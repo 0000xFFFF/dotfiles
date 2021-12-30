@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+import os
+import sys
+
+from scapy.layers.dot11 import Dot11
+from scapy.sendrecv import sniff
+
+ap_list = []
+
+if not os.geteuid() == 0:
+    print("requires root")
+    exit(1)
+
+
+def packet_handler(pkt):
+
+    if pkt.haslayer(Dot11):
+        # AP MAC pkt.addr2
+        print(pkt.addr1,pkt.addr2,pkt.addr3,pkt.ID,pkt.type,pkt.subtype,pkt.dBm_AntSignal, end='   ')
+        if pkt.type == 0 and pkt.subtype == 8: print(pkt.info)
+        else:                                  print("???")
+
+device = sys.argv[1]
+sniff(iface=device, prn=packet_handler)

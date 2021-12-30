@@ -1,0 +1,8 @@
+#!/bin/bash
+case $BLOCK_BUTTON in
+	1) notify-send -a "DATE & TIME" -t 3000 "$(date)" ;;
+	3) urxvt -e sh -c "cal -m -3 && read -p \"\"" </dev/null &>/dev/null & ;;
+esac
+
+echo -e " $(date +"%Y-%m-%d %H:%M:%S")"
+

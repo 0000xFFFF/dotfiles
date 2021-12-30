@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import codecs
+import subprocess
+from colorama import Fore, Back, Style
+from operator import itemgetter
+from tabulate import tabulate
+
+if len(sys.argv) < 2:
+    print("USAGE: " + sys.argv[0] + " <hash(es)File>")
+    exit()
+
+hashes_file_path = sys.argv[1]
+hashes_file_file = open(hashes_file_path, 'r')
+hashes_file_lines = hashes_file_file.readlines()
+hashes_file_file.close()
+
+ouifile_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "mac2ven.lst")
+ouifile = open(ouifile_path, 'r')
+ouifile_lines = ouifile.readlines()
+ouifile.close()
+
+stype = ""
+if len(sys.argv) >= 3:
+    stype = "client"
+
+mac2ven_cache = [] # this makes if way faster
+def mac2ven(mac):
+    mac2check = mac.replace(":", "").replace("-", "").upper()[0:6]
+    for i in mac2ven_cache:
+        if mac2check == i[0]: return i[1]
+    for y_ in ouifile_lines:
+        y = y_.replace("\n", "")
+        split = y.split("\t")
+        split_l = len(split)
+        oui_mac = ""
+        oui_ven = ""
+        if split_l >= 1: oui_mac = split[0]
+        if split_l >= 2: oui_ven = split[1]
+        if mac2check == oui_mac:
+            mac2ven_cache.append([oui_mac, oui_ven])
+            return oui_ven
+    return ""
+
+items = []
+def items_add(item):
+    if not item: return
+    if not item in items:
+        items.append(item)
+        print(item)
+
+counter = 0
+for hashes_file_line in hashes_file_lines:
+    hashLine = hashes_file_line.replace("\n", "")
+    if not hashLine: continue
+    split = hashes_file_line.split("*")
+    bssid = split[3].upper()
+    mac   = split[4].upper()
+    vendor = ""
+    if stype: vendor = mac2ven(mac)
+    else:     vendor = mac2ven(bssid)
+    items_add(vendor)
+

@@ -1,0 +1,15 @@
+#!/bin/bash
+WIFI_ESSID="$1"
+CHANNEL="$2"
+WIFI_BSSID="$3"
+
+wlan mon
+
+[ -z "$WIFI_ESSID" ] && read -r -p 'ESSID: ' WIFI_ESSID
+[ -z "$CHANNEL"    ] && read -r -p 'CH: '    CHANNEL
+[ -z "$WIFI_BSSID" ] && read -r -p 'BSSID (blank = randmac): ' WIFI_BSSID
+
+[ -z "$WIFI_BSSID" ] && WIFI_BSSID="$(randmac)"
+echo "BSSID = $WIFI_BSSID"
+
+sudo airbase-ng -a "$WIFI_BSSID" --essid "$WIFI_ESSID" -c "$CHANNEL" "$(wlanDevice mon)"

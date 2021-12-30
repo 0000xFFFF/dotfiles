@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+
+import sys, subprocess, csv
+
+len_sys_argv = len(sys.argv)
+
+if len_sys_argv <= 1:
+    print("ABOUT: formats IPs and information from the apache's \"access_log\" file")
+    print("USAGE: " + sys.argv[0] + " access_log <options>")
+    print("options:")
+    print("-1 = just print the ips")
+    print(" 0 = reverse when sorting")
+    print(" 1 = sort by 1st column")
+    print(" 2 = sort by 2nd column")
+    print(" 3 = sort by 3rd column")
+    exit()
+
+options = []
+options_reverse = False
+options_onlyip  = False
+for i in range(2, len_sys_argv):
+    arg = sys.argv[i]
+    if arg == "-1": options_onlyip = True
+    options.append(arg)
+
+f = open(sys.argv[1], 'r')
+lines = f.readlines()
+f.close()
+
+
+longest_ip = 0
+longest_geo = 0
+longest_num = 0
+items = []
+
+if options_onlyip:
+    for line in lines:
+        ip = line.split(' ', 1)[0]
+        if not ip in items:
+            print(ip)
+            items.append(ip)
+else:
+    for line in lines:
+        ip = line.split(' ', 1)[0]
+
+        exists = False
+        for item in items:
+            if ip == item[1]:
+                item[2] += 1
+                len_num = len(str(item[2]))
+                if len_num > longest_num: longest_num = len_num
+                exists = True
+                break
+        if exists: continue
+
+        proc = subprocess.Popen(["geoiplookup", ip], stdout=subprocess.PIPE)
+        proc_read = proc.stdout.read()
+        geo = bytes.decode(proc_read).replace("\n", "").replace("GeoIP Country Edition: ", "")
+        if geo.__contains__("can't resolve"): continue
+        len_geo = len(geo)
+        len_ip = len(ip)
+
+        if len_geo > longest_geo: longest_geo = len_geo
+        if len_ip  > longest_ip:  longest_ip  = len_ip
+        items.append([geo, ip, 1])
+
+    h1 = "COUNTRY"
+    h2 = "IP"
+    h3 = "#"
+
+    len_h1 = len(h1)
+    len_h2 = len(h2)
+    len_h3 = len(h3)
+
+    if len_h1 > longest_geo: longest_geo = len_h1
+    if len_h2 > longest_ip:  longest_ip  = len_h2
+    if len_h3 > longest_num: longest_num = len_h3
+
+    fr = "{:<" + str(longest_geo) + "} | {:<" + str(longest_ip) + "} | {:<" + str(longest_num) + "}"
+
+    print(fr.format(h1, h2, h3))
+    print("-" * longest_geo + "-+-" + "-" * longest_ip + "-+-" + "-" * longest_num)
+
+    for opt in options:
+        if opt == "0":
+            options_reverse = True
+            continue
+        if opt == "1":
+            items.sort(key=lambda x:x[0], reverse=options_reverse)
+            continue
+        if opt == "2":
+            items.sort(key=lambda x:x[1], reverse=options_reverse)
+            continue
+        if opt == "3":
+            items.sort(key=lambda x:x[2], reverse=options_reverse)
+            continue
+
+    for i in items:
+        print(fr.format(i[0], i[1], i[2]))

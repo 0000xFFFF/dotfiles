@@ -1,0 +1,2 @@
+#!/bin/bash
+hashcat -m 22000 "$1" -a 0 "$2" -w 4 --session "$3"

@@ -1,0 +1,2 @@
+#!/bin/bash
+printf "%s\n" "$(ifconfig | grep "inet" | grep -v "127.0.0.1" | grep -v "inet6" | awk '{print $2}' | tr "\n" " ")"

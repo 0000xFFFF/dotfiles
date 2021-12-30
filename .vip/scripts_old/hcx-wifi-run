@@ -1,0 +1,37 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+import subprocess
+import re
+
+# find all wlan adapters
+devices = re.compile("^wl\w+").findall(subprocess.run(["iwconfig"], capture_output=True).stdout.decode())
+
+# no wifi interface connected
+if len(devices) == 0:
+    print("no wifi adapter")
+    exit()
+
+# menu
+print("Select Interface:")
+for index, item in enumerate(devices):
+    print(f"  {index} - {item}")
+while True:
+    try: wifi_interface_choice = input("> ")
+    except KeyboardInterrupt: stop()
+    try:
+        if devices[int(wifi_interface_choice)]: break
+    except:
+        print("invalid")
+
+device = devices[int(wifi_interface_choice)]
+
+f = ""
+if len(sys.argv) >= 2:
+    f = sys.argv[1]
+
+if f:
+    os.system("sudo hcx-wifi " + device + " \"" + f + "\"")
+else:
+    os.system("sudo hcx-wifi " + device)

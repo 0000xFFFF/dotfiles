@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+import os
+import sys
+
+# get args
+if len(sys.argv) < 2:
+    print("USAGE: " + sys.argv[0] + " <video>")
+    exit()
+
+
+file_path = sys.argv[1]
+
+n = input("number of cuts (e.g. 2): ")
+
+# get stuff to cut
+subvideos = []
+for i in range(1, int(n)+1):
+    i_s = str(i)
+    start = input("cut[" + i_s + "] start: ")
+    end   = input("cut[" + i_s + "] end..: ")
+    subvideos.append([start, end, "p" + i_s + ".mp4"])
+
+file_out = open("list.txt", "w")
+
+# cut stuff
+for i in subvideos:
+    start = i[0]
+    end = i[1]
+    outfile = i[2]
+    startcmd = ""
+    endcmd = ""
+    if start: startcmd = " -ss " + start
+    if end: endcmd = " -to " + end
+    s = "ffmpeg -i \"" + file_path + "\"" + startcmd + endcmd + " -c copy " + outfile
+    print(s)
+    os.system(s)
+    file_out.write("file " + i[2] + "\n")
+
+file_out.close()
+
+# combine videos
+os.system("ffmpeg -f concat -i list.txt -c copy out.mp4")
+
+exit() # no cleanup
+
+# cleanup
+for i in subvideos:
+    os.remove(i[2])
+
+os.remove("list.txt")

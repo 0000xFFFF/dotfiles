@@ -1,0 +1,2 @@
+#!/bin/bash
+bash ~/.config/i3/scripts/i3lock_pixelIcon ~/.config/i3/img/lockscreen.png

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+FILE_INPUT="$1"
+FILE_OUTPUT="$2"
+while [ -z "$FILE_INPUT"  ]; do read -r -p "Input File..: " FILE_INPUT  ; done
+while [ -z "$FILE_OUTPUT" ]; do read -r -p "Output File.: " FILE_OUTPUT ; done
+
+CROP="$(ffmpeg -i "$FILE_INPUT" -vframes 10 -vf cropdetect -f null - 2>&1 | grep "crop=" | sed 1q | awk -F "crop=" '{printf $2}')"
+while [ -z "$CROP" ]; do read -r -p 'crop=' CROP ; done
+echo "crop=$CROP"
+ffplay -hide_banner -loglevel quiet -vf crop="$CROP" "$FILE_INPUT" >/dev/null 2>/dev/null
+
+read -r -p "Convert? [y/N] " response
+case "$response" in
+    [yY][eE][sS]|[yY]) echo -e "converting..." ;;
+    *)                 exit                    ;;
+esac
+
+ffmpeg -hide_banner -i "$FILE_INPUT" -vf crop="$CROP" -c:a copy "$FILE_OUTPUT"

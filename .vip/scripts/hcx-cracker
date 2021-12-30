@@ -1,0 +1,252 @@
+#!/usr/bin/env python3
+
+# ABOUT:
+# generates wordlists from hash essids
+
+# after running this script
+# run:
+# > chmod +x gen.sh run.sh
+# > ./gen.sh && ./run.sh
+
+# make sure to change longlists below (use rockyou or something you want)
+
+import sys
+import codecs
+import re
+from operator import itemgetter
+
+# get args / help
+if len(sys.argv) <= 1:
+    print("ABOUT: essids -> wordlists")
+    print("USAGE: " + sys.argv[0] + " <hash(es)File> <options>")
+    print("options:")
+    print(" @auto      = generate automatically")
+    print(" @blacklist = skip hashes that don't generate a decent wordlist by using the ESSID...")
+    exit()
+
+# options
+OPTION_AUTO = 0
+OPTION_BLACKLIST = 0
+
+# set options
+for i in sys.argv[1:]:
+    if   i == "@auto":      OPTION_AUTO      = 1
+    elif i == "@blacklist": OPTION_BLACKLIST = 1
+
+# read hashes file
+hashes_file_path = sys.argv[1]
+hashes_file_file = open(hashes_file_path, 'r')
+hashes_file_lines = hashes_file_file.readlines()
+hashes_file_file.close()
+
+# bash header
+shheader = "#!/bin/sh -x\n"
+
+# note
+print(" * leave the hcx-genlst args empty to skip cracking this/current hash")
+
+def hex2str(string):
+    try:
+        binary_str = codecs.decode(string, "hex")
+        return str(binary_str, 'utf-8')
+    except Exception as e:
+        return "HEX ERROR"
+
+def rslatin_check(s):
+    if "č" in s: return True
+    if "Č" in s: return True
+    if "ć" in s: return True
+    if "Ć" in s: return True
+    if "š" in s: return True
+    if "Š" in s: return True
+    if "ž" in s: return True
+    if "Ž" in s: return True
+    if "ð" in s: return True
+    if "đ" in s: return True
+    if "Ð" in s: return True
+    return False
+
+def rslatin_replace(s):
+    s = s.replace("č", "c")
+    s = s.replace("Č", "C")
+    s = s.replace("ć", "c")
+    s = s.replace("Ć", "C")
+    s = s.replace("š", "s")
+    s = s.replace("Š", "S")
+    s = s.replace("ž", "z")
+    s = s.replace("Ž", "Z")
+    s = s.replace("ð", "dj")
+    s = s.replace("đ", "dj")
+    s = s.replace("Ð", "Dj")
+    return s
+
+def wordlst2str(wordlst):
+    genlst = ""
+    for word in wordlst:
+        if genlst: genlst += " '" + word + "'"
+        else:      genlst += "'" + word + "'"
+    return genlst
+
+def essid2wordlst(essid):
+    wordlst = []
+
+    if rslatin_check(essid):
+        essid = rslatin_replace(essid)
+
+    if OPTION_BLACKLIST:
+        blacklist = [
+            "HSWIFI-",
+            "Tech_",
+            "HUAWEI ",
+            "HUAWEI-",
+            "-Guest",
+            "ZTE_",
+            "MIWIFI_",
+            "CGA",
+            "TP-LINK_",
+            "MikroTik-",
+            "SBB-",
+            "TS-",
+            "CXNK",
+            "ALHN-",
+            "HG630",
+            "TP-Link_",
+            "Telenor_Internet_",
+            "AndroidAP",
+        ]
+
+        for i in blacklist:
+            if i in essid:
+                return []
+
+        if len(essid) == 6 and re.search("[0-9a-fA-F]{6}", essid):
+            return []
+
+    # add to list (don't add dupes)
+    def add(word):
+        if not word: return
+        if not word in wordlst:
+            wordlst.append(word)
+
+    def add2(word):
+        add(word)
+        numlessword = ""
+        for c in word:
+            if not c.isdigit():
+                numlessword += c
+        add(numlessword)
+
+    def addlst(words):
+        long = ""
+        for word in words:
+             long += word
+             add2(word)
+        add2(long)
+        long = ""
+        words.reverse()
+        for word in words:
+            long += word
+        add2(long)
+
+    add2(essid)
+    addlst(essid.split(" "))
+    addlst(essid.split("_"))
+    addlst(essid.split("-"))
+
+    # split CamelCase
+    addlst(re.sub('([A-Z][a-z]+)', r' \1', re.sub('([A-Z]+)', r' \1', essid)).split())
+
+    return wordlst
+
+items = []
+counter = 0
+skipped = 0
+for hashes_file_line in hashes_file_lines:
+    hashLine = hashes_file_line.replace("\n", "")
+    if not hashLine: continue
+    counter += 1
+    split = hashes_file_line.split("*")
+    type = split[1]
+    type_str = ""
+    if type == "01": type_str = "PMKID"
+    if type == "02": type_str = "EAPOL"
+    hash  = split[2]#.upper()
+    bssid = split[3]#.upper()
+    mac   = split[4]#.upper()
+    essid = hex2str(split[5])
+    print(counter,"\t",type_str,hash,bssid,mac,essid,end=" --> ")
+
+    genlst = ""
+    if OPTION_AUTO:
+        wordlst = essid2wordlst(essid)
+        if len(wordlst) == 0:
+            skipped += 1
+            print("BLACKLISTED (" + str(skipped) +")")
+            continue
+        genlst = wordlst2str(wordlst)
+        genlst_len = len(wordlst)
+        print(genlst)
+    else:
+        try:
+            genlst = input(" --> hcx-genlst ")
+            genlst_len = len(genlst.split(" "))
+        except:
+            print("")
+            quit()
+        if not genlst:
+            skipped += 1
+            print(" -- Skipping... (" + str(skipped) +")")
+            continue
+    items.append([hashLine,type_str,hash,bssid,mac,essid,genlst,genlst_len])
+
+items = sorted(items, key=itemgetter(6))
+items = sorted(items, key=itemgetter(7))
+
+print("\n+--> gen.sh")
+
+files = []
+num = 0
+zerostr = len(str(len(items)))
+
+if len(items) != 0:
+    with open("gen.sh", 'w') as f_gen:
+        f_gen.write(shheader)
+        items_l = len(items)
+        for i in items:
+            num += 1
+            num_s = str(num).rjust(zerostr, '0')
+            file_1 = "hash" + num_s + ".txt"
+            file_2 = "hash" + num_s + ".lst"
+
+            with open(file_1, 'w') as f1:
+                f1.write(i[0] + "\n")
+
+            #comment = f"echo -e \"{i[1]} {i[2]} {i[3]} {i[4]} {i[5]} -> {i[6]}\"\n"
+            command = "hcx-genlst " + i[6] + " | strings -n 8 > \"" + file_2 + "\" # " + i[5] + "\n"
+            f_gen.write(command)
+            print("|", command, end="")
+            files.append([file_1, file_2, i])
+
+
+print("\n+--> run.sh")
+with open("run.sh", 'w') as f3:
+    f3.write(shheader)
+    print("|", shheader, end="")
+    for i in files:
+        line = f"hashcat --quiet -m 22000 {i[0]} -a 0 {i[1]} -w 4 --session \"{i[2][2]}\" 2>/dev/null # {i[2][5]} -> {i[2][6]}\n"
+        f3.write(line)
+        print("|", line, end="")
+    longlists = [
+        ["essid_uniq", "essid_uniq.txt"],
+        ["holylst", "/home/user/.vip/lists/wordlists/holylst.txt"],
+        ["num8", "/home/user/.vip/lists/wordlists/num8_shuf.txt"],
+    ]
+    for i in longlists:
+        line = f"hashcat -m 22000 \"{hashes_file_path}\" -a 0 \"{i[1]}\" -w 4 --session \"{i[0]}\" 2>/dev/null\n"
+        f3.write(line)
+        print("|", line, end="")
+
+
+print()
+print(" -- total:",num)
+print(" -- done.")

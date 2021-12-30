@@ -1,0 +1,226 @@
+#!/usr/bin/env python
+
+import os
+import time
+import psutil
+import RPi.GPIO as GPIO
+import subprocess
+from pathlib import Path
+from datetime import datetime
+
+RST_PIN       = 25
+CS_PIN        = 8
+DC_PIN        = 24
+RST           = 27
+DC            = 25
+BL            = 24
+bus           = 0
+device        = 0
+KEY_UP_PIN    = 6
+KEY_DOWN_PIN  = 19
+KEY_LEFT_PIN  = 5
+KEY_RIGHT_PIN = 26
+KEY_PRESS_PIN = 13
+KEY1_PIN      = 21
+KEY2_PIN      = 20
+KEY3_PIN      = 16
+
+interface = "wlan1"
+dump_dir = "/home/pi/dump"
+os.chdir(dump_dir)
+hash_file = "preview.txt"
+
+def bytes_human_readable(num, suffix="B"):
+    original = num
+    for unit in ("", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"):
+        if abs(num) < 1024.0:
+            return f"{num:3.1f} {unit}{suffix} ({original} bytes)"
+        num /= 1024.0
+    return f"{num:.1f} Yi{suffix} ({original}) bytes"
+
+# use root
+def checkRoot():
+    return os.geteuid() == 0
+
+if not checkRoot():
+    print("use root.")
+    exit()
+
+def get_adapters():
+    addresses = psutil.net_if_addrs()
+    stats = psutil.net_if_stats()
+    ifs = []
+    for intface, addr_list in addresses.items():
+        ifs.append(intface)
+    return ifs
+
+def term_clear():
+    os.system("clear")
+
+def isRunning():
+    return "hcxdumptool" in (p.name() for p in psutil.process_iter())
+
+def noAdapter():
+    ifs = get_adapters()
+    for i in ifs:
+        if i == interface:
+            return False
+    return True
+
+def start_detached_command(command, *args):
+    full_command = [command] + list(args)
+    with open(os.devnull, 'wb') as devnull:
+        subprocess.Popen(
+            full_command,
+            stdout=devnull,  # Redirect standard output to devnull
+            stderr=devnull,  # Redirect standard error to devnull
+            preexec_fn=os.setsid,
+            close_fds=True
+        )
+
+def start():
+    if isRunning():
+        print("can't start, already running")
+        return
+    if noAdapter():
+        print("can't start, no valid adapter")
+        return
+
+    bpf = os.path.join(os.path.dirname(os.path.realpath(__file__)), "hcx-menu-rpi-filter.bpf")
+    print(f"bpf: {bpf}")
+    print("starting...")
+    start_detached_command('sudo', 'hcxdumptool', '-i', interface, "--rds=1", f"--bpf={bpf}")
+    print("started.")
+
+
+def stop():
+    print("$?:", subprocess.call(['sudo', 'pkill', '-INT', 'hcxdumptool']))
+
+def menu():
+    print(f"DATE: {datetime.now()}")
+    print("BTN 1       - start hcxdumptool")
+    print("BTN 2       - stop hcxdumptool")
+    print("BTN 3       - print names")
+    print("UP          - clear + show menu")
+    print("LEFT        - info: small")
+    print("RIGHT       - info: extract")
+    print("DOWN (HOLD) - poweroff")
+
+
+def info():
+    print("devices:")
+    print(get_adapters())
+    count = 0
+    size = 0
+    for i in os.listdir(dump_dir):
+        file = os.path.join(dump_dir, i)
+        if os.path.isfile(file) and i.endswith(".pcapng"):
+            count += 1
+            size += Path(file).stat().st_size
+    print(f"files: {count}")
+    print(f"bytes: {bytes_human_readable(size)}")
+
+    isRunning = "hcxdumptool" in (p.name() for p in psutil.process_iter())
+    print(f"running: {isRunning}")
+
+
+def hex2str(string):
+    try:
+        hex_bytes = bytes.fromhex(string)
+        utf8_string = hex_bytes.decode('utf-8')
+        return utf8_string
+    except Exception as e: return "HEX ERROR"
+
+
+def names(delay=0):
+    with open(hash_file, 'r') as file1:
+        lines = [line.strip() for line in file1.readlines()]
+
+    for line in lines:
+        if not line: continue
+        split = line.split("*")
+        essid = hex2str(split[5])
+        print(essid)
+        time.sleep(delay)
+
+def saferm(file_path):
+    try:
+        os.remove(file_path)
+        print(f"{file_path} has been deleted successfully")
+    except FileNotFoundError:
+        print(f"{file_path} does not exist")
+    except PermissionError:
+        print(f"Permission denied: {file_path}")
+    except Exception as e:
+        print(f"Error: {e}")
+
+
+def info2():
+    saferm(hash_file)
+    subprocess.run(f"hcxpcapngtool *.pcapng -o {hash_file}", shell=True)
+    names()
+    subprocess.call(["hcxhashtool", "-i", hash_file])
+
+def action_start(channel):
+    start()
+
+def action_stop(channel):
+    stop()
+
+def action_names(channel):
+    term_clear()
+    names(0.3)
+
+def action_clear(channel):
+    term_clear()
+    menu()
+
+def action_info(channel):
+    term_clear()
+    info()
+
+def action_info2(channel):
+    term_clear()
+    info2()
+
+def action_poweroff(channel):
+    start_time = time.time()
+    print("hold for 3 seconds...")
+
+    while GPIO.input(KEY_DOWN_PIN) == GPIO.LOW:
+        time.sleep(0.01)
+
+    hold_time = time.time() - start_time
+    if hold_time > 3:
+        print("sudo poweroff")
+        subprocess.call(["sudo", "poweroff"])
+
+try:
+    # setup board
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(KEY1_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY2_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY3_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_UP_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_LEFT_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_RIGHT_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_DOWN_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+    GPIO.add_event_detect(KEY1_PIN, GPIO.FALLING, callback=action_start, bouncetime=300)
+    GPIO.add_event_detect(KEY2_PIN, GPIO.FALLING, callback=action_stop, bouncetime=300)
+    GPIO.add_event_detect(KEY3_PIN, GPIO.FALLING, callback=action_names, bouncetime=300)
+    GPIO.add_event_detect(KEY_UP_PIN, GPIO.FALLING, callback=action_clear, bouncetime=300)
+    GPIO.add_event_detect(KEY_LEFT_PIN, GPIO.FALLING, callback=action_info, bouncetime=300)
+    GPIO.add_event_detect(KEY_RIGHT_PIN, GPIO.FALLING, callback=action_info2, bouncetime=300)
+    GPIO.add_event_detect(KEY_DOWN_PIN, GPIO.FALLING, callback=action_poweroff, bouncetime=300)
+except:
+    print("can't get board")
+    exit()
+
+term_clear()
+menu()
+
+try:
+    input()
+except KeyboardInterrupt:
+    GPIO.cleanup()

@@ -1,0 +1,6 @@
+#!/bin/bash
+if [ -z "$1" ]; then
+    find "$PWD"
+else
+    find "$PWD" -maxdepth "$1"
+fi

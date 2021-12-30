@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+
+import sys
+import subprocess
+
+if len(sys.argv) < 2:
+    print("ABOUT: print uniq hashes by bssid")
+    print("USAGE: " + sys.argv[0] + " <hashesFile>")
+    exit()
+
+with open(sys.argv[1], 'r') as file1:
+    lines = [line.strip() for line in file1.readlines()]
+
+hashes_list = []
+for line in lines:
+    if not line: continue
+    split = line.split("*")
+    bssid = split[3].upper()
+
+    contains = False
+    for i in hashes_list:
+        if i[0] == bssid:
+            contains = True
+            break
+
+    if not contains: hashes_list.append([bssid, line])
+
+for i in hashes_list:
+    print(i[1])

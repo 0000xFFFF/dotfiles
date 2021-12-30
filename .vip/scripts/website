@@ -1,0 +1,22 @@
+#!/bin/bash
+LOCALHOST=$(hostname -I | cut -d' ' -f1)
+
+if [ "$1" == "start" ]; then
+    echo -e "starting apache2..."
+    sudo service apache2 start
+    echo -e "HOSTING: \"/var/www/html/index.html\" on [$LOCALHOST]"
+fi
+
+if [ "$1" == "stop" ]; then
+    echo -e "stopping apache2..."
+    sudo service apache2 stop
+    echo -e "STOPPED: \"/var/www/html/index.html\" on [$LOCALHOST]"
+fi
+
+if [ -z "$1" ]; then
+    echo -e "current:"
+    service --status-all | grep "apache2"
+    echo -e "options:"
+    echo -e " website start"
+    echo -e " website stop"
+fi
