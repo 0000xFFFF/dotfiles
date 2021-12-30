@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+
+if len(sys.argv) < 2:
+    print("USAGE: " + sys.argv[0] + " <MAC> <ouipath(optional)>")
+    exit()
+
+MAC = sys.argv[1]
+
+ouifile_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "mac2ven.lst")
+
+if len(sys.argv) >= 3: a = sys.argv[2]
+
+ouifile = open(ouifile_path, 'r')
+ouifile_lines = ouifile.readlines()
+ouifile.close()
+
+def mac2ven(mac):
+    mac2check = mac.replace(":", "").replace("-", "").upper()[0:6]
+    vendor = ""
+    for y_ in ouifile_lines:
+        y = y_.replace("\n", "")
+        split = y.split("\t")
+        split_l = len(split)
+        oui_mac = ""
+        oui_ven = ""
+        if split_l >= 1: oui_mac = split[0]
+        if split_l >= 2: oui_ven = split[1]
+        if mac2check == oui_mac:
+            vendor = oui_ven
+            break
+    return vendor
+
+
+print(MAC, mac2ven(MAC))
+

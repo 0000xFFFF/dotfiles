@@ -1,0 +1,25 @@
+#!/bin/bash
+
+case $BLOCK_BUTTON in
+	1) gnome-power-statistics &>/dev/null & ;;
+esac
+
+ICON=""
+BAT1=""
+BAT2=""
+BAT3=""
+BAT4=""
+BAT5=""
+BATW=""
+
+acpi_output="$(acpi)"
+number="$(echo "$acpi_output" | cut -d " " -f3-5 | sed "s/%.*//" | awk '{print $2}')"
+display_var="$(echo "$acpi_output" | cut -d " " -f3-5 | sed -e "s/,//g;s/Discharging//;s/Charging//;s/Unknown//;s/Full//;s/ 0*/ /g;s/ :/ /g")"
+
+if   [ "$number" -ge 95 ]; then ICON="$BAT5" ; 
+elif [ "$number" -ge 75 ]; then ICON="$BAT4" ;
+elif [ "$number" -ge 50 ]; then ICON="$BAT3" ;
+elif [ "$number" -ge 20 ]; then ICON="$BAT2" ;
+else ICON="$BAT1 $BATW" ; fi
+
+echo -e "$ICON $display_var"

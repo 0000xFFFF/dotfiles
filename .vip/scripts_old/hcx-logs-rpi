@@ -1,0 +1,628 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import time
+import atexit
+#import getchlib
+from colorama import Fore, Back, Style
+from operator import itemgetter
+from tabulate import tabulate
+from datetime import datetime
+import RPi.GPIO as GPIO
+
+RST_PIN       = 25
+CS_PIN        = 8
+DC_PIN        = 24
+RST           = 27
+DC            = 25
+BL            = 24
+bus           = 0
+device        = 0
+KEY_UP_PIN    = 6
+KEY_DOWN_PIN  = 19
+KEY_LEFT_PIN  = 5
+KEY_RIGHT_PIN = 26
+KEY_PRESS_PIN = 13
+KEY1_PIN      = 21
+KEY2_PIN      = 20
+KEY3_PIN      = 16
+
+def gpio_setup():
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(KEY_UP_PIN,    GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_DOWN_PIN,  GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_LEFT_PIN,  GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_RIGHT_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_PRESS_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY1_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY2_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY3_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+# glbl stuff
+running = True
+menu_opt = 0
+
+term_show_count = 0
+g_tc = os.get_terminal_size().columns
+g_tl = os.get_terminal_size().lines
+def term_show_count_reset():
+    global term_show_count
+    term_show_count = 0
+def term_clear():
+    os.system("clear")
+    term_show_count_reset()
+def term_cursor_reset():
+    print("\033[0;0H", end='')
+    term_show_count_reset()
+def term_cursor_hide():
+    print("\033[?25l")
+def term_cursor_show():
+    print("\033[?25h")
+def term_blank():
+    term_cursor_hide()
+    term_clear()
+def term_show_print(printStr, color = ""):
+    global term_show_count
+    tl = os.get_terminal_size().lines
+    if term_show_count >= (tl-1): return
+    print(f"{color}{printStr}{Style.RESET_ALL}")
+    term_show_count += 1
+def term_show(s, color = ""):
+    global g_tc
+    global g_tl
+    strings = s.split("\n")
+    tc = os.get_terminal_size().columns
+    tl = os.get_terminal_size().lines
+    if g_tc != tc or g_tl != tl:
+        g_tc = tc
+        g_tl = tl
+        term_clear()
+    for i in strings:
+        il = len(i)
+        if il > tc: term_show_print(i[:tc], color)
+        else:       term_show_print(i + str(" " * int(int(tc)-int(il))), color)
+
+@atexit.register
+def signal_handler():
+    term_cursor_show()
+
+# remove control chars
+import unicodedata, re, itertools, sys
+all_chars = (chr(i) for i in range(sys.maxunicode))
+categories = {'Cc'}
+control_chars = ''.join(map(chr, itertools.chain(range(0x00,0x20), range(0x7f,0xa0))))
+control_char_re = re.compile('[%s]' % re.escape(control_chars))
+def remove_control_chars(s):
+    return control_char_re.sub('', s)
+
+# load log data
+loadlogdata_dir = os.getcwd()
+loadlogdata_count = 0
+
+list_master = []
+list_master_len = 0
+
+list_type_BEACON             = 1
+list_type_HIDDENBEACON       = 2
+list_type_PROBERESPONSE      = 3
+list_type_ROGUEPROBERESPONSE = 4
+list_type_AUTHENTICATION     = 5
+list_type_ASSOCIATION        = 6
+list_type_REASSOCIATION      = 7
+list_type_PMKID              = 8
+list_type_PMKIDROGUE         = 9
+list_type_EAPOL              = 10
+
+list_count_BEACON             = 0
+list_count_HIDDENBEACON       = 0
+list_count_PROBERESPONSE      = 0
+list_count_ROGUEPROBERESPONSE = 0
+list_count_AUTHENTICATION     = 0
+list_count_ASSOCIATION        = 0
+list_count_REASSOCIATION      = 0
+list_count_PMKID              = 0
+list_count_PMKIDROGUE         = 0
+list_count_EAPOL              = 0
+
+list_color_SORT               = Style.BRIGHT + Fore.MAGENTA
+list_color_BEACON             = Style.BRIGHT + Fore.GREEN
+list_color_HIDDENBEACON       = Style.NORMAL + Fore.GREEN
+list_color_PROBERESPONSE      = Style.BRIGHT + Fore.YELLOW
+list_color_ROGUEPROBERESPONSE = Style.NORMAL + Fore.YELLOW
+list_color_AUTHENTICATION     = Style.BRIGHT + Fore.BLUE
+list_color_ASSOCIATION        = Style.BRIGHT + Fore.CYAN
+list_color_REASSOCIATION      = Style.NORMAL + Fore.CYAN
+list_color_PMKID              = Style.BRIGHT + Fore.RED
+list_color_PMKIDROGUE         = Style.NORMAL + Fore.RED
+list_color_EAPOL              = Style.BRIGHT + Fore.WHITE
+list_color_HASH               = Style.NORMAL + Fore.WHITE
+
+def list_append(typ, item, doprint = False):
+    global list_count_BEACON
+    global list_count_HIDDENBEACON
+    global list_count_PROBERESPONSE
+    global list_count_ROGUEPROBERESPONSE
+    global list_count_AUTHENTICATION
+    global list_count_ASSOCIATION
+    global list_count_REASSOCIATION
+    global list_count_PMKID
+    global list_count_PMKIDROGUE
+    global list_count_EAPOL
+    if not [typ, item] in list_master:
+        if   typ == list_type_BEACON:             list_count_BEACON             += 1
+        elif typ == list_type_HIDDENBEACON:       list_count_HIDDENBEACON       += 1
+        elif typ == list_type_PROBERESPONSE:      list_count_PROBERESPONSE      += 1
+        elif typ == list_type_ROGUEPROBERESPONSE: list_count_ROGUEPROBERESPONSE += 1
+        elif typ == list_type_AUTHENTICATION:     list_count_AUTHENTICATION     += 1
+        elif typ == list_type_ASSOCIATION:        list_count_ASSOCIATION        += 1
+        elif typ == list_type_REASSOCIATION:      list_count_REASSOCIATION      += 1
+        elif typ == list_type_PMKID:              list_count_PMKID              += 1
+        elif typ == list_type_PMKIDROGUE:         list_count_PMKIDROGUE         += 1
+        elif typ == list_type_EAPOL:              list_count_EAPOL              += 1
+        list_master.append([typ, item])
+        if doprint:
+            if   typ == list_type_BEACON:             print(list_color_BEACON             + str(list_count_BEACON            ) + " " + item[0] + Style.RESET_ALL)
+            elif typ == list_type_HIDDENBEACON:       print(list_color_HIDDENBEACON       + str(list_count_HIDDENBEACON      ) + " " + item[0] + Style.RESET_ALL)
+            elif typ == list_type_PROBERESPONSE:      print(list_color_PROBERESPONSE      + str(list_count_PROBERESPONSE     ) + " " + item[0] + Style.RESET_ALL)
+            elif typ == list_type_ROGUEPROBERESPONSE: print(list_color_ROGUEPROBERESPONSE + str(list_count_ROGUEPROBERESPONSE) + " " + item[0] + Style.RESET_ALL)
+            elif typ == list_type_AUTHENTICATION:     print(list_color_AUTHENTICATION     + str(list_count_AUTHENTICATION    ) + " " + item[0] + Style.RESET_ALL)
+            elif typ == list_type_ASSOCIATION:        print(list_color_ASSOCIATION        + str(list_count_ASSOCIATION       ) + " " + item[0] + Style.RESET_ALL)
+            elif typ == list_type_REASSOCIATION:      print(list_color_REASSOCIATION      + str(list_count_REASSOCIATION     ) + " " + item[0] + Style.RESET_ALL)
+            elif typ == list_type_PMKID:              print(list_color_PMKID              + str(list_count_PMKID             ) + " " + item[0] + Style.RESET_ALL)
+            elif typ == list_type_PMKIDROGUE:         print(list_color_PMKIDROGUE         + str(list_count_PMKIDROGUE        ) + " " + item[0] + Style.RESET_ALL)
+            elif typ == list_type_EAPOL:              print(list_color_EAPOL              + str(list_count_EAPOL             ) + " " + item[0] + Style.RESET_ALL)
+
+def makeList(line, splitby):
+    return remove_control_chars(line).split(splitby)[0].split()
+def makeList2(line, splitby):
+    items_n_pmk = remove_control_chars(line).split(splitby)
+    return items_n_pmk[0].split(), items_n_pmk[1].split()[0]
+
+def getItems_BEACON(line, doprint = False):
+    lst = makeList(line, " [BEACON]")
+    essid = " ".join(lst[4:])
+    bssid = lst[3].upper()
+    list_append(list_type_BEACON, [essid, bssid], doprint)
+def getItems_HIDDENBEACON(line, doprint = False):
+    lst = makeList(line, " [HIDDEN BEACON]")
+    bssid = lst[3].upper()
+    list_append(list_type_HIDDENBEACON, [bssid], doprint)
+def getItems_PROBERESPONSE(line, doprint = False):
+    lst = makeList(line, " [PROBERESPONSE]")
+    essid = " ".join(lst[4:])
+    mac1 = lst[2].upper()
+    mac2 = lst[3].upper()
+    list_append(list_type_PROBERESPONSE, [essid, mac1, mac2], doprint)
+def getItems_ROGUEPROBERESPONSE(line, doprint = False):
+    lst = makeList(line, " [ROGUE PROBERESPONSE]")
+    essid = " ".join(lst[4:])
+    mac1 = lst[2].upper()
+    mac2 = lst[3].upper()
+    list_append(list_type_ROGUEPROBERESPONSE, [essid, mac1, mac2], doprint)
+def getItems_AUTHENTICATION(line, doprint = False):
+    lst = makeList(line, " [AUTHENTICATION]")
+    essid = " ".join(lst[4:])
+    mac1 = lst[2].upper()
+    mac2 = lst[3].upper()
+    list_append(list_type_AUTHENTICATION, [essid, mac1, mac2], doprint)
+def getItems_ASSOCIATION(line, doprint = False):
+    line_noctrlchars = remove_control_chars(line)
+    tosplit = line_noctrlchars.replace(" [ASSOCIATION]", "")
+    lst = tosplit.split()
+    essid = " ".join(lst[4:])
+    mac1 = lst[2].upper()
+    mac2 = lst[3].upper()
+    list_append(list_type_ASSOCIATION, [essid, mac1, mac2], doprint)
+def getItems_REASSOCIATION(line, doprint = False):
+    lst = makeList(line, " [REASSOCIATION]")
+    essid = " ".join(lst[4:])
+    mac1 = lst[2].upper()
+    mac2 = lst[3].upper()
+    list_append(list_type_REASSOCIATION, [essid, mac1, mac2], doprint)
+def getItems_PMKID(line, doprint = False):
+    lst, pmkid = makeList2(line, " [PMKID:")
+    essid = " ".join(lst[4:])
+    mac1 = lst[2].upper()
+    mac2 = lst[3].upper()
+    list_append(list_type_PMKID, [essid, mac1, mac2, pmkid], doprint)
+def getItems_PMKIDROGUE(line, doprint = False):
+    lst, pmkid = makeList2(line, " [PMKIDROGUE:")
+    essid = " ".join(lst[4:])
+    mac1 = lst[2].upper()
+    mac2 = lst[3].upper()
+    list_append(list_type_PMKIDROGUE, [essid, mac1, mac2, pmkid], doprint)
+def getItems_EAPOL(line, doprint = False):
+    lst = makeList(line, " [EAPOL:")
+    essid = " ".join(lst[4:])
+    mac1 = lst[2].upper()
+    mac2 = lst[3].upper()
+    list_append(list_type_EAPOL, [essid, mac1, mac2], doprint)
+
+
+loadlogdata_last = ""
+def loadlogdata_line(line, doprint = False):
+    if   "[BEACON]"              in line: getItems_BEACON(line, doprint)
+    elif "[HIDDEN BEACON]"       in line: getItems_HIDDENBEACON(line, doprint)
+    elif "[PROBERESPONSE]"       in line: getItems_PROBERESPONSE(line, doprint)
+    elif "[ROGUE PROBERESPONSE]" in line: getItems_ROGUEPROBERESPONSE(line, doprint)
+    elif "[AUTHENTICATION]"      in line: getItems_AUTHENTICATION(line, doprint)
+    elif "[ASSOCIATION]"         in line: getItems_ASSOCIATION(line, doprint)
+    elif "[REASSOCIATION]"       in line: getItems_REASSOCIATION(line, doprint)
+    elif "[PMKID:"               in line: getItems_PMKID(line, doprint)
+    elif "[PMKIDROGUE:"          in line: getItems_PMKIDROGUE(line, doprint)
+    elif "[EAPOL:"               in line: getItems_EAPOL(line, doprint)
+def loadlogdata():
+
+    global loadlogdata_dir
+    global list_master
+    global list_master_len
+    global list_count_BEACON
+    global list_count_HIDDENBEACON
+    global list_count_PROBERESPONSE
+    global list_count_ROGUEPROBERESPONSE
+    global list_count_AUTHENTICATION
+    global list_count_ASSOCIATION
+    global list_count_REASSOCIATION
+    global list_count_PMKID
+    global list_count_PMKIDROGUE
+    global list_count_EAPOL
+    global loadlogdata_count
+    global loadlogdata_last
+
+    list_master.clear()
+    list_count_BEACON             = 0
+    list_count_HIDDENBEACON       = 0
+    list_count_PROBERESPONSE      = 0
+    list_count_ROGUEPROBERESPONSE = 0
+    list_count_AUTHENTICATION     = 0
+    list_count_ASSOCIATION        = 0
+    list_count_REASSOCIATION      = 0
+    list_count_PMKID              = 0
+    list_count_PMKIDROGUE         = 0
+    list_count_EAPOL              = 0
+    loadlogdata_count = 0
+
+    # load log data
+    try:
+        # sort files by creation date
+        files = sorted(os.listdir(loadlogdata_dir), key=lambda fn:os.path.getctime(os.path.join(loadlogdata_dir, fn)))
+        for filename in files:
+            p = os.path.join(loadlogdata_dir, filename)
+            if p.endswith(".log"):
+                f = open(p, 'r')
+                lines = f.readlines()
+                for line in lines: loadlogdata_line(line)
+                f.close()
+                loadlogdata_count += 1
+    except FileNotFoundError:
+        print("FileNotFoundError")
+        exit(1)
+    
+    loadlogdata_last = datetime.now()
+    list_master_len = len(list_master)
+
+def loadtaildata_init():
+    global list_master
+    global list_master_len
+    global list_count_BEACON
+    global list_count_HIDDENBEACON
+    global list_count_PROBERESPONSE
+    global list_count_ROGUEPROBERESPONSE
+    global list_count_AUTHENTICATION
+    global list_count_ASSOCIATION
+    global list_count_REASSOCIATION
+    global list_count_PMKID
+    global list_count_PMKIDROGUE
+    global list_count_EAPOL
+    list_master.clear()
+    list_count_BEACON             = 0
+    list_count_HIDDENBEACON       = 0
+    list_count_PROBERESPONSE      = 0
+    list_count_ROGUEPROBERESPONSE = 0
+    list_count_AUTHENTICATION     = 0
+    list_count_ASSOCIATION        = 0
+    list_count_REASSOCIATION      = 0
+    list_count_PMKID              = 0
+    list_count_PMKIDROGUE         = 0
+    list_count_EAPOL              = 0
+def loadtaildata():
+
+    global list_master
+    global list_master_len
+
+    # load log data
+    try:
+        lines = os.popen(f"/home/pi/.vip/scripts/pi_dump").read().split("\n")
+        for line in lines: loadlogdata_line(line, True)
+    except FileNotFoundError:
+        print("FileNotFoundError")
+        exit(1)
+    list_master_len = len(list_master)
+
+submenu_running = True
+submenu_items = []
+submenu_items_li = 0
+submenu_selected = 0
+submenu_sorted = False
+submenu_goback = 6
+submenu_goforw = 6
+submenu_skip = 10
+def submenu_getItems(t):
+    global list_master
+    lst = []
+    for i in list_master:
+        if t == i[0]:
+            lst.append(i[1])
+    return lst
+def submenu_getItemsHashes():
+    global list_master
+    lst = []
+    for i in list_master:
+        if i[0] == list_type_PMKID or i[0] == list_type_PMKIDROGUE or i[0] == list_type_EAPOL:
+            lst.append(i[1])
+    return lst
+def submenu_load(listType):
+    global submenu_items
+    global submenu_items_li
+    global submenu_selected
+    global submenu_sorted
+
+    submenu_items.clear()
+
+    if submenu_sorted:
+        if   listType ==  1: submenu_items = sorted(submenu_getItems(list_type_BEACON)             , key=itemgetter(0))
+        elif listType ==  2: submenu_items = sorted(submenu_getItems(list_type_HIDDENBEACON)       , key=itemgetter(0))
+        elif listType ==  3: submenu_items = sorted(submenu_getItems(list_type_PROBERESPONSE)      , key=itemgetter(0))
+        elif listType ==  4: submenu_items = sorted(submenu_getItems(list_type_ROGUEPROBERESPONSE) , key=itemgetter(0))
+        elif listType ==  5: submenu_items = sorted(submenu_getItems(list_type_AUTHENTICATION)     , key=itemgetter(0))
+        elif listType ==  6: submenu_items = sorted(submenu_getItems(list_type_ASSOCIATION)        , key=itemgetter(0))
+        elif listType ==  7: submenu_items = sorted(submenu_getItems(list_type_REASSOCIATION)      , key=itemgetter(0))
+        elif listType ==  8: submenu_items = sorted(submenu_getItems(list_type_PMKID)              , key=itemgetter(0))
+        elif listType ==  9: submenu_items = sorted(submenu_getItems(list_type_PMKIDROGUE)         , key=itemgetter(0))
+        elif listType == 10: submenu_items = sorted(submenu_getItems(list_type_EAPOL)              , key=itemgetter(0))
+        elif listType == 11: submenu_items = sorted(submenu_getItemsHashes()                       , key=itemgetter(0))
+    else:
+        if   listType ==  1: submenu_items = submenu_getItems(list_type_BEACON)
+        elif listType ==  2: submenu_items = submenu_getItems(list_type_HIDDENBEACON)
+        elif listType ==  3: submenu_items = submenu_getItems(list_type_PROBERESPONSE)
+        elif listType ==  4: submenu_items = submenu_getItems(list_type_ROGUEPROBERESPONSE)
+        elif listType ==  5: submenu_items = submenu_getItems(list_type_AUTHENTICATION)
+        elif listType ==  6: submenu_items = submenu_getItems(list_type_ASSOCIATION)
+        elif listType ==  7: submenu_items = submenu_getItems(list_type_REASSOCIATION)
+        elif listType ==  8: submenu_items = submenu_getItems(list_type_PMKID)
+        elif listType ==  9: submenu_items = submenu_getItems(list_type_PMKIDROGUE)
+        elif listType == 10: submenu_items = submenu_getItems(list_type_EAPOL)
+        elif listType == 11: submenu_items = submenu_getItemsHashes()
+
+    submenu_items_li = len(submenu_items)-1
+    submenu_selected = submenu_items_li
+def submenu_draw():
+    global submenu_items
+    global submenu_items_li
+    global submenu_sorted
+    global submenu_goback
+    global submenu_goforw
+    global submenu_selected
+
+    term_cursor_reset()
+    back = submenu_selected-submenu_goback
+    forw = submenu_selected+submenu_goforw
+
+    if back < 0:
+        back = 0
+        forw = submenu_goback+submenu_goforw
+    if forw > submenu_items_li:
+        forw = submenu_items_li
+        back = forw - (submenu_goback+submenu_goforw)
+        if back <= 0: back = 0
+
+    term_show(f"{back+1},{submenu_selected+1},{forw+1} / {submenu_items_li+1}" , f"{Style.BRIGHT}{Fore.WHITE}")
+    if back >= 0:
+        for i in submenu_items[back:submenu_selected]:
+            term_show(f"  {i[0]}")
+    if submenu_items_li != -1:
+        term_show(f"> {submenu_items[submenu_selected][0]}" , f"{Style.BRIGHT}{Fore.WHITE}")
+    if forw <= submenu_items_li and submenu_selected+1 <= submenu_items_li:
+        for i in submenu_items[submenu_selected+1:forw+1]:
+            term_show(f"  {i[0]}")
+def submenu_up():
+    global submenu_selected
+    submenu_selected -= 1
+    if submenu_selected < 0: submenu_selected = 0
+def submenu_down():
+    global submenu_selected
+    global submenu_items_li
+    submenu_selected += 1
+    if submenu_selected > submenu_items_li: submenu_selected = submenu_items_li
+def submenu_click():
+    global submenu_items
+    global submenu_selected
+    global submenu_items_li
+    if submenu_items_li != -1:
+        term_clear()
+        print("\n".join(submenu_items[submenu_selected]))
+def submenu_skip_up():
+    global submenu_skip
+    for i in range(submenu_skip): submenu_up()
+def submenu_skip_down():
+    global submenu_skip
+    for i in range(submenu_skip): submenu_down()
+def submenu(listType):
+
+    global submenu_running
+    global submenu_selected
+    global submenu_items_li
+    global submenu_skip
+    term_clear()
+    submenu_load(listType)
+    submenu_running = True
+
+    sleept = 0.1
+    while submenu_running:
+        submenu_draw()
+
+        while running:
+            time.sleep(sleept)
+            if   not GPIO.input(KEY_UP_PIN):    submenu_up() ; break
+            elif not GPIO.input(KEY_DOWN_PIN):  submenu_down() ; break
+            elif not GPIO.input(KEY_LEFT_PIN):  submenu_selected = 0 ; break
+            elif not GPIO.input(KEY_RIGHT_PIN): submenu_selected = submenu_items_li ; break
+            elif not GPIO.input(KEY_PRESS_PIN): submenu_click()
+            elif not GPIO.input(KEY1_PIN):      submenu_running = False ; break
+            elif not GPIO.input(KEY2_PIN):      submenu_skip_up() ; break
+            elif not GPIO.input(KEY3_PIN):      submenu_skip_down() ; break
+
+menu_items = []
+OPT_MIN = 0
+OPT_MAX = len(menu_items) - 1
+
+def action_up():
+    global menu_opt
+    global OPT_MIN
+    menu_opt -= 1
+    if menu_opt < OPT_MIN: menu_opt = OPT_MIN
+def action_down():
+    global menu_opt
+    global OPT_MAX
+    menu_opt += 1
+    if menu_opt > OPT_MAX: menu_opt = OPT_MAX
+def action_quit():
+    global running
+    print("\n\nQuitting...")
+    running = False
+def action_toggleSort():
+    global submenu_sorted
+    submenu_sorted = (not submenu_sorted)
+    menu_updateItems()
+def action_cat():
+    term_blank()
+    print(os.popen(f"/home/pi/.vip/scripts/pi_dump").read())
+def action_run():
+    global menu_opt
+    if   menu_opt ==  0: action_toggleSort()
+    elif menu_opt ==  1: submenu(1)
+    elif menu_opt ==  2: submenu(2)
+    elif menu_opt ==  3: submenu(3)
+    elif menu_opt ==  4: submenu(4)
+    elif menu_opt ==  5: submenu(5)
+    elif menu_opt ==  6: submenu(6)
+    elif menu_opt ==  7: submenu(7)
+    elif menu_opt ==  8: submenu(8)
+    elif menu_opt ==  9: submenu(9)
+    elif menu_opt == 10: submenu(10)
+    elif menu_opt == 11: submenu(11)
+    term_blank()
+
+def menu_updateItems(reloadData = False):
+
+    if reloadData: loadlogdata()
+
+    global menu_items
+    global OPT_MIN
+    global OPT_MAX
+    menu_items.clear()
+
+    global list_master
+    global list_count_BEACON
+    global list_count_HIDDENBEACON
+    global list_count_PROBERESPONSE
+    global list_count_ROGUEPROBERESPONSE
+    global list_count_AUTHENTICATION
+    global list_count_ASSOCIATION
+    global list_count_REASSOCIATION
+    global list_count_PMKID
+    global list_count_PMKIDROGUE
+    global list_count_EAPOL
+
+    list_count_HASH = list_count_PMKID + list_count_PMKIDROGUE + list_count_EAPOL
+    menu_items.append([ 0, list_color_SORT               + f"SORT ({submenu_sorted})"                + Style.RESET_ALL])
+    menu_items.append([ 1, list_color_BEACON             + f"BEACO: {list_count_BEACON}"             + Style.RESET_ALL])
+    menu_items.append([ 2, list_color_HIDDENBEACON       + f"HBEAC: {list_count_HIDDENBEACON}"       + Style.RESET_ALL])
+    menu_items.append([ 3, list_color_PROBERESPONSE      + f"PROBE: {list_count_PROBERESPONSE}"      + Style.RESET_ALL])
+    menu_items.append([ 4, list_color_ROGUEPROBERESPONSE + f"RPROO: {list_count_ROGUEPROBERESPONSE}" + Style.RESET_ALL])
+    menu_items.append([ 5, list_color_AUTHENTICATION     + f"AUTHS: {list_count_AUTHENTICATION}"     + Style.RESET_ALL])
+    menu_items.append([ 6, list_color_ASSOCIATION        + f"ASSOC: {list_count_ASSOCIATION}"        + Style.RESET_ALL])
+    menu_items.append([ 7, list_color_REASSOCIATION      + f"REASS: {list_count_REASSOCIATION}"      + Style.RESET_ALL])
+    menu_items.append([ 8, list_color_PMKID              + f"PMKID: {list_count_PMKID}"              + Style.RESET_ALL])
+    menu_items.append([ 9, list_color_PMKIDROGUE         + f"PMKRO: {list_count_PMKIDROGUE}"         + Style.RESET_ALL])
+    menu_items.append([10, list_color_EAPOL              + f"EAPOL: {list_count_EAPOL}"              + Style.RESET_ALL])
+    menu_items.append([11, list_color_HASH               + f"HASHS: {list_count_HASH}"               + Style.RESET_ALL])
+    OPT_MIN = 0
+    OPT_MAX = len(menu_items) - 1
+
+tail_running = False
+def tail():
+
+    global tail_running
+    tail_running = True
+
+    # init
+    term_clear()
+    loadtaildata_init()
+
+    while tail_running:
+        loadtaildata()
+        if not GPIO.input(KEY_LEFT_PIN): tail_running = False
+        time.sleep(0.1)
+
+    term_clear()
+    menu_updateItems(True)
+
+def menu(keyPress):
+    global menu_opt
+    global menu_items
+    global loadlogdata_last
+
+    term_cursor_reset()
+
+    if   keyPress == 1: action_up()
+    elif keyPress == 2: action_down()
+    elif keyPress == 3: term_blank()
+    elif keyPress == 4: menu_updateItems(True)
+    elif keyPress == 5: action_run()      
+    elif keyPress == 8: tail()
+
+    # draw
+    term_show(f"LOGS: {loadlogdata_count} / {list_master_len}" , f"{Style.BRIGHT}{Fore.RED}")
+    term_show(f"{str(datetime.now())}"                         , f"{Style.BRIGHT}{Fore.GREEN}")
+    term_show(f"{loadlogdata_last}"                            , f"{Style.BRIGHT}{Fore.MAGENTA}")
+    for i in menu_items:
+        num = str(i[0]).rjust(3, " ")
+        cmd = i[1]
+        if menu_opt == i[0]: term_show(f">{num}. {cmd}" , f"{Style.BRIGHT}{Back.BLUE}{Fore.WHITE}")
+        else:                term_show(f" {num}. {cmd}")
+
+    if   keyPress == 6: action_quit()
+    elif keyPress == 7: action_cat()
+
+
+if __name__ == "__main__":
+
+    if len(sys.argv) >= 2:
+        loadlogdata_dir = sys.argv[1]
+
+    term_blank()
+    gpio_setup()
+    menu_updateItems(True)
+    menu(0)
+
+    try:
+        while running:
+            if   not GPIO.input(KEY_UP_PIN):    menu(1)
+            elif not GPIO.input(KEY_DOWN_PIN):  menu(2)
+            elif not GPIO.input(KEY_LEFT_PIN):  menu(3)
+            elif not GPIO.input(KEY_RIGHT_PIN): menu(4)
+            elif not GPIO.input(KEY_PRESS_PIN): menu(5)
+            elif not GPIO.input(KEY1_PIN):      menu(6)
+            elif not GPIO.input(KEY2_PIN):      menu(7)
+            elif not GPIO.input(KEY3_PIN):      menu(8)
+            time.sleep(0.2)
+
+    except KeyboardInterrupt:
+        action_quit()
+    except Exception as e:
+        if hasattr(e, 'message'): print(e.message)
+        else: print(e)
+        action_quit()
+

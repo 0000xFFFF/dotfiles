@@ -1,0 +1,17 @@
+#!/bin/bash
+
+function utc() {
+	echo "$(date +"%Y-%m-%d %T:%N (%s)") --"
+}
+
+WLANDEVICE="$1"
+FILENAME="$2"
+if [ -z "$FILENAME" ]; then
+	echo "$(utc)[!] no pcapng filename specified"
+	exit 1
+fi
+
+echo "$(utc)[>] hcxdumptool : starting capture...]"
+sudo hcxdumptool --filtermode=1 --filterlist_ap=/home/pi/.filterlist_ap --filterlist_client=/home/pi/.filterlist_client -i "$WLANDEVICE" -o "/home/pi/Dump/$FILENAME.pcapng" --enable_status=31
+echo "$(utc)[>] hcxdumptool -> $?"
+

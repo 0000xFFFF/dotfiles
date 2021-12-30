@@ -1,0 +1,3 @@
+#!/bin/bash
+convert "$1" -crop 720x405+0+575 "$1"_cropped.jpg
+

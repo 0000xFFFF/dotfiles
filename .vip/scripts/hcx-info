@@ -1,0 +1,157 @@
+#!/usr/bin/env python
+
+import sys
+import os
+import codecs
+import subprocess
+from colorama import Fore, Back, Style
+from operator import itemgetter
+from tabulate import tabulate
+
+OPTION_SORT       = 0 # sort
+OPTION_SORT_INDEX = 5 # sort by index
+OPTION_VENDOR     = 0 # fetch/show vendor for bssid
+OPTION_PASSWD     = 1 # run hashcat --show to show passwords
+OPTION_COLOR      = 1 # show colors
+
+if len(sys.argv) < 2:
+    print("ABOUT: print a table for all the PMKID/EAPOL hashes")
+    print("USAGE: " + sys.argv[0] + " <hash(es)File> <search(optional)/special option> <so2> <...>")
+    print("SPECIAL OPTIONS:")
+    print("    @sortX   = sort by X index (default: 5 / @sort / @sort5)")
+    print("    @vendor  = display vendor info from MAC")
+    print("    @nopass  = don't fetch passwords from hashcat")
+    print("    @nocolor = don't use colors when printing")
+    print("    <search> = search hash and print it")
+    exit()
+
+search = ""
+for i in sys.argv[2:]:
+    if "@sort" in i:
+        OPTION_SORT = 1
+        spl = i.split("@sort")
+        if len(spl) >= 2 and spl[1]: OPTION_SORT_INDEX = int(spl[1])
+    elif "@nocolor" in i: OPTION_COLOR  = 0
+    elif "@nopass"  in i: OPTION_PASSWD = 0
+    elif i == "@vendor":  OPTION_VENDOR = 1
+    else: search = i.lower()
+
+def hex2str(string):
+    try:
+        binary_str = codecs.decode(string, "hex")
+        return str(binary_str, 'utf-8')
+    except Exception as e: return "HEX ERROR"
+
+hashes_file_path = sys.argv[1]
+hashes_file_file = open(hashes_file_path, 'r')
+hashes_file_lines = hashes_file_file.readlines()
+hashes_file_file.close()
+
+if OPTION_VENDOR:
+    ouifile_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "mac2ven.lst")
+
+    try:
+        ouifile = open(ouifile_path, 'r')
+        ouifile_lines = ouifile.readlines()
+        ouifile.close()
+    except FileNotFoundError: ouifile_lines = []
+
+    mac2ven_cache = [] # this makes if way faster
+    def mac2ven(mac):
+        if len(ouifile_lines) == 0: return ""
+        mac2check = mac.replace(":", "").replace("-", "").upper()[0:6]
+        for i in mac2ven_cache:
+            if mac2check == i[0]: return i[1]
+        for y_ in ouifile_lines:
+            y = y_.replace("\n", "")
+            split = y.split("\t")
+            split_l = len(split)
+            oui_mac = ""
+            oui_ven = ""
+            if split_l >= 1: oui_mac = split[0]
+            if split_l >= 2: oui_ven = split[1]
+            if mac2check == oui_mac:
+                mac2ven_cache.append([oui_mac, oui_ven])
+                return oui_ven
+        return ""
+else:
+    def mac2ven(mac):
+        return ""
+
+if OPTION_PASSWD:
+    hashcat_items = []
+    try:
+        hashcat = subprocess.Popen(['hashcat', '-m', '22000', '--show', hashes_file_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        for potfile_file_line in hashcat.stdout.read().decode().split("\n"):
+            if not potfile_file_line: continue
+            clms = potfile_file_line.split(":")
+            if len(clms) >= 5:
+                hashcat_items.append([clms[0], clms[4]])
+    except FileNotFoundError:
+        pass
+
+items = []
+counter = 0
+for hashes_file_line in hashes_file_lines:
+    hashLine = hashes_file_line.replace("\n", "")
+    if not hashLine: continue
+    split = hashes_file_line.split("*")
+    if len(split) < 6:
+        print("invalid format")
+        exit()
+    type = split[1]
+    type_str = ""
+    if type == "01": type_str = "PMKID"
+    if type == "02": type_str = "EAPOL"
+    hash  = split[2]#.upper()
+    bssid = split[3]#.upper()
+    mac   = split[4]#.upper()
+    essid = hex2str(split[5])
+
+    passwd = ""
+    if OPTION_PASSWD:
+        for hcitem in hashcat_items:
+            if hcitem[0] in hashLine:
+                passwd = hcitem[1]
+                break
+
+    vendor  = ""
+    vendor2 = ""
+    if OPTION_VENDOR:
+        vendor  = mac2ven(bssid)
+        vendor2 = mac2ven(mac)
+
+    items.append([hashLine, type_str, hash, bssid, mac, essid, passwd, vendor, vendor2])
+
+if search:
+    for item in items:
+        for clm in item:
+            if search in clm.lower():
+                print(item[0])
+                break
+    quit()
+
+
+counter = 0
+data = []
+counter = 0
+items2 = []
+if OPTION_SORT: items2 = sorted(items, key=itemgetter(OPTION_SORT_INDEX))
+else:           items2 = items
+
+for i in items2:
+    counter += 1
+    if OPTION_COLOR:
+        clr_counter  = Style.NORMAL + Fore.YELLOW  + str(counter) + Style.RESET_ALL
+        clr_type     = Style.NORMAL + Fore.GREEN   + i[1]         + Style.RESET_ALL
+        clr_hash     = Style.NORMAL + Fore.GREEN   + i[2]         + Style.RESET_ALL
+        clr_bssid    = Style.NORMAL + Fore.MAGENTA + i[3]         + Style.RESET_ALL
+        clr_mac      = Style.NORMAL + Fore.BLUE    + i[4]         + Style.RESET_ALL
+        clr_essid    = Style.NORMAL + Fore.MAGENTA + i[5]         + Style.RESET_ALL
+        clr_pass     = Style.NORMAL + Fore.RED     + i[6]         + Style.RESET_ALL
+        clr_vendor   = Style.NORMAL + Fore.MAGENTA + i[7]         + Style.RESET_ALL
+        clr_vendor2  = Style.NORMAL + Fore.BLUE    + i[8]         + Style.RESET_ALL
+        data.append([clr_counter,clr_type,clr_hash,clr_bssid,clr_mac,clr_essid,clr_pass,clr_vendor,clr_vendor2])
+    else:
+        data.append([str(counter),i[1],i[2],i[3],i[4],i[5],i[6],i[7],i[8]])
+print(tabulate(data, headers=["#", "TYPE", "HASH", "MAC AP", "MAC CLIENT", "ESSID", "PASSWORD", "VENDOR AP", "VENDOR CLIENT"]))

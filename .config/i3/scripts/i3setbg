@@ -1,0 +1,13 @@
+#!/bin/bash
+input="$1"
+image="$HOME/.wallpaper"
+
+if [ -z "$input" ]; then
+	input="$image"
+else
+	[ -e "$input" ] && rm -rf "$HOME/.wallpaper"
+	ln -sfr "$input" "$image"
+fi
+
+feh --recursive --randomize --bg-fill "$input"
+

@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+
+import sys
+import subprocess
+
+if len(sys.argv) < 3:
+    print("ABOUT: remove hashes from another file by matching bssids")
+    print("USAGE: " + sys.argv[0] + " <hashesFile> <hashesToRemoveFile>")
+    exit()
+
+with open(sys.argv[1], 'r') as file1:
+    lines1 = [line.strip() for line in file1.readlines()]
+
+with open(sys.argv[2], 'r') as file2:
+    lines2 = [line.strip() for line in file2.readlines()]
+
+bssids = []
+for line in lines2:
+    if not line: continue
+    split = line.split("*")
+    bssid = split[3].upper()
+    if bssid not in bssids: bssids.append(bssid)
+
+hashes_list = []
+for line in lines1:
+    if not line: continue
+    split = line.split("*")
+    bssid = split[3].upper()
+    if bssid in bssids: continue
+    hashes_list.append([bssid, line])
+
+for i in hashes_list:
+    print(i[1])
+
+
+

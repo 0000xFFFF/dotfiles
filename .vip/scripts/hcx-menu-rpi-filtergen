@@ -1,0 +1,3 @@
+#!/bin/bash
+hcxdumptool --bpfc="not ether host A8:F9:4B:E6:E0:B4 and not ether host 42:FC:5B:35:C6:41" > hcx-menu-rpi-filter.bpf
+

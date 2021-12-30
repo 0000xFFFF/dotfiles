@@ -1,0 +1,12 @@
+#!/bin/bash
+
+read -r -p "enp* NAME: " DEVICE
+read -r -p "enp* IPv6: " IPV6
+read -r -p "pi's IPV6: " IPV6_2
+
+sudo avahi-autoipd -D "$DEVICE"
+
+avahi-resolve -n "raspberrypi.local"
+
+ssh -6 -o BindAddress="$IPV6%$DEVICE" pi@$IPV6_2
+

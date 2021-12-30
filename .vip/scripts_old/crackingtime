@@ -1,0 +1,5 @@
+#!/bin/bash
+ls "/media/HDD/Root/dump/cap/all/all.txt"
+ls "/home/user/.vip/lists/wordlists/rockyou_english_serbian_min8.txt"
+ls "/home/user/.vip/lists/wordlists/serbianNames_numbers/nameNUM_NAMENUM_NameNUM.txt"
+ls "/home/user/.vip/lists/wordlists/num8.txt"

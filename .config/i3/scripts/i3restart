@@ -1,0 +1,4 @@
+#!/bin/bash
+[ "$(echo -e 'NO\nYES' | rofi -font "Inconsolata Nerd Font Medium 40" -dmenu -l 2 -width 35 -theme Monokai -i -p "Reload i3?")" == "YES" ] && i3-msg -q restart
+# dmenu -fn "Mono 40" -nb '#2f343f' -nf '#f3f4f5' -sb '#9575cd' -sf '#f3f4f5' -i -p "Are you sure you want to logout?")
+

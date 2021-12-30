@@ -1,0 +1,7 @@
+#!/bin/bash
+pgrep -af "airmon-ng"
+pgrep -af "hcx-wifi-rpi"
+pgrep -af "hcxdumptool"
+pgrep -af "pi_dump"
+pgrep -af "pi_log"
+pgrep -af "tail"
