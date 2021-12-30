@@ -1,0 +1,9 @@
+#!/bin/bash
+
+FILE="$1"
+
+[ -z "$FILE" ] && FILE="$(date +%s).pcapng"
+
+wlan mon
+
+sudo hcxdumptool -i "$(wlanDevice mon)" -o "$FILE" --enable_status=31

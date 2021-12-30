@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+
+# generate wordlist from word
+
+import sys
+
+def genlst(word):
+	
+	# num variations
+	def print_i(word, i):
+		print(word + i)
+		print(i + word)
+		print(i + word + i)
+	
+	# common sufix
+	sufix = [
+		"!",
+		"!!",
+		"!!!",
+		"012345",
+		"0123456",
+		"01234567",
+		"012345678",
+		"0123456789",
+		"01234567890",
+		"012345678910",
+		"12345",
+		"123456",
+		"1234567",
+		"12345678",
+		"123456789",
+		"1234567890",
+		"12345678910",
+	]
+
+	for i in sufix:
+		print_i(word, i)
+	for i in range(0, 10001):
+		print_i(word, str(i))
+	for x in range(2, 5):
+		for y in range(0, 10 ** (x-1)):
+			print_i(word, str(y).rjust(x, '0'))
+
+
+def wordvars(word):
+	word_lower = word.lower()
+	word_upper = word.upper()
+	word_title = word.title()
+	word_r_lower = word[::-1].lower()
+	word_r_upper = word[::-1].upper()
+	word_r_title = word[::-1].title()
+
+	# just print the word
+	if word != word_lower and word != word_upper and word != word_title and word != word_r_lower and word != word_r_upper and word != word_r_title:
+		genlst(word)
+	genlst(word_lower)
+	genlst(word_upper)
+	genlst(word_title)
+	genlst(word_r_lower)
+	genlst(word_r_upper)
+	genlst(word_r_title)
+
+if len(sys.argv) <= 1:
+	print("ABOUT: generate wordlist from word")
+	print("USAGE: " + sys.argv[0] + " <word>")
+	exit()
+
+for i in sys.argv[1:]:
+	wordvars(i)

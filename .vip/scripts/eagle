@@ -1,0 +1,18 @@
+#!/bin/bash
+
+wlan mon
+
+ESSID="$1"
+CHANNEL="$2"
+BSSID="$3"
+WRITE="$4"
+IFACE="$(wlanDevice mon)"
+BSSID2="$(echo "$BSSID" | tr ':' '-')"
+
+[ -n "$ESSID" ]   && ESSID_CMD="--essid \"$ESSID\""
+[ -n "$CHANNEL" ] && CHANNEL_CMD="--channel \"$CHANNEL\""
+[ -n "$BSSID" ]   && BSSID_CMD="--bssid \"$BSSID\""
+[ -n "$WRITE" ]   && WRITE_CMD="-w \"[$ESSID,$CHANNEL,$BSSID2]\""
+
+CMDS="sudo airodump-ng $ESSID_CMD $CHANNEL_CMD $BSSID_CMD $WRITE_CMD \"$IFACE\""
+eval "$CMDS"

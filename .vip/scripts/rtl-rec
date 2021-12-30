@@ -1,0 +1,6 @@
+#!/bin/bash
+freq="$1"
+file="$2"
+while [ -z "$freq" ]; do read -r -p 'freq: ' freq ; done
+while [ -z "$file" ]; do read -r -p 'file: ' file ; done
+rtl_fm -M am -f "$freq" -s 2000000 - | sox -t raw -r 2000000 -e signed-integer -b 16 -c 1 -V1 - "$file"

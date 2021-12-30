@@ -1,0 +1,105 @@
+#!/usr/bin/env python3
+
+# go through each hash
+# put hash in another file
+# generate a wordlist for the hash in another file
+# generate a bash script which will run hashcat on all the hashes and hash wordlists
+
+import sys
+import os
+import subprocess
+
+if len(sys.argv) < 2:
+	print("USAGE: " + sys.argv[0] + " <hash(es)File>")
+	exit()
+
+hashes_file_file = open(sys.argv[1], 'r')
+hashes_file_lines = hashes_file_file.readlines()
+hashes_file_file.close()
+
+shheader = "#!/bin/bash\n"
+
+print(" * leave the hcx-genlst args empty to skip cracking this/current hash")
+
+items = []
+counter = 0
+skipped = 0
+for hashes_file_line in hashes_file_lines:
+	hashLine = hashes_file_line.replace("\n", "")
+	bssid = hashes_file_line.split("*")[3].upper()
+	p = subprocess.Popen(['hcxpmktool', '-i', hashLine, '-p', ''], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+	essid = ""
+	pmk = ""
+	for outL in p.stdout.read().decode().split("\n"):
+		if outL.startswith("PMK...............: "):
+			pmk = outL.replace("PMK...............: ", "")
+			continue
+		if outL.startswith("ESSID.............: "):
+			essid = outL.replace("ESSID.............: ", "")
+			continue
+		if pmk != "" and essid != "": break
+	counter += 1
+	print(counter,"\t",pmk,bssid,essid,end="")
+	genlst = ""
+	try:
+		genlst = input(" --> hcx-genlst ")
+	except:
+		print("")
+		quit()
+	if not genlst:
+		skipped += 1
+		print(" -- Skipping... (" + str(skipped) +")")
+		continue
+	items.append([hashLine, pmk, bssid, essid, genlst])
+
+print("\n+--> gen.sh")
+
+files = []
+num = 0
+zerostr = len(str(len(items)))
+
+
+with open("gen.sh", 'w') as f_gen:
+	f_gen.write(shheader)
+	for i in items:
+		num += 1
+		num_s = str(num).rjust(zerostr, '0')
+		file_1 = "hash" + num_s + ".txt"
+		file_2 = "hash" + num_s + ".lst"
+	
+		with open(file_1, 'w') as f1:
+			f1.write(i[0] + "\n")
+	
+		# make script instead of making everything on the spot
+		comment = "echo -e \"" + i[1] + " " + i[2] + " " + i[3] + " -> " + i[4] + "\"\n"
+		f_gen.write(comment)
+		print("|", comment, end="")
+		command = "hcx-genlst " + i[4] + " | strings -n 8 > \"" + file_2 + "\"\n"
+		f_gen.write(command)
+		print("|", command, end="")
+		
+		#with open(file_2, 'w') as f2:
+		#	cmds = ['hcx-genlst']
+		#	for arg in i[4].split():
+		#		cmds.append(arg)
+		#	p1 = subprocess.Popen(cmds, stdout=subprocess.PIPE)
+		#	p2 = subprocess.Popen(['strings', '-n', '8'], stdin=subprocess.PIPE, stdout=f2)
+		#	p1_out = p1.communicate()[0]
+		#	p2.communicate(p1_out)
+	
+		# hash file, wordlist file, session name
+		files.append([file_1, file_2, i])
+
+
+print("\n+--> run.sh")
+with open("run.sh", 'w') as f3:
+	f3.write(shheader)
+	print("|", shheader, end="")
+	for i in files:
+		line = "hashcat -m 22000 " + i[0] + " -a 0 " + i[1] + " -w 4 --session \"" + i[2][2] + "\" # " + i[2][1] + " " + i[2][2] + " " + i[2][3] + " -> " + i[2][4] + "\n"
+		f3.write(line)
+		print("|", line, end="")
+
+print()
+print(" -- total:",num)
+print(" -- done.")

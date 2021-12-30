@@ -1,0 +1,36 @@
+===[ AUR ]===
+burpsuite
+cli-visualizer
+crunch
+gconf
+netdiscover
+python-nmap
+spotify
+urxvt-resize-font-git
+cozette-otb
+findimagedupes
+
+
+==[ PYTHON TOOLS ]===
+$ python  -m virtualenv p3env    # gen python3 virtual env
+$ python2 -m virtualenv p2env    # gen python2 virtual env
+
+# .vip/pyenv/p2tools
+PRET
+Upnp-Exploiter
+
+# .vip/pyenv/p3tools
+IPGeoLocation
+kickthemout
+routersploit
+wfuzz
+
+
+===[ .vip/tools ]===
+beep
+beep-keyboard
+cli-visualizer
+dahvore
+slowloris
+xkblayout-state
+
