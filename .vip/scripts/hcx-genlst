@@ -42,23 +42,22 @@ def genlst(word):
 			print_i(word, str(y).rjust(x, '0'))
 
 
-def wordvars(word):
-	word_lower = word.lower()
-	word_upper = word.upper()
-	word_title = word.title()
-	word_r_lower = word[::-1].lower()
-	word_r_upper = word[::-1].upper()
-	word_r_title = word[::-1].title()
+words = []
+def addword(word):
+	if not word in words:
+		words.append(word)
 
-	# just print the word
-	if word != word_lower and word != word_upper and word != word_title and word != word_r_lower and word != word_r_upper and word != word_r_title:
-		genlst(word)
-	genlst(word_lower)
-	genlst(word_upper)
-	genlst(word_title)
-	genlst(word_r_lower)
-	genlst(word_r_upper)
-	genlst(word_r_title)
+def wordvars(word):
+	addword(word)
+	addword(word.lower())
+	addword(word.upper())
+	addword(word.title())
+	addword(word[::-1].lower())
+	addword(word[::-1].upper())
+	addword(word[::-1].title())
+
+	for i in words:
+		genlst(i)
 
 if len(sys.argv) <= 1:
 	print("ABOUT: generate wordlist from word")

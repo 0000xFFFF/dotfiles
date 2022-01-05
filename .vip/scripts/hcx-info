@@ -63,12 +63,12 @@ for hashes_file_line in hashes_file_lines:
 				passwd = hcitem[1]
 				break
 
-		clr_counter = Style.BRIGHT + Fore.GREEN   + str(counter).rjust(5, " ") + Style.RESET_ALL
-		clr_pmk     = Style.BRIGHT + Fore.RED     + pmk                        + Style.RESET_ALL
-		clr_bssid   = Style.BRIGHT + Fore.YELLOW  + bssid                      + Style.RESET_ALL
+		clr_counter = Style.BRIGHT + Fore.YELLOW  + str(counter).rjust(5, " ") + Style.RESET_ALL
+		clr_pmk     = Style.BRIGHT + Fore.GREEN   + pmk                        + Style.RESET_ALL
+		clr_bssid   = Style.BRIGHT + Fore.CYAN    + bssid                      + Style.RESET_ALL
 		clr_essid   = Style.BRIGHT + Fore.BLUE    + essid                      + Style.RESET_ALL
 		if passwd:
-			clr_passwd = Style.BRIGHT + Fore.GREEN + passwd + Style.RESET_ALL
+			clr_passwd = Style.BRIGHT + Fore.RED + passwd + Style.RESET_ALL
 			print(clr_counter,clr_pmk,clr_bssid,clr_essid,"-->",clr_passwd)
 		else:
 			print(clr_counter,clr_pmk,clr_bssid,clr_essid)

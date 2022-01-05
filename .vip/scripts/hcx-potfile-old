@@ -6,11 +6,26 @@
 # hc-potfile PASS                                 - only print passwords from potfile
 #
 
+
+# this script in bash (slow):
+'''
+INPUT_FILE="$1"
+[ -z "$INPUT_FILE" ] && INPUT_FILE="/home/user/.local/share/hashcat/hashcat.potfile"
+
+while read -r line ; do
+	#echo "- $line"
+	HASH="$(printf "$line" | awk 'BEGIN { FS = "*" } ; { print $1 }')"
+	NAME="$(printf "$line" | awk 'BEGIN { FS = "*" } ; { print $2 }' | awk 'BEGIN { FS = ":" } ; { print $1 }' | perl -pe 's/(..)/chr(hex($1))/ge')"
+	PASS="$(printf "$line" | awk 'BEGIN { FS = ":" } ; { print $2 }')"
+	echo -e "$HASH - $NAME : $PASS"
+	#printf "$line" | awk 'BEGIN { FS = "*" } ; { print $6 }' | perl -pe 's/(..)/chr(hex($1))/ge'
+done <<< $(cat "$INPUT_FILE")
+'''
+
 import sys
 import os
 import subprocess
 import codecs
-from colorama import Fore, Back, Style
 
 print_pass_only = False
 potfile_path = os.path.expanduser('~') + "/.local/share/hashcat/hashcat.potfile"
@@ -55,10 +70,6 @@ else:
 		if l_essid > maxlen_essid: maxlen_essid = l_essid
 		if l_psk   > maxlen_psk:   maxlen_psk   = l_psk
 		if l_num   > maxlen_num:   maxlen_num   = l_num
-		psks.append([str(num), hash, essid, psk])
+		psks.append([num, hash, essid, psk])
 	for i in psks:
-		num   = Style.BRIGHT + Fore.YELLOW + i[0].ljust(maxlen_num)   + Style.RESET_ALL
-		pmk   = Style.BRIGHT + Fore.GREEN  + i[1].ljust(maxlen_hash)  + Style.RESET_ALL
-		essid = Style.BRIGHT + Fore.BLUE   + i[2].ljust(maxlen_essid) + Style.RESET_ALL
-		psk   = Style.BRIGHT + Fore.RED    + i[3].ljust(maxlen_psk)   + Style.RESET_ALL
-		print(num + " " + pmk + " " + essid + " " + psk)
+		print(("{:<" + str(maxlen_num) + "} {:<" + str(maxlen_hash) + "} {:<" + str(maxlen_essid) + "} {:<" + str(maxlen_psk) + "}").format(i[0],i[1],i[2],i[3]))

@@ -4,21 +4,19 @@
 
 import sys
 
-def genWordlist_numberSwapper(word):
+def genlst(word):
 	
-	# just print the word
-	print(word)
-	
-	# vars
+	# num variations
 	def print_i(word, i):
-		print(word.title() + i)
+		print(word + i)
+		#print(i + word)
+		#print(i + word + i)
 	
 	# common sufix
 	sufix = [
 		"!",
 		"!!",
 		"!!!",
-		"01234",
 		"012345",
 		"0123456",
 		"01234567",
@@ -37,13 +35,29 @@ def genWordlist_numberSwapper(word):
 
 	for i in sufix:
 		print_i(word, i)
-
-	for i in range(0, 10000):
+	for i in range(0, 10001):
 		print_i(word, str(i))
-
 	for x in range(2, 5):
 		for y in range(0, 10 ** (x-1)):
 			print_i(word, str(y).rjust(x, '0'))
+
+
+words = []
+def addword(word):
+	if not word in words:
+		words.append(word)
+
+def wordvars(word):
+	#addword(word)
+	#addword(word.lower())
+	#addword(word.upper())
+	addword(word.title())
+	#addword(word[::-1].lower())
+	#addword(word[::-1].upper())
+	#addword(word[::-1].title())
+
+	for i in words:
+		genlst(i)
 
 if len(sys.argv) <= 1:
 	print("ABOUT: generate wordlist from word")
@@ -51,4 +65,4 @@ if len(sys.argv) <= 1:
 	exit()
 
 for i in sys.argv[1:]:
-	genWordlist_numberSwapper(i)
+	wordvars(i)

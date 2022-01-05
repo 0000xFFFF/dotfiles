@@ -86,6 +86,7 @@ alias \
 alias \
 	gfx="lspci -k | g -EA3 --color 'VGA|3D|Display'" \
 	dupes="find . -type f -print0 | xargs -0 md5sum | sort | uniq -w32 --all-repeated=separate" \
+	sortlessuniq="perl -ne 'print unless \$seen{\$_}++'" \
 	gpath="echo "\$PATH" | tr ':' '\n'" \
 
 # long commands
@@ -124,10 +125,6 @@ alias \
 	corona="curl https://corona-stats.online" \
 	coronars="curl https://corona-stats.online/serbia" \
 	dldotfiles="git clone 'https://www.github.com/0xC0LD/dotfiles'"
-
-# hax
-alias \
-        hcxh="hcxhashtool --info=stdout -i"
 
 # CD shortcuts
 alias \
