@@ -3,7 +3,7 @@
 import sys
 
 if len(sys.argv) <= 1:
-	print("ABOUT: check if string uses utf-8")
+	print("ABOUT: remove [čćšžðđ] from strings")
 	print("USAGE: " + sys.argv[0] + " <file>")
 	exit()
 

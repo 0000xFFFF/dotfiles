@@ -5,6 +5,8 @@
 import sys
 import os
 import subprocess
+from colorama import Fore, Back, Style
+
 
 if len(sys.argv) < 2:
 	print("USAGE: " + sys.argv[0] + " <hash(es)File> <search(optional)>")
@@ -14,9 +16,25 @@ search = ""
 if len(sys.argv) >= 3:
 	search = sys.argv[2].lower()
 
-hashes_file_file = open(sys.argv[1], 'r')
+hashes_file_path = sys.argv[1]
+hashes_file_file = open(hashes_file_path, 'r')
 hashes_file_lines = hashes_file_file.readlines()
 hashes_file_file.close()
+
+#potfile_file_path = os.path.expanduser('~') + "/.local/share/hashcat/hashcat.potfile"
+#potfile_file_file = open(potfile_file_path, 'r')
+#potfile_file_lines = potfile_file_file.readlines()
+#potfile_file_file.close()
+
+hashcat_items = []
+hashcat = subprocess.Popen(['hashcat', '-m', '22000', '--show', hashes_file_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+for potfile_file_line in hashcat.stdout.read().decode().split("\n"):
+	if not potfile_file_line: continue
+	#print(potfile_file_line)
+	clms = potfile_file_line.split(":")
+	#print(clms)
+	hashcat_items.append([clms[0], clms[4]])
+
 
 items = []
 counter = 0
@@ -39,7 +57,21 @@ for hashes_file_line in hashes_file_lines:
 		items.append([hashLine, pmk, bssid, essid])
 	else:
 		counter += 1
-		print(str(counter).rjust(5, " "),pmk,bssid,essid)
+		passwd = ""
+		for hcitem in hashcat_items:
+			if hcitem[0] in hashLine:
+				passwd = hcitem[1]
+				break
+
+		clr_counter = Style.BRIGHT + Fore.YELLOW  + str(counter).rjust(5, " ") + Style.RESET_ALL
+		clr_pmk     = Style.BRIGHT + Fore.GREEN   + pmk                        + Style.RESET_ALL
+		clr_bssid   = Style.BRIGHT + Fore.CYAN    + bssid                      + Style.RESET_ALL
+		clr_essid   = Style.BRIGHT + Fore.BLUE    + essid                      + Style.RESET_ALL
+		if passwd:
+			clr_passwd = Style.BRIGHT + Fore.RED + passwd + Style.RESET_ALL
+			print(clr_counter,clr_pmk,clr_bssid,clr_essid,"-->",clr_passwd)
+		else:
+			print(clr_counter,clr_pmk,clr_bssid,clr_essid)
 
 if search:
 	for x in items:

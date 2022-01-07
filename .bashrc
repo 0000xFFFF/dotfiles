@@ -130,6 +130,8 @@ alias \
 alias \
 	bin="cd \"$HOME/.vip/scripts\"" \
 	vip="cd \"$HOME/.vip/\"" \
+	wlst="cd \"$HOME/.vip/lists/wordlists\"" \
+	cap="cd /media/HDD/Root/dump/cap" \
 	dx="cd \"$HOME/Desktop\"" \
 	cddx="cd \"$HOME/Desktop\"" \
 	cddl="cd \"$HOME/Downloads\"" \

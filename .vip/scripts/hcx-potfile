@@ -11,6 +11,7 @@ import os
 import subprocess
 import codecs
 from colorama import Fore, Back, Style
+from tabulate import tabulate
 
 print_pass_only = False
 potfile_path = os.path.expanduser('~') + "/.local/share/hashcat/hashcat.potfile"
@@ -28,18 +29,10 @@ if print_pass_only:
 		print(i.replace("\n", "").split(":")[1])
 else:
 	psks = []
-	maxlen_num     = 0
-	maxlen_hash    = 0
-	maxlen_essid   = 0
-	maxlen_psk     = 0
 	num = 0
 	for i in potfile_lines:
 		line = i.replace("\n", "")
 		if not line: continue
-		'''
-		hex = line.split("*")[1].split(":")[0]
-		print(line.replace(hex, str(codecs.decode(hex, "hex"), "utf-8")))
-		'''
 		num += 1
 		split_star = line.split("*")
 		hash = split_star[0]
@@ -47,18 +40,11 @@ else:
 		essid_hex = split_colon[0]
 		psk = split_colon[1]
 		essid = str(codecs.decode(essid_hex, "hex"), "utf-8")
-		l_hash  = len(hash)
-		l_essid = len(essid)
-		l_psk   = len(psk)
-		l_num   = len(str(num))
-		if l_hash  > maxlen_hash:  maxlen_hash  = l_hash
-		if l_essid > maxlen_essid: maxlen_essid = l_essid
-		if l_psk   > maxlen_psk:   maxlen_psk   = l_psk
-		if l_num   > maxlen_num:   maxlen_num   = l_num
-		psks.append([str(num), hash, essid, psk])
-	for i in psks:
-		num   = Style.BRIGHT + Fore.YELLOW + i[0].ljust(maxlen_num)   + Style.RESET_ALL
-		pmk   = Style.BRIGHT + Fore.GREEN  + i[1].ljust(maxlen_hash)  + Style.RESET_ALL
-		essid = Style.BRIGHT + Fore.BLUE   + i[2].ljust(maxlen_essid) + Style.RESET_ALL
-		psk   = Style.BRIGHT + Fore.RED    + i[3].ljust(maxlen_psk)   + Style.RESET_ALL
-		print(num + " " + pmk + " " + essid + " " + psk)
+
+		clr_num   = Style.BRIGHT + Fore.YELLOW + str(num) + Style.RESET_ALL
+		clr_hash  = Style.BRIGHT + Fore.GREEN  + hash     + Style.RESET_ALL
+		clr_essid = Style.BRIGHT + Fore.BLUE   + essid    + Style.RESET_ALL
+		clr_psk   = Style.BRIGHT + Fore.RED    + psk      + Style.RESET_ALL
+		psks.append([clr_num,clr_hash,clr_essid,clr_psk])
+
+	print(tabulate(psks, headers=["#", "HASHCAT ID", "ESSID", "PASSWORD"]))

@@ -13,7 +13,8 @@ if len(sys.argv) < 2:
 	print("USAGE: " + sys.argv[0] + " <hash(es)File>")
 	exit()
 
-hashes_file_file = open(sys.argv[1], 'r')
+hashes_file_path = sys.argv[1]
+hashes_file_file = open(hashes_file_path, 'r')
 hashes_file_lines = hashes_file_file.readlines()
 hashes_file_file.close()
 
@@ -99,6 +100,16 @@ with open("run.sh", 'w') as f3:
 		line = "hashcat -m 22000 " + i[0] + " -a 0 " + i[1] + " -w 4 --session \"" + i[2][2] + "\" # " + i[2][1] + " " + i[2][2] + " " + i[2][3] + " -> " + i[2][4] + "\n"
 		f3.write(line)
 		print("|", line, end="")
+	longlists = [
+		["rockyou", "/home/user/.vip/lists/wordlists/rockyou_english_serbian_min8.txt"],
+		["names", "/home/user/.vip/lists/wordlists/serbianNames_numbers/nameNUM_NAMENUM_NameNUM.txt"],
+		["num8", "/home/user/.vip/lists/wordlists/num8.txt"],
+	]
+	for i in longlists:
+		line = "hashcat -m 22000 " + hashes_file_path + " -a 0 " + i[1] + " -w 4 --session \"" + i[0] + "\"\n"
+		f3.write(line)
+		print("|", line, end="")
+
 
 print()
 print(" -- total:",num)

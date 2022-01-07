@@ -1,14 +1,14 @@
 #!/bin/bash
-echo "-- essid.txt all.txt ..."
+echo "-- essid.txt all.txt"
 hcxpcapngtool *.pcapng *.cap -E essid.txt -o all.txt >/dev/null 2>/dev/null
-echo "-- essid_uniq.txt ..."
+echo "-- essid_uniq.txt"
 sort -u essid.txt > essid_uniq.txt
-echo "-- all_uniq ..."
+echo "-- all_uniq"
 hcx-uniq all.txt > all_uniq.txt
-echo "-- hashcat_cracked.txt ..."
+echo "-- hashcat_cracked.txt"
 hashcat -m 22000 --show all_uniq.txt > hashcat_cracked.txt
 
-echo "-- hashcat_cracked_idonly.txt ..."
+echo "-- hashcat_cracked_idonly.txt"
 echo -ne "" > hashcat_cracked_idonly.txt
 while read -r line ; do
 	ID=$(echo "$line" | awk -F ":" '{printf $1}')
@@ -19,3 +19,4 @@ echo "-- all_uniq_cracked.txt"
 inline all_uniq.txt hashcat_cracked_idonly.txt > all_uniq_cracked.txt
 echo "-- all_uniq_uncracked.txt"
 hcx-rmhashes all_uniq.txt all_uniq_cracked.txt > all_uniq_uncracked.txt
+
