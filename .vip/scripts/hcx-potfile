@@ -2,8 +2,9 @@
 
 #
 # USAGE:
-# hc-potfile "/path/for/the/potfile (optional)"   - the script will find the potfile by itself
-# hc-potfile PASS                                 - only print passwords from potfile
+# hcx-potfile "/path/for/the/potfile (optional)"   - the script will find the potfile by itself
+# hcx-potfile PASS                                 - only print passwords from potfile
+# hcx-potfile SORT0                                - sort by clm index (0 = num, 1 = pmk, 2 = essid, 3 = psk)
 #
 
 import sys
@@ -12,13 +13,22 @@ import subprocess
 import codecs
 from colorama import Fore, Back, Style
 from tabulate import tabulate
+from operator import itemgetter
 
 print_pass_only = False
+sort_essid = False
+sort_index = 0
 potfile_path = os.path.expanduser('~') + "/.local/share/hashcat/hashcat.potfile"
 
 for i in sys.argv[1:]:
-	if i == "PASS": print_pass_only = True
-	else:           potfile_path = i
+	if i == "PASS":
+		print_pass_only = True
+	elif "SORT" in i:
+		sort_essid = True
+		sort_index = i.split("SORT")[1]
+	else:
+		potfile_path = i
+
 
 potfile = open(potfile_path, 'r')
 potfile_lines = potfile.readlines()
@@ -46,5 +56,8 @@ else:
 		clr_essid = Style.BRIGHT + Fore.BLUE   + essid    + Style.RESET_ALL
 		clr_psk   = Style.BRIGHT + Fore.RED    + psk      + Style.RESET_ALL
 		psks.append([clr_num,clr_hash,clr_essid,clr_psk])
+
+	if sort_essid:
+		psks = sorted(psks, key=itemgetter(int(sort_index)))
 
 	print(tabulate(psks, headers=["#", "HASHCAT ID", "ESSID", "PASSWORD"]))
