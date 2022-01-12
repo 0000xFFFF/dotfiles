@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-import os
 import sys
+import os
 import subprocess
+import time
 
 # cmd e.g.
 # > ffmpeg -hide_banner -vn -i file.mp4 -af "silencedetect=n=-30dB:d=5" -f null -
@@ -18,14 +19,20 @@ if len(sys.argv) < 2:
 	exit()
 
 file_path = sys.argv[1]
-file_ext = os.path.splitext(file_path)[1]
+file_split = os.path.splitext(file_path)
+file_name = file_split[0]
+file_ext  = file_split[1]
+
+totaldur_muted   = 0
+totaldur_sounded = 0
+failed2conv = 0
 
 db       = input("dB (default: -30): ")
 duration = input("silence duration (in sec, default/min = 1): ")
 
 if not db: db = "-30"
 if not duration or float(duration) < 1: duration = "1"
-print("db:",db,"duration:",duration)
+print(f"db: {db}, duration: {duration}")
 
 ffmpeg_sd = subprocess.Popen(['ffmpeg', '-hide_banner', '-vn', '-i', file_path, '-af', 'silencedetect=n=' + db + 'dB:d=' + duration, '-f', 'null', '-'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
@@ -49,12 +56,13 @@ for line_ in ffmpeg_sd.stdout.read().decode().split("\n"):
 
 
 
+
 #'''
 print("===[ MUTED TIMESTAMPS (START, END, DURATION) ]===")
 for i in mutedtimestamps:
+	totaldur_muted += float(i[2])
 	print(i[0],i[1],i[2])
 #'''
-
 
 mutedtimestamps_len = len(mutedtimestamps)
 subvideos = []
@@ -69,7 +77,6 @@ def subvideos_append(s,e):
 			e = str(round(float(e) + d2add, 5))
 			d = round(float(e) - float(s), 5)
 	ds = str(d)
-	if d == 0: ds = "???"
 	subvideos.append([s,e,ds,o])
 
 
@@ -91,10 +98,24 @@ print("===[ SOUNDED TIMESTAMPS (FILETOWRITE, START, END, DURATION) ]===")
 counter = 0
 for i in subvideos:
 	counter += 1
+	totaldur_sounded += float(i[2])
 	print(counter,i[3],i[0],i[1],i[2])
 
-#input("Hit enter to: start making cuts")
-#print()
+def convTime(sec):
+	ty_res = time.gmtime(sec)
+	res = time.strftime("%H:%M:%S",ty_res)
+	return res
+
+print()
+print(f"total silence duration: {convTime(totaldur_muted)} ({totaldur_muted:.2f}s)")
+print(f"total sounded duration: {convTime(totaldur_sounded)} ({totaldur_sounded:.2f}s)")
+print()
+try:
+	input("Hit enter to: start making cuts")
+except KeyboardInterrupt:
+	print("\n")
+	exit()
+print()
 
 file_out = open("list.txt", "w")
 
@@ -121,14 +142,17 @@ for i in subvideos:
 		print("SUCCESS")
 		file_out.write("file " + outfile + "\n")
 	else:
+		failed2conv += 1
 		print("FAILED")
 
 
 file_out.close()
 
+print(f"files failed to convert: {failed2conv}")
+
 # combine videos
 print("===[ CONCAT ]===")
-run_concat = "ffmpeg -hide_banner -loglevel error -f concat -i list.txt -c copy out" + file_ext
+run_concat = "ffmpeg -hide_banner -loglevel error -f concat -i list.txt -c copy \"" + file_name + "_cut" + file_ext + "\""
 print(run_concat)
 concat_rc = os.system(run_concat)
 
@@ -139,3 +163,4 @@ input()
 for i in subvideos:
 	os.remove(i[3])
 os.remove("list.txt")
+
