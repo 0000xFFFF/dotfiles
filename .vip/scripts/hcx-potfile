@@ -4,7 +4,7 @@
 # USAGE:
 # hcx-potfile "/path/for/the/potfile (optional)"   - the script will find the potfile by itself
 # hcx-potfile PASS                                 - only print passwords from potfile
-# hcx-potfile SORT0                                - sort by clm index (0 = num, 1 = pmk, 2 = essid, 3 = psk)
+# hcx-potfile SORT0                                - sort by clm index (0 = num, 1 = hashid, 2 = essid, 3 = psk)
 #
 
 import sys
@@ -51,10 +51,10 @@ else:
 		psk = split_colon[1]
 		essid = str(codecs.decode(essid_hex, "hex"), "utf-8")
 
-		clr_num   = Style.BRIGHT + Fore.YELLOW + str(num) + Style.RESET_ALL
-		clr_hash  = Style.BRIGHT + Fore.GREEN  + hash     + Style.RESET_ALL
-		clr_essid = Style.BRIGHT + Fore.BLUE   + essid    + Style.RESET_ALL
-		clr_psk   = Style.BRIGHT + Fore.RED    + psk      + Style.RESET_ALL
+		clr_num   = Style.NORMAL + Fore.YELLOW + str(num) + Style.RESET_ALL
+		clr_hash  = Style.NORMAL + Fore.GREEN  + hash     + Style.RESET_ALL
+		clr_essid = Style.NORMAL + Fore.BLUE   + essid    + Style.RESET_ALL
+		clr_psk   = Style.NORMAL + Fore.RED    + psk      + Style.RESET_ALL
 		psks.append([clr_num,clr_hash,clr_essid,clr_psk])
 
 	if sort_essid:

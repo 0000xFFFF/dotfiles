@@ -6,9 +6,11 @@ if len(sys.argv) == 1:
 	print("USAGE: " + sys.argv[0] + " hex")
 	exit()
 
-try:
-	string = sys.argv[1]
-	binary_str = codecs.decode(string, "hex")
-	print(str(binary_str, 'utf-8'))
-except Exception as e:
-	print(e)
+def hex2str(string):
+	try:
+		binary_str = codecs.decode(string, "hex")
+		return str(binary_str, 'utf-8')
+	except Exception as e:
+		return "HEX ERROR"
+
+print(hex2str(sys.argv[1]))

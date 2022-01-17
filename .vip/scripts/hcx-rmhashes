@@ -3,7 +3,6 @@
 # remove hashes in a file from a different file
 
 import sys
-import os
 import subprocess
 
 if len(sys.argv) < 3:

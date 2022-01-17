@@ -1,12 +1,23 @@
 #!/bin/bash
-echo "-- essid.txt all.txt"
-hcxpcapngtool *.pcapng *.cap -E essid.txt -o all.txt >/dev/null 2>/dev/null
+echo "-- hcxpcapngtool"
+hcxpcapngtool *.pcapng *.cap -E essid.txt -R probeonly.txt -I identity.txt -U username.txt -D deviceinfo.txt -o all.txt >/dev/null 2>/dev/null
 echo "-- essid_uniq.txt"
 sort -u essid.txt > essid_uniq.txt
-echo "-- all_uniq"
-hcx-uniq all.txt > all_uniq.txt
+echo "-- probeonly_uniq.txt"
+sort -u probeonly.txt > probeonly_uniq.txt
+echo "-- identity_uniq.txt"
+sort -u identity.txt > identity_uniq.txt
+echo "-- username_uniq.txt"
+sort -u username.txt > username_uniq.txt
+echo "-- deviceinfo_uniq.txt"
+sort -u deviceinfo.txt > deviceinfo_uniq.txt
+echo "-- all_uniq.txt"
+sort -u all.txt > all_uniq.txt
+
+echo "-- pmkuniq.txt"
+hcx-uniq all_uniq.txt > pmkuniq.txt
 echo "-- hashcat_cracked.txt"
-hashcat -m 22000 --show all_uniq.txt > hashcat_cracked.txt
+hashcat -m 22000 --show pmkuniq.txt > hashcat_cracked.txt
 
 echo "-- hashcat_cracked_idonly.txt"
 echo -ne "" > hashcat_cracked_idonly.txt
@@ -15,8 +26,8 @@ while read -r line ; do
 	echo "$ID" >> hashcat_cracked_idonly.txt
 done <<< "$(cat hashcat_cracked.txt)"
 
-echo "-- all_uniq_cracked.txt"
-inline all_uniq.txt hashcat_cracked_idonly.txt > all_uniq_cracked.txt
-echo "-- all_uniq_uncracked.txt"
-hcx-rmhashes all_uniq.txt all_uniq_cracked.txt > all_uniq_uncracked.txt
+echo "-- cracked.txt"
+lines-inline pmkuniq.txt hashcat_cracked_idonly.txt > cracked.txt
+echo "-- uncracked.txt"
+hcx-rmhashes pmkuniq.txt cracked.txt > uncracked.txt
 

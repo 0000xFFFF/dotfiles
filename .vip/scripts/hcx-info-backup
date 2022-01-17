@@ -6,6 +6,8 @@ import sys
 import os
 import subprocess
 from colorama import Fore, Back, Style
+from operator import itemgetter
+from tabulate import tabulate
 
 
 if len(sys.argv) < 2:
@@ -21,20 +23,12 @@ hashes_file_file = open(hashes_file_path, 'r')
 hashes_file_lines = hashes_file_file.readlines()
 hashes_file_file.close()
 
-#potfile_file_path = os.path.expanduser('~') + "/.local/share/hashcat/hashcat.potfile"
-#potfile_file_file = open(potfile_file_path, 'r')
-#potfile_file_lines = potfile_file_file.readlines()
-#potfile_file_file.close()
-
 hashcat_items = []
 hashcat = subprocess.Popen(['hashcat', '-m', '22000', '--show', hashes_file_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 for potfile_file_line in hashcat.stdout.read().decode().split("\n"):
 	if not potfile_file_line: continue
-	#print(potfile_file_line)
 	clms = potfile_file_line.split(":")
-	#print(clms)
 	hashcat_items.append([clms[0], clms[4]])
-
 
 items = []
 counter = 0
@@ -53,28 +47,33 @@ for hashes_file_line in hashes_file_lines:
 			essid = outL.replace("ESSID.............: ", "")
 			continue
 		if pmk != "" and essid != "": break
-	if search:
-		items.append([hashLine, pmk, bssid, essid])
-	else:
-		counter += 1
-		passwd = ""
-		for hcitem in hashcat_items:
-			if hcitem[0] in hashLine:
-				passwd = hcitem[1]
-				break
+	passwd = ""
+	for hcitem in hashcat_items:
+		if hcitem[0] in hashLine:
+			passwd = hcitem[1]
+			break
+	items.append([hashLine, pmk, bssid, essid, passwd])
 
-		clr_counter = Style.BRIGHT + Fore.YELLOW  + str(counter).rjust(5, " ") + Style.RESET_ALL
-		clr_pmk     = Style.BRIGHT + Fore.GREEN   + pmk                        + Style.RESET_ALL
-		clr_bssid   = Style.BRIGHT + Fore.CYAN    + bssid                      + Style.RESET_ALL
-		clr_essid   = Style.BRIGHT + Fore.BLUE    + essid                      + Style.RESET_ALL
-		if passwd:
-			clr_passwd = Style.BRIGHT + Fore.RED + passwd + Style.RESET_ALL
-			print(clr_counter,clr_pmk,clr_bssid,clr_essid,"-->",clr_passwd)
-		else:
-			print(clr_counter,clr_pmk,clr_bssid,clr_essid)
+
 
 if search:
-	for x in items:
-		for y in x:
-			if search in y.lower():
-				print(x[0])
+	for item in items:
+		for clm in item:
+			if search in clm.lower():
+				print(item[0])
+				break
+else:
+	counter = 0
+	data = []
+	counter = 0
+	for i in sorted(items, key=itemgetter(3)):
+		counter += 1
+		clr_counter = Style.BRIGHT + Fore.YELLOW  + str(counter) + Style.RESET_ALL
+		clr_pmk     = Style.BRIGHT + Fore.GREEN   + i[1]         + Style.RESET_ALL
+		clr_bssid   = Style.BRIGHT + Fore.CYAN    + i[2]         + Style.RESET_ALL
+		clr_essid   = Style.BRIGHT + Fore.BLUE    + i[3]         + Style.RESET_ALL
+		clr_pass    = Style.BRIGHT + Fore.RED     + i[4]         + Style.RESET_ALL
+		data.append([clr_counter,clr_pmk,clr_bssid,clr_essid,clr_pass])
+	print(tabulate(data, headers=["#", "PMK", "BSSID", "ESSID", "PASSWORD"]))
+
+
