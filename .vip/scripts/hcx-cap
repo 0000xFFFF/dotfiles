@@ -14,10 +14,10 @@ sort -u deviceinfo.txt > deviceinfo_uniq.txt
 echo "-- all_uniq.txt"
 sort -u all.txt > all_uniq.txt
 
-echo "-- pmkuniq.txt"
-hcx-uniq all_uniq.txt > pmkuniq.txt
+echo "-- apuniq.txt"
+hcx-uniq all_uniq.txt > apuniq.txt
 echo "-- hashcat_cracked.txt"
-hashcat -m 22000 --show pmkuniq.txt > hashcat_cracked.txt
+hashcat -m 22000 --show apuniq.txt > hashcat_cracked.txt
 
 echo "-- hashcat_cracked_idonly.txt"
 echo -ne "" > hashcat_cracked_idonly.txt
@@ -27,7 +27,7 @@ while read -r line ; do
 done <<< "$(cat hashcat_cracked.txt)"
 
 echo "-- cracked.txt"
-lines-inline pmkuniq.txt hashcat_cracked_idonly.txt > cracked.txt
+lines-inline apuniq.txt hashcat_cracked_idonly.txt > cracked.txt
 echo "-- uncracked.txt"
-hcx-rmhashes pmkuniq.txt cracked.txt > uncracked.txt
+hcx-rmhashes apuniq.txt cracked.txt > uncracked.txt
 

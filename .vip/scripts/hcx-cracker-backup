@@ -8,15 +8,9 @@
 import sys
 import codecs
 
-if len(sys.argv) <= 1:
-	print("USAGE: " + sys.argv[0] + " <hash(es)File> <auto(optional)>")
-	print("if second arg is 'auto', generate automatically")
+if len(sys.argv) < 2:
+	print("USAGE: " + sys.argv[0] + " <hash(es)File>")
 	exit()
-
-OPTION_AUTO = 0
-
-if len(sys.argv) >= 3:
-	if sys.argv[2] == "auto": OPTION_AUTO = 1
 
 hashes_file_path = sys.argv[1]
 hashes_file_file = open(hashes_file_path, 'r')
@@ -34,40 +28,6 @@ def hex2str(string):
 	except Exception as e:
 		return "HEX ERROR"
 
-
-wordlst = []
-
-def wordlst_dupelessAppend(word):
-	if not word: return
-	if not word in wordlst:
-		wordlst.append(word)
-
-def wordlst_append(word):
-	wordlst_dupelessAppend(word)
-	numlessword = ""
-	for c in word:
-		if not c.isdigit():
-			numlessword += c
-	wordlst_dupelessAppend(numlessword)
-
-def wordlst_appendWords(words):
-	long = ""
-	for word in words:
-		 long += word
-		 wordlst_append(word)
-	wordlst_append(long)
-	long = ""
-	words.reverse()
-	for word in words:
-		long += word
-	wordlst_append(long)
-
-def wordlst_genessid(essid):
-	wordlst_append(essid)
-	wordlst_appendWords(essid.split(" "))
-	wordlst_appendWords(essid.split("_"))
-	wordlst_appendWords(essid.split("-"))
-
 items = []
 counter = 0
 skipped = 0
@@ -84,28 +44,18 @@ for hashes_file_line in hashes_file_lines:
 	bssid = split[3].upper()
 	mac   = split[4].upper()
 	essid = hex2str(split[5])
-	print(counter,"\t",type_str,hash,bssid,mac,essid,end=" --> ")
+	print(counter,"\t",type_str,hash,bssid,mac,essid,end="")
 
 	genlst = ""
-	if OPTION_AUTO:
-		wordlst = []
-		wordlst_genessid(essid)
-		for word in wordlst:
-			if genlst:
-				genlst += " '" + word + "'"
-			else:
-				genlst += "'" + word + "'"
-		print(genlst)
-	else:
-		try:
-			genlst = input(" --> hcx-genlst ")
-		except:
-			print("")
-			quit()
-		if not genlst:
-			skipped += 1
-			print(" -- Skipping... (" + str(skipped) +")")
-			continue
+	try:
+		genlst = input(" --> hcx-genlst ")
+	except:
+		print("")
+		quit()
+	if not genlst:
+		skipped += 1
+		print(" -- Skipping... (" + str(skipped) +")")
+		continue
 	items.append([hashLine,type_str,hash,bssid,mac,essid,genlst])
 
 print("\n+--> gen.sh")
