@@ -56,13 +56,21 @@ def wordvars(word):
 	addword(word[::-1].upper())
 	addword(word[::-1].title())
 
-	for i in words:
-		genlst(i)
-
 if len(sys.argv) <= 1:
 	print("ABOUT: generate wordlist from word")
 	print("USAGE: " + sys.argv[0] + " <word>")
 	exit()
 
+# word mash
 for i in sys.argv[1:]:
 	wordvars(i)
+
+# just print word variations
+for i in words:
+	print(i)
+
+# word + nums
+for i in words:
+	genlst(i)
+
+
