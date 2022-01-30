@@ -145,16 +145,16 @@ with open("run.sh", 'w') as f3:
 	f3.write(shheader)
 	print("|", shheader, end="")
 	for i in files:
-		line = f"hashcat --quiet -m 22000 {i[0]} -a 0 {i[1]} -w 4 --session \"{i[2][2]}\" 2>/dev/null # {i[2][1]} {i[2][2]} {i[2][3]} {i[2][4]} {i[2][5]} -> {i[2][6]}\n"
+		line = f"hashcat --quiet -m 22000 {i[0]} -a 0 {i[1]} -w 4 --session \"{i[2][2]}\" 2>/dev/null # {i[2][5]} -> {i[2][6]}\n"
 		f3.write(line)
 		print("|", line, end="")
 	longlists = [
+		["names", "/home/user/.vip/lists/wordlists/serbianNames_numbers/nameNUM_mostcommon.txt"],
 		["holylst", "/home/user/.vip/lists/wordlists/holylst.txt"],
-		["names", "/home/user/.vip/lists/wordlists/serbianNames_numbers/nameNUM.txt"],
 		["num8", "/home/user/.vip/lists/wordlists/num8.txt"],
 	]
 	for i in longlists:
-		line = f"hashcat --quiet -m 22000 {hashes_file_path} -a 0 {i[1]} -w 4 --session \"{i[0]}\" 2>/dev/null\n"
+		line = f"hashcat -m 22000 {hashes_file_path} -a 0 {i[1]} -w 4 --session \"{i[0]}\" 2>/dev/null\n"
 		f3.write(line)
 		print("|", line, end="")
 

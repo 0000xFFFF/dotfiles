@@ -17,13 +17,8 @@ def genlst(word):
 		"!",
 		"!!",
 		"!!!",
-		"012345",
-		"0123456",
-		"01234567",
-		"012345678",
-		"0123456789",
-		"01234567890",
-		"012345678910",
+		"123",
+		"1234",
 		"12345",
 		"123456",
 		"1234567",
@@ -31,15 +26,27 @@ def genlst(word):
 		"123456789",
 		"1234567890",
 		"12345678910",
+		"012",
+		"0123",
+		"01234",
+		"012345",
+		"0123456",
+		"01234567",
+		"012345678",
+		"0123456789",
+		"01234567890",
+		"012345678910",
 	]
 
 	for i in sufix:
 		print_i(word, i)
-	for i in range(0, 10001):
+	for i in range(0, 100):
 		print_i(word, str(i))
-	for x in range(2, 5):
+	for x in range(2, 3):
 		for y in range(0, 10 ** (x-1)):
 			print_i(word, str(y).rjust(x, '0'))
+	for i in range(1900, 2025):
+		print_i(word, str(i))
 
 
 words = []
@@ -49,20 +56,28 @@ def addword(word):
 
 def wordvars(word):
 	#addword(word)
-	#addword(word.lower())
+	addword(word.lower())
 	#addword(word.upper())
-	addword(word.title())
+	#addword(word.title())
 	#addword(word[::-1].lower())
 	#addword(word[::-1].upper())
 	#addword(word[::-1].title())
-
-	for i in words:
-		genlst(i)
 
 if len(sys.argv) <= 1:
 	print("ABOUT: generate wordlist from word")
 	print("USAGE: " + sys.argv[0] + " <word>")
 	exit()
 
+# word mash
 for i in sys.argv[1:]:
 	wordvars(i)
+
+# just print word variations
+for i in words:
+	print(i)
+
+# word + nums
+for i in words:
+	genlst(i)
+
+
