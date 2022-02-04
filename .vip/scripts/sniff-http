@@ -1,2 +1,0 @@
-#!/bin/bash
-tshark -i "$1" -Y "http.request.method == GET"

@@ -4,14 +4,12 @@
 
 import sys
 
-def genlst(word):
-	
-	# num variations
-	def print_i(word, i):
-		print(word + i)
-		#print(i + word)
-		#print(i + word + i)
-	
+# num variations
+def print_wi(word,  i): print(word + i)
+def print_iw(word,  i): print(i + word)
+def print_iwi(word, i): print(i + word + i)
+
+def genlst(word, callback):
 	# common sufix
 	sufix = [
 		"!",
@@ -39,38 +37,40 @@ def genlst(word):
 	]
 
 	for i in sufix:
-		print_i(word, i)
+		callback(word, i)
 	for i in range(0, 100):
-		print_i(word, str(i))
+		callback(word, str(i))
 	for x in range(2, 3):
 		for y in range(0, 10 ** (x-1)):
-			print_i(word, str(y).rjust(x, '0'))
+			callback(word, str(y).rjust(x, '0'))
 	for i in range(1900, 2025):
-		print_i(word, str(i))
-
+		callback(word, str(i))
 
 words = []
 def addword(word):
+	# don't add dupes to list
 	if not word in words:
 		words.append(word)
 
-def wordvars(word):
-	#addword(word)
+# add word variations to list
+def wordvari(word):
+	addword(word)
 	addword(word.lower())
-	#addword(word.upper())
-	#addword(word.title())
+	addword(word.upper())
+	addword(word.title())
 	#addword(word[::-1].lower())
 	#addword(word[::-1].upper())
 	#addword(word[::-1].title())
 
+# print usage
 if len(sys.argv) <= 1:
 	print("ABOUT: generate wordlist from word")
 	print("USAGE: " + sys.argv[0] + " <word>")
 	exit()
 
-# word mash
+# get all word variations from cmd args
 for i in sys.argv[1:]:
-	wordvars(i)
+	wordvari(i)
 
 # just print word variations
 for i in words:
@@ -78,6 +78,8 @@ for i in words:
 
 # word + nums
 for i in words:
-	genlst(i)
+	genlst(i, print_wi)
+	genlst(i, print_iw)
+	genlst(i, print_iwi)
 
 

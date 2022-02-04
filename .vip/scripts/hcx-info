@@ -8,16 +8,19 @@ from colorama import Fore, Back, Style
 from operator import itemgetter
 from tabulate import tabulate
 
-OPTION_SORT       = 0  # sort
-OPTION_SORT_INDEX = 5  # sort by index
-OPTION_VENDOR     = 0  # fetch/show vendor for bssid
-OPTION_PASSWD     = 1  # run hashcat --show to show passwords
+OPTION_SORT       = 0 # sort
+OPTION_SORT_INDEX = 5 # sort by index
+OPTION_VENDOR     = 0 # fetch/show vendor for bssid
+OPTION_PASSWD     = 1 # run hashcat --show to show passwords
+OPTION_COLOR      = 1 # show colors
 
 if len(sys.argv) < 2:
 	print("USAGE: " + sys.argv[0] + " <hash(es)File> <search(optional)/special option> <so2> <...>")
 	print("SPECIAL OPTIONS:")
 	print("    @sortX   = sort by X index (default: 5 / @sort / @sort5)")
 	print("    @vendor  = display vendor info from MAC")
+	print("    @nopass  = don't fetch passwords from hashcat")
+	print("    @nocolor = don't print color when printing")
 	print("    <search> = search hash and print it")
 	exit()
 
@@ -27,6 +30,10 @@ for i in sys.argv[2:]:
 		OPTION_SORT = 1
 		spl = i.split("@sort")
 		if len(spl) >= 2 and spl[1]: OPTION_SORT_INDEX = int(spl[1])
+	elif "@nocolor" in i:
+		OPTION_COLOR = 0
+	elif "@nopass" in i:
+		OPTION_PASSWD = 0
 	elif i == "@vendor":
 		OPTION_VENDOR = 1
 	else:
@@ -125,15 +132,17 @@ else:           items2 = items
 
 for i in items2:
 	counter += 1
-	clr_counter  = Style.NORMAL + Fore.YELLOW  + str(counter) + Style.RESET_ALL
-	clr_type     = Style.NORMAL + Fore.GREEN   + i[1]         + Style.RESET_ALL
-	clr_hash     = Style.NORMAL + Fore.GREEN   + i[2]         + Style.RESET_ALL
-	clr_bssid    = Style.NORMAL + Fore.MAGENTA + i[3]         + Style.RESET_ALL
-	clr_mac      = Style.NORMAL + Fore.BLUE    + i[4]         + Style.RESET_ALL
-	clr_essid    = Style.NORMAL + Fore.MAGENTA + i[5]         + Style.RESET_ALL
-	clr_pass     = Style.NORMAL + Fore.RED     + i[6]         + Style.RESET_ALL
-	clr_vendor   = Style.NORMAL + Fore.MAGENTA + i[7]         + Style.RESET_ALL
-	clr_vendor2  = Style.NORMAL + Fore.BLUE    + i[8]         + Style.RESET_ALL
-	data.append([clr_counter,clr_type,clr_hash,clr_bssid,clr_mac,clr_essid,clr_pass,clr_vendor,clr_vendor2])
+	if OPTION_COLOR:
+		clr_counter  = Style.NORMAL + Fore.YELLOW  + str(counter) + Style.RESET_ALL
+		clr_type     = Style.NORMAL + Fore.GREEN   + i[1]         + Style.RESET_ALL
+		clr_hash     = Style.NORMAL + Fore.GREEN   + i[2]         + Style.RESET_ALL
+		clr_bssid    = Style.NORMAL + Fore.MAGENTA + i[3]         + Style.RESET_ALL
+		clr_mac      = Style.NORMAL + Fore.BLUE    + i[4]         + Style.RESET_ALL
+		clr_essid    = Style.NORMAL + Fore.MAGENTA + i[5]         + Style.RESET_ALL
+		clr_pass     = Style.NORMAL + Fore.RED     + i[6]         + Style.RESET_ALL
+		clr_vendor   = Style.NORMAL + Fore.MAGENTA + i[7]         + Style.RESET_ALL
+		clr_vendor2  = Style.NORMAL + Fore.BLUE    + i[8]         + Style.RESET_ALL
+		data.append([clr_counter,clr_type,clr_hash,clr_bssid,clr_mac,clr_essid,clr_pass,clr_vendor,clr_vendor2])
+	else:
+		data.append([str(counter),i[1],i[2],i[3],i[4],i[5],i[6],i[7],i[8]])
 print(tabulate(data, headers=["#", "TYPE", "HASH", "MAC AP", "MAC CLIENT", "ESSID", "PASSWORD", "VENDOR AP", "VENDOR CLIENT"]))
-

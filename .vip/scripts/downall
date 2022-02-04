@@ -1,4 +1,0 @@
-#!/bin/bash
-pm2 stop all
-systemctl stop httpd
-systemctl status httpd

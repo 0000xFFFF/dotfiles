@@ -1,3 +1,0 @@
-#!/bin/bash
-IFACE="enp3s0"
-sudo tcpdump -vv -i "$IFACE" icmp

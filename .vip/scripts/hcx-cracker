@@ -7,25 +7,37 @@
 
 import sys
 import codecs
+import re
 from operator import itemgetter
 
+# get args / help
 if len(sys.argv) <= 1:
-	print("USAGE: " + sys.argv[0] + " <hash(es)File> <auto(optional)>")
-	print("if second arg is 'auto', generate automatically")
+	print("USAGE: " + sys.argv[0] + " <hash(es)File> <options>")
+
+	print("options:")
+	print(" @auto      = generate automatically")
+	print(" @blacklist = skip hashes that don't generate a decent wordlist by using the ESSID...")
 	exit()
 
+# options
 OPTION_AUTO = 0
+OPTION_BLACKLIST = 0
 
-if len(sys.argv) >= 3:
-	if sys.argv[2] == "auto": OPTION_AUTO = 1
+# set options
+for i in sys.argv[1:]:
+	if   i == "@auto":      OPTION_AUTO      = 1
+	elif i == "@blacklist": OPTION_BLACKLIST = 1
 
+# read hashes file
 hashes_file_path = sys.argv[1]
 hashes_file_file = open(hashes_file_path, 'r')
 hashes_file_lines = hashes_file_file.readlines()
 hashes_file_file.close()
 
+# bash header
 shheader = "#!/bin/sh -x\n"
 
+# note
 print(" * leave the hcx-genlst args empty to skip cracking this/current hash")
 
 def hex2str(string):
@@ -35,39 +47,80 @@ def hex2str(string):
 	except Exception as e:
 		return "HEX ERROR"
 
+def wordlst2str(wordlst):
+	genlst = ""
+	for word in wordlst:
+		if genlst: genlst += " '" + word + "'"
+		else:      genlst += "'" + word + "'"
+	return genlst
 
-wordlst = []
+def essid2wordlst(essid):
+	wordlst = []
 
-def wordlst_dupelessAppend(word):
-	if not word: return
-	if not word in wordlst:
-		wordlst.append(word)
+	if OPTION_BLACKLIST:
+		blacklist = [
+			"HSWIFI-",
+			"Tech_",
+			"HUAWEI ",
+			"HUAWEI-",
+			"-Guest",
+			"ZTE_",
+			"MIWIFI_",
+			"CGA",
+			"TP-LINK_",
+			"MikroTik-",
+			"SBB-",
+			"TS-",
+			"CXNK",
+			"ALHN-",
+			"HG630",
+			"TP-Link_",
+			"Telenor_Internet_",
+			"AndroidAP",
+		]
+	
+		for i in blacklist:
+			if i in essid:
+				return []
 
-def wordlst_append(word):
-	wordlst_dupelessAppend(word)
-	numlessword = ""
-	for c in word:
-		if not c.isdigit():
-			numlessword += c
-	wordlst_dupelessAppend(numlessword)
+		if len(essid) == 6 and re.search("[0-9a-fA-F]{6}", essid):
+			return []
 
-def wordlst_appendWords(words):
-	long = ""
-	for word in words:
-		 long += word
-		 wordlst_append(word)
-	wordlst_append(long)
-	long = ""
-	words.reverse()
-	for word in words:
-		long += word
-	wordlst_append(long)
+	# add to list (don't add dupes)
+	def add(word):
+		if not word: return
+		if not word in wordlst:
+			wordlst.append(word)
+	
+	def add2(word):
+		add(word)
+		numlessword = ""
+		for c in word:
+			if not c.isdigit():
+				numlessword += c
+		add(numlessword)
 
-def wordlst_genessid(essid):
-	wordlst_append(essid)
-	wordlst_appendWords(essid.split(" "))
-	wordlst_appendWords(essid.split("_"))
-	wordlst_appendWords(essid.split("-"))
+	def addlst(words):
+		long = ""
+		for word in words:
+			 long += word
+			 add2(word)
+		add2(long)
+		long = ""
+		words.reverse()
+		for word in words:
+			long += word
+		add2(long)
+
+	add2(essid)
+	addlst(essid.split(" "))
+	addlst(essid.split("_"))
+	addlst(essid.split("-"))
+
+	# split CamelCase
+	addlst(re.sub('([A-Z][a-z]+)', r' \1', re.sub('([A-Z]+)', r' \1', essid)).split())
+
+	return wordlst
 
 items = []
 counter = 0
@@ -89,17 +142,18 @@ for hashes_file_line in hashes_file_lines:
 
 	genlst = ""
 	if OPTION_AUTO:
-		wordlst = []
-		wordlst_genessid(essid)
-		for word in wordlst:
-			if genlst:
-				genlst += " '" + word + "'"
-			else:
-				genlst += "'" + word + "'"
+		wordlst = essid2wordlst(essid)
+		if len(wordlst) == 0:
+			skipped += 1
+			print("BLACKLISTED (" + str(skipped) +")")
+			continue
+		genlst = wordlst2str(wordlst)
+		genlst_len = len(wordlst)
 		print(genlst)
 	else:
 		try:
 			genlst = input(" --> hcx-genlst ")
+			genlst_len = len(genlst.split(" "))
 		except:
 			print("")
 			quit()
@@ -107,8 +161,9 @@ for hashes_file_line in hashes_file_lines:
 			skipped += 1
 			print(" -- Skipping... (" + str(skipped) +")")
 			continue
-	items.append([hashLine,type_str,hash,bssid,mac,essid,genlst,len(wordlst)])
+	items.append([hashLine,type_str,hash,bssid,mac,essid,genlst,genlst_len])
 
+items = sorted(items, key=itemgetter(6))
 items = sorted(items, key=itemgetter(7))
 
 print("\n+--> gen.sh")
@@ -131,9 +186,6 @@ if len(items) != 0:
 				f1.write(i[0] + "\n")
 		
 			#comment = f"echo -e \"{i[1]} {i[2]} {i[3]} {i[4]} {i[5]} -> {i[6]}\"\n"
-			comment = f"echo '{num}/{items_l}' ; "
-			f_gen.write(comment)
-			print("|", comment, end="")
 			command = "hcx-genlst " + i[6] + " | strings -n 8 > \"" + file_2 + "\" # " + i[5] + "\n"
 			f_gen.write(command)
 			print("|", command, end="")
@@ -149,12 +201,12 @@ with open("run.sh", 'w') as f3:
 		f3.write(line)
 		print("|", line, end="")
 	longlists = [
-		["names", "/home/user/.vip/lists/wordlists/serbianNames_numbers/nameNUM_mostcommon.txt"],
+		["essid_uniq", "essid_uniq.txt"],
 		["holylst", "/home/user/.vip/lists/wordlists/holylst.txt"],
-		["num8", "/home/user/.vip/lists/wordlists/num8.txt"],
+		["num8", "/home/user/.vip/lists/wordlists/num8_shuf.txt"],
 	]
 	for i in longlists:
-		line = f"hashcat -m 22000 {hashes_file_path} -a 0 {i[1]} -w 4 --session \"{i[0]}\" 2>/dev/null\n"
+		line = f"hashcat -m 22000 \"{hashes_file_path}\" -a 0 \"{i[1]}\" -w 4 --session \"{i[0]}\" 2>/dev/null\n"
 		f3.write(line)
 		print("|", line, end="")
 

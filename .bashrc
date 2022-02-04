@@ -53,6 +53,9 @@ alias \
 	dust="du -h | sort -h" \
 	dust2="du -h -d 1 | sort -h" \
 	nf="neofetch" \
+
+# site
+alias \
 	site="sudo systemctl status httpd" \
 	siteup="sudo systemctl start httpd" \
 	siterst="sudo systemctl restart httpd" \
@@ -60,6 +63,10 @@ alias \
 	sitelog="tail -f /var/log/httpd/*" \
 	sitelogmain="tail -f /var/log/httpd/access_log" \
 	sitelogclear="sudo rm -rfi /var/log/httpd/access_log /var/log/httpd/error_log /var/log/httpd/ssl_request_log" \
+	upall="pm2 start all ; systemctl start httpd ; systemctl status httpd" \
+	downall="pm2 stop all ; systemctl stop httpd ; systemctl status httpd" \
+	statall="pm2 status ; systemctl status httpd" \
+
 # look
 alias \
 	ls="exa --color=auto --group-directories-first" \
@@ -81,7 +88,14 @@ alias \
 	ffmpeg="ffmpeg -hide_banner" \
 	ffprobe="ffprobe -hide_banner" \
 	ffplay="ffplay -hide_banner" \
+
+# hax
+alias \
+	rpf='su -c /home/user/.vip/tools/radeon-profile/radeon-profile/target/radeon-profile' \
 	nd="sudo netdiscover" \
+	tshark-http="tshark -Y 'http.request.method == GET' -i" \
+	tshark-icmp="tshark -Y 'icmp' -i" \
+	tcpdump-icmp="tcpdump -vv icmp -i" \
 
 # checkers
 alias \
@@ -90,7 +104,7 @@ alias \
 	sortlessuniq="perl -ne 'print unless \$seen{\$_}++'" \
 	gpath="echo "\$PATH" | tr ':' '\n'" \
 
-# long commands
+# cool stuff
 alias \
 	feh="feh --scale-down --auto-zoom -d" \
 	fehbg="feh --recursive --randomize --bg-fill" \
@@ -101,6 +115,7 @@ alias \
 	dump="mkdir dump ; cd dump" \
 	fbg="feh --bg-fill ~/.wallpaper" \
 	open="dolphin --select" \
+	nogpu="LIBGL_ALWAYS_SOFTWARE=1 eval"
 
 # edit
 alias \
