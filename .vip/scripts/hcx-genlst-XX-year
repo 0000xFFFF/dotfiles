@@ -22,12 +22,18 @@ def genlst(word, callback):
 		"@@",
 		"@@@",
 		"#",
+		"123",
+		"1234",
+		"12345",
 		"123456",
 		"1234567",
 		"12345678",
 		"123456789",
 		"1234567890",
 		"12345678910",
+		"012",
+		"0123",
+		"01234",
 		"012345",
 		"0123456",
 		"01234567",
@@ -39,11 +45,13 @@ def genlst(word, callback):
 
 	for i in sufix:
 		callback(word, i)
-	for i in range(0, 100001):
+	for i in range(0, 100):
 		callback(word, str(i))
-	for x in range(2, 6):
+	for x in range(2, 3):
 		for y in range(0, 10 ** (x-1)):
 			callback(word, str(y).rjust(x, '0'))
+	for i in range(1900, 2025):
+		callback(word, str(i))
 
 words = []
 def addword(word):

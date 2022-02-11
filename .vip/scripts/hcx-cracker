@@ -47,6 +47,34 @@ def hex2str(string):
 	except Exception as e:
 		return "HEX ERROR"
 
+def rslatin_check(s):
+	if "č" in s: return True
+	if "Č" in s: return True
+	if "ć" in s: return True
+	if "Ć" in s: return True
+	if "š" in s: return True
+	if "Š" in s: return True
+	if "ž" in s: return True
+	if "Ž" in s: return True
+	if "ð" in s: return True
+	if "đ" in s: return True
+	if "Ð" in s: return True
+	return False
+
+def rslatin_replace(s):
+	s = s.replace("č", "c")
+	s = s.replace("Č", "C")
+	s = s.replace("ć", "c")
+	s = s.replace("Ć", "C")
+	s = s.replace("š", "s")
+	s = s.replace("Š", "S")
+	s = s.replace("ž", "z")
+	s = s.replace("Ž", "Z")
+	s = s.replace("ð", "dj")
+	s = s.replace("đ", "dj")
+	s = s.replace("Ð", "Dj")
+	return s
+
 def wordlst2str(wordlst):
 	genlst = ""
 	for word in wordlst:
@@ -56,6 +84,9 @@ def wordlst2str(wordlst):
 
 def essid2wordlst(essid):
 	wordlst = []
+
+	if rslatin_check(essid):
+		essid = rslatin_replace(essid)
 
 	if OPTION_BLACKLIST:
 		blacklist = [
@@ -99,7 +130,7 @@ def essid2wordlst(essid):
 			if not c.isdigit():
 				numlessword += c
 		add(numlessword)
-
+		
 	def addlst(words):
 		long = ""
 		for word in words:

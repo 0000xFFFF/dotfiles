@@ -1,0 +1,67 @@
+#!/bin/bash
+
+function utc() {
+	echo "$(date +"%Y-%m-%d %T:%N (%s)")"
+}
+
+unhide_cursor() {
+    printf '\e[?25h'
+}
+trap unhide_cursor EXIT
+
+# Hide the cursor (there is probably a much better way to do this)
+printf '\e[?25l'
+
+FILES="$1"
+[ -z "$FILES" ] && FILES="*.log"
+
+tput clear
+
+getoutput() {
+	OUTPUT_CAT="$(cat -v $FILES 2>/dev/null)"
+	COUNTER_B="$(echo "$OUTPUT_CAT" | grep '\[BEACON\]' | wc -l)"
+	COUNTER_HB="$(echo "$OUTPUT_CAT" | grep '\[HIDDEN BEACON\]' | wc -l)"
+	COUNTER_BHB=$(($COUNTER_B + $COUNTER_HB))
+	COUNTER_PR="$(echo "$OUTPUT_CAT" | grep '\[PROBERESPONSE\]' | wc -l)"
+	COUNTER_RPR="$(echo "$OUTPUT_CAT" | grep '\[ROGUE PROBERESPONSE\]' | wc -l)"
+	COUNTER_PRRPR=$(($COUNTER_PR + $COUNTER_RPR))
+	COUNTER_AU="$(echo "$OUTPUT_CAT" | grep '\[AUTHENTICATION\]' | wc -l)"
+	COUNTER_AS="$(echo "$OUTPUT_CAT" | grep '\[ASSOCIATION\]' | wc -l)"
+	COUNTER_RAS="$(echo "$OUTPUT_CAT" | grep '\[REASSOCIATION\]' | wc -l)"
+	COUNTER_AUASRAS=$(($COUNTER_AU + $COUNTER_AS + $COUNTER_RAS))
+	COUNTER_PK="$(echo "$OUTPUT_CAT" | grep '\[PMKID:' | wc -l)"
+	COUNTER_PKR="$(echo "$OUTPUT_CAT" | grep '\[PMKIDROGUE:' | wc -l)"
+	COUNTER_PKPKR=$(($COUNTER_PK + $COUNTER_PKR))
+	COUNTER_E="$(echo "$OUTPUT_CAT" | grep '\[EAPOL:' | wc -l)"
+	COUNTER_H=$(($COUNTER_PKPKR + $COUNTER_E))
+	TAILOUT_HASH="$(echo "$OUTPUT_CAT" | grep '\[PMKID:\|\[PMKIDROGUE:\|\[EAPOL:' | tail)"
+	TAILOUT="$(echo "$OUTPUT_CAT" | tail)"
+	TIMENOW=$(utc)
+
+	echo -e "\n===[ COUNTERS:"
+	echo -e "\e[95mDATE TIME\e[0m.......................: \e[95m$TIMENOW\e[0m"
+	echo -e "\e[92mBEACON\e[0m + \e[32mHIDDEN\e[0m.................: \e[1;92m$COUNTER_BHB\e[0m (\e[92m$COUNTER_B\e[0m+\e[32m$COUNTER_HB\e[0m)"
+	echo -e "\e[93mPROBE RESPONSE\e[0m + \e[33mROGUE\e[0m..........: \e[1;93m$COUNTER_PRRPR\e[0m (\e[93m$COUNTER_PR\e[0m+\e[33m$COUNTER_RPR\e[0m)"
+	echo -e "\e[36mAUTHENTICATION\e[0m + \e[1;36m(RE)\e[0m\e[96mASSOCIATION\e[0m: \e[1;96m$COUNTER_AUASRAS\e[0m (\e[36m$COUNTER_AU\e[0m+\e[1;36m$COUNTER_RAS\e[0m+\e[96m$COUNTER_AS\e[0m)"
+	echo -e "\e[31mPMKID\e[0m + \e[91mPMKIDROGUE\e[0m + \e[1;31mEAPOL\e[0m......: \e[1;91m$COUNTER_H\e[0m (\e[31m$COUNTER_PK\e[0m+\e[91m$COUNTER_PKR\e[0m+\e[1;31m$COUNTER_E\e[0m)\e[0m"
+	echo -e "\n===[ NEWEST HASHES:"
+	echo -e "$TAILOUT_HASH"
+	echo -e "\n===[ TAIL:"
+	echo -e "$TAILOUT"
+}
+
+HOME=$(tput cup 0 0)
+ED=$(tput ed)
+EL=$(tput el)
+printf '%s%s' "$HOME" "$ED"
+while true
+do
+    ROWS=$(tput lines)
+    COLS=$(tput cols)
+    CMD="$@"
+    getoutput | head -n $ROWS | while IFS= read LINE; do
+        printf '%-*.*s%s\n' $COLS $COLS "$LINE" "$EL"
+    done
+    printf '%s%s' "$ED" "$HOME"
+    sleep 3
+done

@@ -18,11 +18,11 @@ MENU() {
 	echo -e "\e[92m> Your IP(s)......: \e[91m$LOCALHOST\e[0m"
 	echo -e "\e[92m> Your Gateway(s).: \e[91m$GATEWAYS\e[0m"
 	echo
-	echo -e "\e[0mSelect:"
+	echo -e "\e[0mSelect:\e[0m"
 	echo -e "  \e[33m[\e[91m1\e[33m]\e[0m PING (FAST)\e[0m"
 	echo -e "  \e[33m[\e[91m2\e[33m]\e[0m NMAP\e[0m"
-	echo -e "  \e[33m[\e[91m3\e[33m]\e[0m NMAP - BLOCKS"
-	echo -e "  \e[33m[\e[91m4\e[33m]\e[0m NMAP - TABLE"
+	echo -e "  \e[33m[\e[91m3\e[33m]\e[0m NMAP - BLOCKS\e[0m"
+	echo -e "  \e[33m[\e[91m4\e[33m]\e[0m NMAP - TABLE\e[0m"
 	read -n1 -r -p  '  >' INPUT
 	if [ -z "$INPUT" ]; then
 		echo
