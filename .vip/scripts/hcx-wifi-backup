@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 
-import sys
-import termios # getch()
-import time
-import atexit
-
 from scapy.all import *
 from threading import Thread
+import pandas as pd
+import time
 from datetime import datetime
-from tabulate import tabulate
-from operator import itemgetter
+import atexit
+from colorama import Fore, Back, Style
+import sys, tty, termios # getch()
 
 running = True
 pauseUI_evt = threading.Event()
@@ -23,7 +21,9 @@ columns = ["BSSID", "#", "SSID", "PWR", "CH", "CRYPTO", "TIMESTAMP", "PACKETS", 
 sortBy = "PWR"
 sortBy_ascending = False
 
-wifi = []
+wifi = pd.DataFrame(columns=columns)
+wifi.set_index("BSSID", inplace=True)
+
 passwords_count = 0
 
 def clearScreen():
@@ -69,19 +69,11 @@ def callback(packet):
 				passwd = i[2]
 				break
 
-		hasWifi = False
-		index = 0
-		for i in range(0, len(wifi)):
-			index = i
-			if wifi[i][0] == bssid:
-				hasWifi = True
-				break
-
-		if hasWifi:
-			wifi[index] = [bssid, wifi[index][1], essid, dbm_signal, channel, crypto, timestamp, wifi[index][7]+1, lastseen, passwd]
-		else:
-			wifi.append([bssid, len(wifi)+1, essid, dbm_signal, channel, crypto, timestamp, 1, lastseen, passwd])
-		
+		try:
+			if not wifi.loc[bssid].empty:
+				wifi.loc[bssid] = (wifi.loc[bssid][0], essid, dbm_signal, channel, crypto, timestamp, wifi.loc[bssid][6]+1, lastseen, passwd)
+		except KeyError:
+			wifi.loc[bssid] = (len(wifi.index), essid, dbm_signal, channel, crypto, timestamp, 1, lastseen, passwd)
 
 updateUI_mutex = threading.Lock()
 
@@ -108,11 +100,9 @@ def updateUI():
 
 	# display stuff
 	show(f"CH {str(ch).rjust(2)} | {str(timestr).ljust(26)} | PASS: {passwords_count} | {status}")
-	show(f"COUNT: {len(wifi)}")
+	show(f"COUNT: {len(wifi.index)}")
 	show(f"SORT BY: {arrowChar} {sortBy}")
-
-	data = sorted(wifi, key=itemgetter(columns.index(sortBy)), reverse=sortBy_ascending)
-	print(tabulate(data, headers=columns))
+	show(str(wifi.sort_values(sortBy, ascending=sortBy_ascending)))
 	show("\n")
 
 	updateUI_mutex.release()
@@ -242,7 +232,7 @@ if __name__ == "__main__":
 			clearScreen()
 			sortBy_ascending = (not sortBy_ascending)
 		elif pressedKey == "x":
-			wifi = []
+			wifi = wifi[0:0]
 		elif pressedKey == "p" or pressedKey == " ":
 			if pauseUI_evt.is_set():
 				pauseUI_evt.clear()
