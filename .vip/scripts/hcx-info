@@ -20,7 +20,7 @@ if len(sys.argv) < 2:
 	print("    @sortX   = sort by X index (default: 5 / @sort / @sort5)")
 	print("    @vendor  = display vendor info from MAC")
 	print("    @nopass  = don't fetch passwords from hashcat")
-	print("    @nocolor = don't print color when printing")
+	print("    @nocolor = don't use colors when printing")
 	print("    <search> = search hash and print it")
 	exit()
 

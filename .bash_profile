@@ -2,7 +2,7 @@
 [[ -f ~/.bashrc ]] && . ~/.bashrc
 
 # path mods
-export PATH="$PATH":"$HOME/.vip/scripts":"$HOME/.config/i3/scripts"
+export PATH="$PATH":"$HOME/.vip/scripts":"$HOME/.vip/scripts_ln":"$HOME/.config/i3/scripts"
 
 # default programs
 export EDITOR="nvim"

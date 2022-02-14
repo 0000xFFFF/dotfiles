@@ -53,6 +53,8 @@ alias \
 	dust="du -h | sort -h" \
 	dust2="du -h -d 1 | sort -h" \
 	nf="neofetch" \
+	cursor_show="printf '\033[?25h'" \
+	cursor_hide="printf '\033[?25l'" \
 
 # site
 alias \
