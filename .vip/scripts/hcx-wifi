@@ -24,6 +24,7 @@ sortBy = "PWR"
 sortBy_ascending = False
 
 wifi = []
+passwords = [] # BSSID, ESSID, PASSWORD
 passwords_count = 0
 
 def clearScreen():
@@ -61,13 +62,15 @@ def callback(packet):
 		lastseen =  datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 		passwd = ""
 
-		global passwords
-		for i in passwords:
-			match_bssid = str(bssid).replace(":", "").replace("-", "").lower()
-			match_i     =  str(i[0]).replace(":", "").replace("-", "").lower()
-			if match_bssid == match_i and essid == i[1]:
-				passwd = i[2]
-				break
+		global passwords_count
+		if passwords_count:
+			global passwords
+			for i in passwords:
+				match_bssid = str(bssid).replace(":", "").replace("-", "").lower()
+				match_i     =  str(i[0]).replace(":", "").replace("-", "").lower()
+				if match_bssid == match_i and essid == i[1]:
+					passwd = i[2]
+					break
 
 		hasWifi = False
 		index = 0
@@ -112,7 +115,7 @@ def updateUI():
 	show(f"SORT BY: {arrowChar} {sortBy}")
 
 	data = sorted(wifi, key=itemgetter(columns.index(sortBy)), reverse=sortBy_ascending)
-	print(tabulate(data, headers=columns))
+	show(str(tabulate(data, headers=columns)))
 	show("\n")
 
 	updateUI_mutex.release()
@@ -180,10 +183,12 @@ def is_root():
 
 if __name__ == "__main__":
 
-	if len(sys.argv) < 3:
+	argv_len = len(sys.argv)
+
+	if argv_len < 2:
 		print("ABOUT: uses scapy to show nearby networks,")
-		print("       and trys to match them with the csv password list")
-		print("USAGE: " + sys.argv[0] + " <interface(mon)> <wifipasslst.csv>")
+		print("       (optional) and trys to match them with the csv password list")
+		print("USAGE: " + sys.argv[0] + " <interface(mon)> <wifipasslst.csv(optional)>")
 		print("KEY COMMANDS:")
 		print("  q       - quit")
 		print("  s       - change sorting column")
@@ -197,18 +202,18 @@ if __name__ == "__main__":
 		exit()
 
 	interface = sys.argv[1]
-	file_pass_path = sys.argv[2]
-	file_pass = open(file_pass_path, 'r')
-	file_pass_lines = file_pass.readlines()
-	file_pass.close()
 
-	passwords = [] # BSSID, #ESSID, #PASSWORD
-	for i_ in file_pass_lines:
-		i = i_.replace("\n", "")
-		isplit = i.split("|||")
-		if len(isplit) >= 3:
-			passwords.append([isplit[0],isplit[1],isplit[2]])
-	passwords_count = len(passwords)
+	if argv_len >= 3:
+		file_pass_path = sys.argv[2]
+		file_pass = open(file_pass_path, 'r')
+		file_pass_lines = file_pass.readlines()
+		file_pass.close()
+		for i_ in file_pass_lines:
+			i = i_.replace("\n", "")
+			isplit = i.split("|||")
+			if len(isplit) >= 3:
+				passwords.append([isplit[0],isplit[1],isplit[2]])
+		passwords_count = len(passwords)
 
 	# clear screen and hide cursor
 	clearScreen()
