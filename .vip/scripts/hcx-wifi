@@ -19,11 +19,23 @@ g_tc = os.get_terminal_size().columns
 g_tl = os.get_terminal_size().lines
 ch = 1
 
-columns = ["BSSID", "#", "SSID", "PWR", "CH", "CRYPTO", "TIMESTAMP", "PACKETS", "LAST SEEN", "PASSWORD"]
-sortBy = "PWR"
-sortBy_ascending = False
-
 wifi = []
+wifi_clms = ["BSSID", "ESSID", "PASSWORD", "PWR", "LAST SEEN", "#", "CH", "CRYPTO", "TIMESTAMP", "PACKETS" ]
+wifi_clms_len = len(wifi_clms)
+wifi_clm_bssid     = 0
+wifi_clm_essid     = 1
+wifi_clm_passwd    = 2
+wifi_clm_pwr       = 3
+wifi_clm_lastseen  = 4
+wifi_clm_num       = 5
+wifi_clm_ch        = 6
+wifi_clm_crypto    = 7
+wifi_clm_timestamp = 8
+wifi_clm_packets   = 9
+
+sortBy = "PWR"
+sortBy_reverse = True
+
 passwords = [] # BSSID, ESSID, PASSWORD
 passwords_count = 0
 
@@ -62,28 +74,42 @@ def callback(packet):
 		lastseen =  datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 		passwd = ""
 
-		global passwords_count
-		if passwords_count:
-			global passwords
-			for i in passwords:
-				match_bssid = str(bssid).replace(":", "").replace("-", "").lower()
-				match_i     =  str(i[0]).replace(":", "").replace("-", "").lower()
-				if match_bssid == match_i and essid == i[1]:
-					passwd = i[2]
-					break
-
 		hasWifi = False
 		index = 0
 		for i in range(0, len(wifi)):
 			index = i
-			if wifi[i][0] == bssid:
+			if wifi[i][wifi_clm_bssid] == bssid:
 				hasWifi = True
 				break
 
+		lst = [None] * wifi_clms_len
+		lst[wifi_clm_bssid]     = bssid
+		lst[wifi_clm_essid]     = essid
+		lst[wifi_clm_pwr]       = dbm_signal
+		lst[wifi_clm_lastseen]  = lastseen
+		lst[wifi_clm_ch]        = channel
+		lst[wifi_clm_crypto]    = crypto
+		lst[wifi_clm_timestamp] = timestamp
+		
 		if hasWifi:
-			wifi[index] = [bssid, wifi[index][1], essid, dbm_signal, channel, crypto, timestamp, wifi[index][7]+1, lastseen, passwd]
+			lst[wifi_clm_num]     = wifi[index][wifi_clm_num]
+			lst[wifi_clm_packets] = wifi[index][wifi_clm_packets]+1
+			lst[wifi_clm_passwd]  = wifi[index][wifi_clm_passwd]
+			wifi[index] = lst
 		else:
-			wifi.append([bssid, len(wifi)+1, essid, dbm_signal, channel, crypto, timestamp, 1, lastseen, passwd])
+			global passwords_count
+			if passwords_count:
+				global passwords
+				for i in passwords:
+					match_bssid = str(bssid).replace(":", "").replace("-", "").lower()
+					match_i     =  str(i[0]).replace(":", "").replace("-", "").lower()
+					if match_bssid == match_i and essid == i[1]:
+						passwd = i[2]
+						break
+			lst[wifi_clm_num]     = len(wifi)+1
+			lst[wifi_clm_packets] = 1
+			lst[wifi_clm_passwd]  = passwd
+			wifi.append(lst)
 		
 
 updateUI_mutex = threading.Lock()
@@ -99,7 +125,7 @@ def updateUI():
 	timestr = now
 
 	arrowChar = "\u2193"
-	if sortBy_ascending: arrowChar = "\u2191"
+	if sortBy_reverse: arrowChar = "\u2191"
 
 	# set print pos to 0x0
 	print("\033[0;0H", end='')
@@ -114,8 +140,8 @@ def updateUI():
 	show(f"COUNT: {len(wifi)}")
 	show(f"SORT BY: {arrowChar} {sortBy}")
 
-	data = sorted(wifi, key=itemgetter(columns.index(sortBy)), reverse=sortBy_ascending)
-	show(str(tabulate(data, headers=columns)))
+	data = sorted(wifi, key=itemgetter(wifi_clms.index(sortBy)), reverse=sortBy_reverse)
+	show(str(tabulate(data, headers=wifi_clms)))
 	show("\n")
 
 	updateUI_mutex.release()
@@ -158,10 +184,10 @@ def getch():
 def changeSorting():
 	found = False
 	isSet = False
-	global columns
+	global wifi_clms
 	global sortBy
 	while True:
-		for i in columns:
+		for i in wifi_clms:
 			if found:
 				sortBy = i
 				isSet = True
@@ -221,8 +247,8 @@ if __name__ == "__main__":
 	print("\033[?25l")
 
 	# threads (print / channel hopper)
-	th_ui    = Thread(target=thread_updateUI) ; th_ui.daemon = True
-	th_hop   = Thread(target=thread_hopch)    ; th_hop.daemon = True
+	th_ui  = Thread(target=thread_updateUI)
+	th_hop = Thread(target=thread_hopch)
     
 	# start all threads
 	th_ui.start()
@@ -240,13 +266,15 @@ if __name__ == "__main__":
 			exit()
 
 		if pressedKey == "q":
-			running = False
+			running = False # send signal for the threads to close
+			th_ui.join()
+			th_hop.join()
 			exit()
 		elif pressedKey == "s":
 			changeSorting()
 		elif pressedKey == "a":
 			clearScreen()
-			sortBy_ascending = (not sortBy_ascending)
+			sortBy_reverse = (not sortBy_reverse)
 		elif pressedKey == "x":
 			wifi = []
 		elif pressedKey == "p" or pressedKey == " ":
