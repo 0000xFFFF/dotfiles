@@ -28,7 +28,10 @@ while True:
 device = devices[int(wifi_interface_choice)]
 
 f = ""
-if len(sys.argv) >= 1:
+if len(sys.argv) >= 2:
 	f = sys.argv[1]
 
-os.system("sudo hcx-wifi " + device + " \"" + f + "\"")
+if f:
+	os.system("sudo hcx-wifi " + device + " \"" + f + "\"")
+else:
+	os.system("sudo hcx-wifi " + device)
