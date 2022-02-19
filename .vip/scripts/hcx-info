@@ -56,10 +56,13 @@ if OPTION_VENDOR:
 	ouifile = open(ouifile_path, 'r')
 	ouifile_lines = ouifile.readlines()
 	ouifile.close()
-	
+
+	mac2ven_cache = [] # this makes if way faster
 	def mac2ven(mac):
 		mac2check = mac.replace(":", "").replace("-", "").upper()[0:6]
-		vendor = ""
+		for i in mac2ven_cache:
+			if mac2check == i[0]:
+				return i[1]
 		for y_ in ouifile_lines:
 			y = y_.replace("\n", "")
 			split = y.split("\t")
@@ -69,9 +72,9 @@ if OPTION_VENDOR:
 			if split_l >= 1: oui_mac = split[0]
 			if split_l >= 2: oui_ven = split[1]
 			if mac2check == oui_mac:
-				vendor = oui_ven
-				break
-		return vendor
+				mac2ven_cache.append([oui_mac, oui_ven])
+				return oui_ven
+		return ""
 else:
 	def mac2ven(mac):
 		return ""
