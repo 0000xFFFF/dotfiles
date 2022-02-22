@@ -30,21 +30,16 @@ for i in sys.argv[2:]:
 		OPTION_SORT = 1
 		spl = i.split("@sort")
 		if len(spl) >= 2 and spl[1]: OPTION_SORT_INDEX = int(spl[1])
-	elif "@nocolor" in i:
-		OPTION_COLOR = 0
-	elif "@nopass" in i:
-		OPTION_PASSWD = 0
-	elif i == "@vendor":
-		OPTION_VENDOR = 1
-	else:
-		search = i.lower()
+	elif "@nocolor" in i: OPTION_COLOR  = 0
+	elif "@nopass"  in i: OPTION_PASSWD = 0
+	elif i == "@vendor":  OPTION_VENDOR = 1
+	else: search = i.lower()
 
 def hex2str(string):
 	try:
 		binary_str = codecs.decode(string, "hex")
 		return str(binary_str, 'utf-8')
-	except Exception as e:
-		return "HEX ERROR"
+	except Exception as e: return "HEX ERROR"
 
 hashes_file_path = sys.argv[1]
 hashes_file_file = open(hashes_file_path, 'r')
@@ -61,8 +56,7 @@ if OPTION_VENDOR:
 	def mac2ven(mac):
 		mac2check = mac.replace(":", "").replace("-", "").upper()[0:6]
 		for i in mac2ven_cache:
-			if mac2check == i[0]:
-				return i[1]
+			if mac2check == i[0]: return i[1]
 		for y_ in ouifile_lines:
 			y = y_.replace("\n", "")
 			split = y.split("\t")
@@ -112,7 +106,7 @@ for hashes_file_line in hashes_file_lines:
 	vendor  = ""
 	vendor2 = ""
 	if OPTION_VENDOR:
-		vendor = mac2ven(bssid)
+		vendor  = mac2ven(bssid)
 		vendor2 = mac2ven(mac)
 
 	items.append([hashLine, type_str, hash, bssid, mac, essid, passwd, vendor, vendor2])
