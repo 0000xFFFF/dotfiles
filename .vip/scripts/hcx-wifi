@@ -1,4 +1,18 @@
 #!/usr/bin/env python3
+ 
+'''
+# TODO:
+ - color
+ - death table
+ - ap select
+
+https://wlan1nde.wordpress.com/page/2/
+https://yasoob.me/2018/09/08/sending-sniffing-wlan-beacon-frames-using-scapy/
+https://bowdennetworks.co.uk/downloads/Scapy%20802.11%20Cheat%20Sheet%20v0.1.pdf
+
+sudo scapy
+sniff(prn=lambda x:x.summary(), iface="wlp0s26u1u2mon")
+'''
 
 import sys
 import termios # getch()
@@ -74,9 +88,11 @@ def clearScreen():
 
 # print string but make sure it fits according to terminal size
 def show(s):
+
 	strings = s.split("\n")
 	tc = os.get_terminal_size().columns
 	tl = os.get_terminal_size().lines
+
 	global g_tc
 	global g_tl
 	if g_tc != tc or g_tl != tl:
@@ -87,6 +103,7 @@ def show(s):
 		il = len(i)
 		if il > tc: print(i[:tc])
 		else:       print(i + str(" " * int(int(tc)-int(il))))
+
 
 
 if OPTION_VENDOR:
@@ -172,23 +189,56 @@ def callback(packet):
 		return # close if
 
 	if enable_probes:
-		ptype = ""
-		has_Dot11ProbeReq  = packet.haslayer(Dot11ProbeReq)
-		has_Dot11ProbeResp = packet.haslayer(Dot11ProbeResp)
 
-		if has_Dot11ProbeReq or has_Dot11ProbeResp:
+		hasNone = False
+
+		ptype = ""
+		station = ""
+		bssid = ""
+
+		if packet.haslayer(Dot11Auth):
+			ptype = "Auth"
+			station = packet[Dot11].addr1.upper()
+			bssid = packet[Dot11].addr2.upper()
+		elif packet.haslayer(Dot11Deauth):
+			ptype = "Deauth"
+			station = packet[Dot11].addr1.upper()
+			bssid = packet[Dot11].addr2.upper()
+		elif packet.haslayer(Dot11AssoReq):
+			ptype = "AssoReq"
+			bssid = packet[Dot11].addr1.upper()
+			station = packet[Dot11].addr2.upper()
+		elif packet.haslayer(Dot11AssoResp):
+			ptype = "AssoResp"
+			station = packet[Dot11].addr1.upper()
+			bssid = packet[Dot11].addr2.upper()
+		elif packet.haslayer(Dot11Disas):
+			ptype = "Disas"
+			station = packet[Dot11].addr1.upper()
+			bssid = packet[Dot11].addr2.upper()
+		elif packet.haslayer(Dot11ReassoReq):
+			ptype = "ReassoReq"
+			bssid = packet[Dot11].addr1.upper()
+			station = packet[Dot11].addr2.upper()
+		elif packet.haslayer(Dot11ReassoResp):
+			ptype = "ReassoResp"
+			station = packet[Dot11].addr1.upper()
+			bssid = packet[Dot11].addr2.upper()
+		elif packet.haslayer(Dot11ProbeReq):
+			ptype = "ProbeReq"
+			bssid = packet[Dot11].addr1.upper()
+			station = packet[Dot11].addr2.upper()
+		elif packet.haslayer(Dot11ProbeResp):
+			ptype = "ProbeResp"
+			station = packet[Dot11].addr1.upper()
+			bssid = packet[Dot11].addr2.upper()
+		else:
+			hasNone = True
+
+		if not hasNone:
 			ptype = ""
 			bssid = ""
 			station = ""
-
-			if has_Dot11ProbeReq:
-				ptype = "ProbeReq"
-				bssid = packet[Dot11].addr1.upper()
-				station = packet[Dot11].addr2.upper()
-			if has_Dot11ProbeResp:
-				ptype = "ProbeResp"
-				bssid = packet[Dot11].addr2.upper()
-				station = packet[Dot11].addr1.upper()
 
 			try:    essid = packet[Dot11Elt].info.decode()
 			except: essid = ""
@@ -230,11 +280,8 @@ def callback(packet):
 				lst[probe_clm_vendor]  = mac2ven(station)
 				lst[probe_clm_packets] = 1
 				probes.append(lst)
-
+		
 	# has_Dot11Deauth    = packet.haslayer(Dot11Deauth)
-
-
-
 
 def updateUI():
 
@@ -371,12 +418,15 @@ if __name__ == "__main__":
 			print("  q     - quit")
 			print("  s     - change sorting column")
 			print("  a     - change sorting order")
-			print("  x     - clear wifi (beacon) table")
-			print("  X     - show/hide wifi (beacon) table")
+			print("  x     - clear wifi table")
+			print("  X     - show/hide wifi table")
 			print("  z     - clear probe table")
 			print("  Z     - show/hide probe table")
 			print("  p     - toggle probe info collection")
 			print("  SPACE - pause")
+			print("")
+			print(" * wifi table  - Dot11Beacon")
+			print(" * probe table - Dot11ProbeReq, Dot11ProbeResp, ...")
 			exit()
 
 		if not is_root():
@@ -443,8 +493,12 @@ if __name__ == "__main__":
 				else:           status = "show probes: off"
 			elif pressedKey == "p":
 				enable_probes = (not enable_probes)
-				if enable_probes: status = "probe collection: on"
-				else:             status = "probe collection: off"
+				if enable_probes:
+					status = "probe collection: on"
+					show_probes = True
+				else:
+					status = "probe collection: off"
+					show_probes = False
 			elif pressedKey == " ":
 				if pauseUI_evt.is_set():
 					pauseUI_evt.clear()
