@@ -1,40 +1,123 @@
 #!/usr/bin/env python3
+ 
+'''
+# TODO:
+ - color
+ - change key binding (make them better)
+ - ap select
+
+https://wlan1nde.wordpress.com/page/2/
+https://yasoob.me/2018/09/08/sending-sniffing-wlan-beacon-frames-using-scapy/
+https://bowdennetworks.co.uk/downloads/Scapy%20802.11%20Cheat%20Sheet%20v0.1.pdf
+
+sudo scapy
+sniff(prn=lambda x:x.summary(), iface="wlp0s26u1u2mon")
+'''
+
+import sys
+import termios # getch()
+import time
+import atexit
 
 from scapy.all import *
 from threading import Thread
-import pandas as pd
-import time
 from datetime import datetime
-import atexit
+from tabulate import tabulate
+from operator import itemgetter
 from colorama import Fore, Back, Style
-import sys, tty, termios # getch()
 
+# global stuff
 running = True
+status = ("STARTED: " + datetime.now().strftime("%Y-%m-%d %H:%M:%S")) # UI status
+show_wifi     = True
+show_auths    = True
+show_probes   = False
+enable_wifi   = True
+enable_auths  = True
+enable_probes = False
+match_bssid   = True # match bssid's from wifi table and just assign index ("#")
+fetch_vendor  = True # fetch vendor name from mac
+
+# channels to use
+#channels = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 ]
+channels = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ]
+ch = 1 # current channel
+
+# wifi (beacon) table
+wifis = []
+wifi_clms = ["BSSID", "ESSID", "PASSWORD", "PWR", "LAST SEEN", "#", "CH", "CRYPTO", "TIMESTAMP", "PACKETS" ]
+wifi_clms_len = len(wifi_clms)
+wifi_clm_bssid     = 0
+wifi_clm_essid     = 1
+wifi_clm_passwd    = 2
+wifi_clm_pwr       = 3
+wifi_clm_lastseen  = 4
+wifi_clm_num       = 5
+wifi_clm_ch        = 6
+wifi_clm_crypto    = 7
+wifi_clm_timestamp = 8
+wifi_clm_packets   = 9
+
+sortBy = "#"
+sortBy_reverse = False
+
+# auth table
+auths = []
+auth_clms = [ "TYPE", "ADDR1", "ADDR2", "ESSID", "CH", "PWR", "LAST SEEN", "MAC TIMESTAMP", "PACKETS", "VENDOR1", "VENDOR2" ]
+auth_clms_len = len(auth_clms)
+auth_clm_type      = 0
+auth_clm_addr1     = 1
+auth_clm_addr2     = 2
+auth_clm_essid     = 3
+auth_clm_ch        = 4
+auth_clm_pwr       = 5
+auth_clm_lastseen  = 6
+auth_clm_timestamp = 7
+auth_clm_packets   = 8
+auth_clm_vendor1   = 9
+auth_clm_vendor2   = 10
+
+# probe table
+probes = []
+probe_clms = [ "TYPE", "STATION", "BSSID", "ESSID", "CH", "PWR", "LAST SEEN", "MAC TIMESTAMP", "PACKETS", "VENDOR" ]
+probe_clms_len = len(probe_clms)
+probe_clm_type      = 0
+probe_clm_station   = 1
+probe_clm_bssid     = 2
+probe_clm_essid     = 3
+probe_clm_ch        = 4
+probe_clm_pwr       = 5
+probe_clm_lastseen  = 6
+probe_clm_timestamp = 7
+probe_clm_packets   = 8
+probe_clm_vendor    = 9
+
+# 
+# global things to not touch
+#
+updateUI_mutex = threading.Lock()
 pauseUI_evt = threading.Event()
 pauseUI_evt.set()
-
+pauseCHHOP_evt = threading.Event()
+pauseCHHOP_evt.set()
 g_tc = os.get_terminal_size().columns
 g_tl = os.get_terminal_size().lines
-ch = 1
-
-columns = ["BSSID", "#", "SSID", "PWR", "CH", "CRYPTO", "TIMESTAMP", "PACKETS", "LAST SEEN", "PASSWORD"]
-sortBy = "PWR"
-sortBy_ascending = False
-
-wifi = pd.DataFrame(columns=columns)
-wifi.set_index("BSSID", inplace=True)
-
+# password list from csv file
+passwords = [] # BSSID, ESSID, PASSWORD
 passwords_count = 0
+
 
 def clearScreen():
 	os.system("clear")
 
 # print string but make sure it fits according to terminal size
 def show(s):
+
 	strings = s.split("\n")
 	tc = os.get_terminal_size().columns
 	tl = os.get_terminal_size().lines
-	global g_tc
+
+	global g_tc 
 	global g_tl
 	if g_tc != tc or g_tl != tl:
 		g_tc = tc
@@ -46,6 +129,33 @@ def show(s):
 		else:       print(i + str(" " * int(int(tc)-int(il))))
 
 
+if fetch_vendor:
+	ouifile_path = "/home/user/.vip/scripts/mac2ven.lst"
+	ouifile = open(ouifile_path, 'r')
+	ouifile_lines = ouifile.readlines()
+	ouifile.close()
+
+	mac2ven_cache = [] # this makes if way faster
+	def mac2ven(mac):
+		mac2check = mac.replace(":", "").replace("-", "").upper()[0:6]
+		for i in mac2ven_cache:
+			if mac2check == i[0]: return i[1]
+		for y_ in ouifile_lines:
+			y = y_.replace("\n", "")
+			split = y.split("\t")
+			split_l = len(split)
+			oui_mac = ""
+			oui_ven = ""
+			if split_l >= 1: oui_mac = split[0]
+			if split_l >= 2: oui_ven = split[1]
+			if mac2check == oui_mac:
+				mac2ven_cache.append([oui_mac, oui_ven])
+				return oui_ven
+		return ""
+else:
+	def mac2ven(mac):
+		return ""
+
 # sniff callback
 # this is what updates the wifi list
 def callback(packet):
@@ -53,7 +163,7 @@ def callback(packet):
 		bssid = packet[Dot11].addr2.upper()
 		essid = packet[Dot11Elt].info.decode()
 		try:    dbm_signal = packet.dBm_AntSignal
-		except: dbm_signal = "N/A"
+		except: dbm_signal = ""
 		stats = packet[Dot11Beacon].network_stats()
 		channel = stats.get("channel")
 		crypto  = stats.get("crypto")
@@ -61,21 +171,180 @@ def callback(packet):
 		lastseen =  datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 		passwd = ""
 
-		global passwords
-		for i in passwords:
-			match_bssid = str(bssid).replace(":", "").replace("-", "").lower()
-			match_i     =  str(i[0]).replace(":", "").replace("-", "").lower()
-			if match_bssid == match_i and essid == i[1]:
-				passwd = i[2]
+		# check if wifi exists
+		hasWifi = False
+		index = 0
+		for i in range(0, len(wifis)):
+			index = i
+			if wifis[i][wifi_clm_bssid] == bssid:
+				hasWifi = True
 				break
 
-		try:
-			if not wifi.loc[bssid].empty:
-				wifi.loc[bssid] = (wifi.loc[bssid][0], essid, dbm_signal, channel, crypto, timestamp, wifi.loc[bssid][6]+1, lastseen, passwd)
-		except KeyError:
-			wifi.loc[bssid] = (len(wifi.index), essid, dbm_signal, channel, crypto, timestamp, 1, lastseen, passwd)
+		lst = [None] * wifi_clms_len
+		lst[wifi_clm_bssid]     = bssid
+		lst[wifi_clm_essid]     = essid
+		lst[wifi_clm_pwr]       = dbm_signal
+		lst[wifi_clm_lastseen]  = lastseen
+		lst[wifi_clm_ch]        = channel
+		lst[wifi_clm_crypto]    = crypto
+		lst[wifi_clm_timestamp] = timestamp
+		
+		if hasWifi:
+			lst[wifi_clm_num]     = wifis[index][wifi_clm_num]
+			lst[wifi_clm_packets] = wifis[index][wifi_clm_packets]+1
+			lst[wifi_clm_passwd]  = wifis[index][wifi_clm_passwd]
+			wifis[index] = lst
+		else:
+			global passwords_count
+			if passwords_count:
+				global passwords
+				for i in passwords:
+					match_bssid = str(bssid).replace(":", "").replace("-", "").lower()
+					match_i     =  str(i[0]).replace(":", "").replace("-", "").lower()
+					if match_bssid == match_i and essid == i[1]:
+						passwd = i[2]
+						break
+			lst[wifi_clm_num]     = len(wifis)+1
+			lst[wifi_clm_packets] = 1
+			lst[wifi_clm_passwd]  = passwd
+			wifis.append(lst)
+		
+		return # close if
 
-updateUI_mutex = threading.Lock()
+	if enable_auths:
+		hasNone = False
+
+		ptype = ""
+		addr1 = ""
+		addr2 = ""
+		addr3 = ""
+
+		if   packet.haslayer(Dot11Auth):       ptype = "Auth"
+		elif packet.haslayer(Dot11Deauth):     ptype = "Deauth"
+		elif packet.haslayer(Dot11AssoReq):    ptype = "AssoReq"
+		elif packet.haslayer(Dot11AssoResp):   ptype = "AssoResp"
+		elif packet.haslayer(Dot11Disas):      ptype = "Disas"
+		elif packet.haslayer(Dot11ReassoReq):  ptype = "ReassoReq"
+		elif packet.haslayer(Dot11ReassoResp): ptype = "ReassoResp"
+		else: hasNone = True
+		
+		if not hasNone:
+			try:    addr1 = packet.addr1.upper()
+			except: addr1 = ""
+			try:    addr2 = packet.addr2.upper()
+			except: addr2 = ""
+			try:    essid = packet[Dot11Elt].info.decode()
+			except: essid = ""
+			try:    channel = packet.channel
+			except: channel = ""
+			try:    dbm_signal = packet.dBm_AntSignal
+			except: dbm_signal = ""
+			lastseen =  datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+			try:    timestamp = packet.mac_timestamp
+			except: timestamp = ""
+
+			# check if auth exists
+			hasAuth = False
+			index = 0
+			for i in range(0, len(auths)):
+				index = i
+				if auths[i][auth_clm_type] == ptype and auths[i][auth_clm_addr1] == addr1 and auths[i][auth_clm_addr2] == addr2:
+					hasAuth = True
+					break
+
+			lst = [None] * auth_clms_len
+			lst[auth_clm_type]      = ptype
+			lst[auth_clm_addr1]     = addr1
+			lst[auth_clm_addr2]     = addr2
+			lst[auth_clm_essid]     = essid
+			lst[auth_clm_ch]        = channel
+			lst[auth_clm_pwr]       = dbm_signal
+			lst[auth_clm_lastseen]  = lastseen
+			lst[auth_clm_timestamp] = timestamp
+
+			if hasAuth:
+				lst[auth_clm_packets] = auths[index][auth_clm_packets]+1
+				lst[auth_clm_vendor1] = auths[index][auth_clm_vendor1]
+				lst[auth_clm_vendor2] = auths[index][auth_clm_vendor2]
+				auths[index] = lst
+			else:
+				lst[auth_clm_packets] = 1
+				lst[auth_clm_vendor1]  = mac2ven(addr1)
+				lst[auth_clm_vendor2]  = mac2ven(addr2)
+				auths.append(lst)
+
+	if enable_probes:
+		hasNone = False
+		ptype = ""
+		station = ""
+		bssid = ""
+
+		if packet.haslayer(Dot11ProbeReq):
+			ptype = "ProbeReq"
+			bssid = packet[Dot11].addr1.upper()
+			station = packet[Dot11].addr2.upper()
+		elif packet.haslayer(Dot11ProbeResp):
+			ptype = "ProbeResp"
+			station = packet[Dot11].addr1.upper()
+			bssid = packet[Dot11].addr2.upper()
+		else:
+			hasNone = True
+
+		if not hasNone:
+			ptype = ""
+			bssid = ""
+			station = ""
+
+			try:    essid = packet[Dot11Elt].info.decode()
+			except: essid = ""
+			try:    channel = packet.channel
+			except: channel = ""
+			try:    dbm_signal = packet.dBm_AntSignal
+			except: dbm_signal = ""
+			lastseen =  datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+			try:    timestamp = packet.mac_timestamp
+			except: timestamp = ""
+
+			# check if probe exists
+			hasProbe = False
+			index = 0
+			for i in range(0, len(probes)):
+				index = i
+				if probes[i][probe_clm_station] == station and probes[i][probe_clm_type] == ptype:
+					hasProbe = True
+					break
+
+			lst = [None] * probe_clms_len
+			lst[probe_clm_type]      = ptype
+			lst[probe_clm_station]   = station
+			lst[probe_clm_essid]     = essid
+			lst[probe_clm_ch]        = channel
+			lst[probe_clm_pwr]       = dbm_signal
+			lst[probe_clm_lastseen]  = lastseen
+			lst[probe_clm_timestamp] = timestamp
+
+			if hasProbe:
+				lst[probe_clm_bssid] = probes[index][probe_clm_bssid]
+				if not bssid in lst[probe_clm_bssid]: lst[probe_clm_bssid].append(bssid)
+				lst[probe_clm_packets] = probes[index][probe_clm_packets]+1
+				lst[probe_clm_vendor]  = probes[index][probe_clm_vendor]
+				probes[index] = lst
+			else:
+				lst[probe_clm_bssid] = []
+				lst[probe_clm_bssid].append(bssid)
+				lst[probe_clm_vendor]  = mac2ven(station)
+				lst[probe_clm_packets] = 1
+				probes.append(lst)
+
+
+# find bssid in wifi table and return index
+def bssid2index(mac):
+	if mac == "FF:FF:FF:FF:FF:FF": return "*"
+	for i in wifis:
+		if mac == i[wifi_clm_bssid]: return str(i[wifi_clm_num])
+
+def numlist2str(numlst):
+	return str(numlst).replace(" ", "").replace("[", "").replace("]", "").replace("'", "")
 
 def updateUI():
 
@@ -88,22 +357,64 @@ def updateUI():
 	timestr = now
 
 	arrowChar = "\u2193"
-	if sortBy_ascending: arrowChar = "\u2191"
+	if sortBy_reverse: arrowChar = "\u2191"
 
 	# set print pos to 0x0
 	print("\033[0;0H", end='')
 
-	status = ""
-
-	if not pauseUI_evt.is_set():
-		status = "PAUSED"
-
 	# display stuff
 	show(f"CH {str(ch).rjust(2)} | {str(timestr).ljust(26)} | PASS: {passwords_count} | {status}")
-	show(f"COUNT: {len(wifi.index)}")
+	show(f"COUNT: {len(wifis)}")
 	show(f"SORT BY: {arrowChar} {sortBy}")
-	show(str(wifi.sort_values(sortBy, ascending=sortBy_ascending)))
-	show("\n")
+
+	if show_wifi:
+		wifis_sorted = sorted(wifis, key=itemgetter(wifi_clms.index(sortBy)), reverse=sortBy_reverse)
+		show(str(tabulate(wifis_sorted, headers=wifi_clms)))
+		show("\n")
+
+	if show_auths:
+		if match_bssid:
+			auths_static = []
+			auths_dupe = []
+			for i in auths:
+				x = i.copy()
+				auths_static.append(x)
+				auths_dupe.append(x)
+
+			for index in range(len(auths_static)): # for each auth
+				addr1_index = bssid2index(auths_static[index][auth_clm_addr1])
+				addr2_index = bssid2index(auths_static[index][auth_clm_addr2])
+				if addr1_index: auths_dupe[index][auth_clm_addr1] = addr1_index
+				if addr2_index: auths_dupe[index][auth_clm_addr2] = addr2_index
+			
+			show(str(tabulate(auths_dupe, headers=auth_clms)))
+			show("\n")
+		else:
+			show(str(tabulate(auths, headers=auth_clms)))
+			show("\n")
+
+	if show_probes:
+		if match_bssid:
+			probes_static = []
+			probes_dupe = []
+			for i in probes:
+				x = i.copy()
+				probes_static.append(x)
+				probes_dupe.append(x)
+
+			for index in range(len(probes_static)): # for each probe
+				nums = []
+				for y in probes_static[index][probe_clm_bssid]: # for each probe's bssids
+					index_str = bssid2index(y)
+					if index_str and (not index_str in nums): nums.append(index_str)
+					else: nums.append(y)
+				probes_dupe[index][probe_clm_bssid] = numlist2str(nums)
+			
+			show(str(tabulate(probes_dupe, headers=probe_clms)))
+			show("\n")
+		else:
+			show(str(tabulate(probes, headers=probe_clms)))
+			show("\n")
 
 	updateUI_mutex.release()
 
@@ -111,24 +422,38 @@ def updateUI():
 def thread_updateUI():
 	global running
 	while running:
-		if not pauseUI_evt.is_set():
-			pauseUI_evt.wait()
+		if not pauseUI_evt.is_set(): pauseUI_evt.wait()
 		updateUI()
 		time.sleep(0.1)
 
-channels = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 ]
+def channel_get(): return os.popen(f"iw '{interface}' info | grep channel | awk -P '{{print $2}}'").read().replace("\n", "")
+def channel_set(i): os.system(f"sudo iw dev '{interface}' set channel {i}")
 
-def hopch(i):
-	os.system(f"sudo iw dev '{interface}' set channel {i}")
+# next channel
+def hopch():
+	found = False
+	isSet = False
+	global channels
+	global ch
+	while True:
+		for i in channels:
+			if found:
+				ch = i
+				channel_set(i)
+				isSet = True
+				break
+			if i == ch:
+				found = True
+				continue
+		if isSet:
+			break
 
 def thread_hopch():
-	global ch
 	global running
 	while running:
-		for i in range(1, 15):
-			ch = i
-			hopch(i)
-			time.sleep(1)
+		if not pauseCHHOP_evt.is_set(): pauseCHHOP_evt.wait()
+		hopch()
+		time.sleep(1)
 
 def getch():
 	old_settings = termios.tcgetattr(0)
@@ -141,13 +466,14 @@ def getch():
 		termios.tcsetattr(0, termios.TCSANOW, old_settings)
 	return ch
 
+# next sorting order
 def changeSorting():
 	found = False
 	isSet = False
-	global columns
+	global wifi_clms
 	global sortBy
 	while True:
-		for i in columns:
+		for i in wifi_clms:
 			if found:
 				sortBy = i
 				isSet = True
@@ -170,74 +496,121 @@ def is_root():
 
 if __name__ == "__main__":
 
-	if len(sys.argv) < 3:
-		print("ABOUT: uses scapy to show nearby networks,")
-		print("       and trys to match them with the csv password list")
-		print("USAGE: " + sys.argv[0] + " <interface(mon)> <wifipasslst.csv>")
-		print("KEY COMMANDS:")
-		print("  q       - quit")
-		print("  s       - change sorting column")
-		print("  a       - change sorting order")
-		print("  x       - clear table")
-		print("  p/SPACE - pause")
-		exit()
+	try:
 
-	if not is_root():
-		print("use root.")
-		exit()
+		argv_len = len(sys.argv)
 
-	interface = sys.argv[1]
-	file_pass_path = sys.argv[2]
-	file_pass = open(file_pass_path, 'r')
-	file_pass_lines = file_pass.readlines()
-	file_pass.close()
-
-	passwords = [] # BSSID, #ESSID, #PASSWORD
-	for i_ in file_pass_lines:
-		i = i_.replace("\n", "")
-		isplit = i.split("|||")
-		if len(isplit) >= 3:
-			passwords.append([isplit[0],isplit[1],isplit[2]])
-	passwords_count = len(passwords)
-
-	# clear screen and hide cursor
-	clearScreen()
-	print("\033[?25l")
-
-	# threads (print / channel hopper)
-	th_ui    = Thread(target=thread_updateUI) ; th_ui.daemon = True
-	th_hop   = Thread(target=thread_hopch)    ; th_hop.daemon = True
-    
-	# start all threads
-	th_ui.start()
-	th_hop.start()
-
-	# start sniffing
-	th_sniff = AsyncSniffer(prn=callback, iface=interface)
-	th_sniff.start()
-
-	# handle key input
-	while running:
-		try:
-			pressedKey = getch()
-		except KeyboardInterrupt:
+		if argv_len < 2:
+			print("ABOUT: uses scapy to show nearby networks,")
+			print("       (optional) and trys to match them with the csv password list")
+			print("USAGE: " + sys.argv[0] + " <interface(mon)> <wifipasslst.csv(optional)>")
+			print("KEY COMMANDS:")
+			print("  q     - quit")
+			print("  s     - change sorting column")
+			print("  a     - change sorting order")
+			print("  x     - clear wifi table")
+			print("  X     - show/hide wifi table")
+			print("  z     - clear probe table")
+			print("  Z     - show/hide probe table")
+			print("  p     - toggle probe info collection")
+			print("  C     - toggle auto channel hopping")
+			print("  c     - change channel")
+			print("  SPACE - pause")
+			print("")
+			print(" * wifi table  - Dot11Beacon")
+			print(" * probe table - Dot11ProbeReq, Dot11ProbeResp, ...")
 			exit()
 
-		if pressedKey == "q":
-			running = False
+		if not is_root():
+			print("use root.")
 			exit()
-		elif pressedKey == "s":
-			changeSorting()
-		elif pressedKey == "a":
-			clearScreen()
-			sortBy_ascending = (not sortBy_ascending)
-		elif pressedKey == "x":
-			wifi = wifi[0:0]
-		elif pressedKey == "p" or pressedKey == " ":
-			if pauseUI_evt.is_set():
-				pauseUI_evt.clear()
-			else:
-				pauseUI_evt.set()
 
+		interface = sys.argv[1]
+
+		if argv_len >= 3:
+			file_pass_path = sys.argv[2]
+			file_pass = open(file_pass_path, 'r')
+			file_pass_lines = file_pass.readlines()
+			file_pass.close()
+			for i_ in file_pass_lines:
+				i = i_.replace("\n", "")
+				isplit = i.split("|||")
+				if len(isplit) >= 3:
+					passwords.append([isplit[0],isplit[1],isplit[2]])
+			passwords_count = len(passwords)
+
+		# clear screen and hide cursor
 		clearScreen()
-		updateUI()
+		print("\033[?25l")
+
+		# threads (print / channel hopper)
+		th_ui  = Thread(target=thread_updateUI)
+		th_hop = Thread(target=thread_hopch)
+	
+		# start all threads
+		th_ui.start()
+		th_hop.start()
+
+		# start sniffing
+		th_sniff = AsyncSniffer(prn=callback, iface=interface)
+		th_sniff.start()
+
+		# handle key input
+		while running:
+			pressedKey = getch()
+
+			if pressedKey == "q":
+				running = False # send signal for the threads to close
+				th_ui.join()
+				th_hop.join()
+				exit()
+			elif pressedKey == "s":
+				changeSorting()
+			elif pressedKey == "a":
+				clearScreen()
+				sortBy_reverse = (not sortBy_reverse)
+			elif pressedKey == "x":
+				wifis = []
+				status = "cleared wifi table"
+			elif pressedKey == "X":
+				show_wifi = (not show_wifi)
+				if show_wifi: status = "show wifi: on"
+				else:         status = "show wifi: off"
+			elif pressedKey == "z":
+				probes = []
+				status = "cleared probe table"
+			elif pressedKey == "Z":
+				show_probes = (not show_probes)
+				if show_probes: status = "show probes: on"
+				else:           status = "show probes: off"
+			elif pressedKey == "p":
+				enable_probes = (not enable_probes)
+				if enable_probes:
+					status = "probe collection: on"
+					show_probes = True
+				else:
+					status = "probe collection: off"
+					show_probes = False
+			elif pressedKey == " ":
+				if pauseUI_evt.is_set():
+					pauseUI_evt.clear()
+					status = "RESUMED"
+				else:
+					pauseUI_evt.set()
+					status = "PAUSED"
+			elif pressedKey == "C":
+				if pauseCHHOP_evt.is_set():
+					pauseCHHOP_evt.clear()
+					status = "PAUSED CHANNEL HOPPER"
+				else:
+					pauseCHHOP_evt.set()
+					status = "RESUMED CHANNEL HOPPER"
+			elif pressedKey == "c":
+				hopch()
+
+			clearScreen()
+			updateUI()
+	except KeyboardInterrupt:
+		print("Quitting...")
+		running = False
+		quit()

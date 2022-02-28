@@ -105,28 +105,39 @@ g_tl = os.get_terminal_size().lines
 # password list from csv file
 passwords = [] # BSSID, ESSID, PASSWORD
 passwords_count = 0
+show_counter = 0
 
 
 def clearScreen():
 	os.system("clear")
 
 # print string but make sure it fits according to terminal size
+def show2(s):
+	global show_counter
+	tl = os.get_terminal_size().lines
+	if show_counter >= (tl-1): return
+	print(s)
+	show_counter += 1
+
+
 def show(s):
+
+	global g_tc 
+	global g_tl
 
 	strings = s.split("\n")
 	tc = os.get_terminal_size().columns
 	tl = os.get_terminal_size().lines
 
-	global g_tc 
-	global g_tl
 	if g_tc != tc or g_tl != tl:
 		g_tc = tc
 		g_tl = tl
 		clearScreen()
+	
 	for i in strings:
 		il = len(i)
-		if il > tc: print(i[:tc])
-		else:       print(i + str(" " * int(int(tc)-int(il))))
+		if il > tc: show2(i[:tc])
+		else:       show2(i + str(" " * int(int(tc)-int(il))))
 
 
 if fetch_vendor:
@@ -352,6 +363,7 @@ def updateUI():
 
 	# get vars
 	global ch
+	global show_counter
 	now = datetime.now()
 	#timestr = now.strftime("%Y-%m-%d %H:%M:%S.%f")
 	timestr = now
@@ -361,8 +373,10 @@ def updateUI():
 
 	# set print pos to 0x0
 	print("\033[0;0H", end='')
+	show_counter = 0 # reset show counter
 
 	# display stuff
+	show(f"COUNTER: {show_counter}")
 	show(f"CH {str(ch).rjust(2)} | {str(timestr).ljust(26)} | PASS: {passwords_count} | {status}")
 	show(f"COUNT: {len(wifis)}")
 	show(f"SORT BY: {arrowChar} {sortBy}")

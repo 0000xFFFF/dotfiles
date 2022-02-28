@@ -55,6 +55,7 @@ alias \
 	nf="neofetch" \
 	cursor_show="printf '\033[?25h'" \
 	cursor_hide="printf '\033[?25l'" \
+	clear2="printf '\033[0;0H'" \
 
 # site
 alias \

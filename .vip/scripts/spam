@@ -3,8 +3,11 @@
 SLEEPTIME="$2"
 [ -z "$SLEEPTIME" ] && SLEEPTIME="0.3"
 
+clear
+
 while true
 do
+	clear2
 	eval "$1"
 	sleep "$SLEEPTIME"
 done
