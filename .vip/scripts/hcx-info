@@ -79,7 +79,7 @@ else:
 if OPTION_PASSWD:
 	hashcat_items = []
 	try:
-		hashcat = subprocess.Popen(['hashcat2', '-m', '22000', '--show', hashes_file_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		hashcat = subprocess.Popen(['hashcat', '-m', '22000', '--show', hashes_file_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 		for potfile_file_line in hashcat.stdout.read().decode().split("\n"):
 			if not potfile_file_line: continue
 			clms = potfile_file_line.split(":")
