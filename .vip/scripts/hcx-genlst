@@ -39,7 +39,7 @@ def genlst(word, callback):
 
 	for i in sufix:
 		callback(word, i)
-	for i in range(0, 100001):
+	for i in range(0, 10001): # 100001
 		callback(word, str(i))
 	for x in range(2, 6):
 		for y in range(0, 10 ** (x-1)):

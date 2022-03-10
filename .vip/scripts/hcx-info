@@ -47,13 +47,16 @@ hashes_file_lines = hashes_file_file.readlines()
 hashes_file_file.close()
 
 if OPTION_VENDOR:
-	ouifile_path = os.path.expanduser('~') + "/.vip/scripts/mac2ven.lst"
-	ouifile = open(ouifile_path, 'r')
-	ouifile_lines = ouifile.readlines()
-	ouifile.close()
+	ouifile_path = "/home/user/.vip/scripts/mac2ven.lst"
+	try:
+		ouifile = open(ouifile_path, 'r')
+		ouifile_lines = ouifile.readlines()
+		ouifile.close()
+	except FileNotFoundError: ouifile_lines = []
 
 	mac2ven_cache = [] # this makes if way faster
 	def mac2ven(mac):
+		if len(ouifile_lines) == 0: return ""
 		mac2check = mac.replace(":", "").replace("-", "").upper()[0:6]
 		for i in mac2ven_cache:
 			if mac2check == i[0]: return i[1]
@@ -75,11 +78,14 @@ else:
 
 if OPTION_PASSWD:
 	hashcat_items = []
-	hashcat = subprocess.Popen(['hashcat', '-m', '22000', '--show', hashes_file_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-	for potfile_file_line in hashcat.stdout.read().decode().split("\n"):
-		if not potfile_file_line: continue
-		clms = potfile_file_line.split(":")
-		hashcat_items.append([clms[0], clms[4]])
+	try:
+		hashcat = subprocess.Popen(['hashcat2', '-m', '22000', '--show', hashes_file_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		for potfile_file_line in hashcat.stdout.read().decode().split("\n"):
+			if not potfile_file_line: continue
+			clms = potfile_file_line.split(":")
+			hashcat_items.append([clms[0], clms[4]])
+	except FileNotFoundError:
+		pass
 
 items = []
 counter = 0

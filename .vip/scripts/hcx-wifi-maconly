@@ -3,16 +3,19 @@
 import sys
 from scapy.all import *
 
-OPTION_VENDOR = 1
+fetch_vendor = 1
 
-if OPTION_VENDOR:
+if fetch_vendor:
 	ouifile_path = "/home/user/.vip/scripts/mac2ven.lst"
-	ouifile = open(ouifile_path, 'r')
-	ouifile_lines = ouifile.readlines()
-	ouifile.close()
+	try:
+		ouifile = open(ouifile_path, 'r')
+		ouifile_lines = ouifile.readlines()
+		ouifile.close()
+	except FileNotFoundError: ouifile_lines = []
 
 	mac2ven_cache = [] # this makes if way faster
 	def mac2ven(mac):
+		if len(ouifile_lines) == 0: return ""
 		mac2check = mac.replace(":", "").replace("-", "").upper()[0:6]
 		for i in mac2ven_cache:
 			if mac2check == i[0]: return i[1]
@@ -30,7 +33,7 @@ if OPTION_VENDOR:
 		return ""
 else:
 	def mac2ven(mac):
-		return "UNK"
+		return ""
 
 channels = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ]
 
