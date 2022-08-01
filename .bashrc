@@ -143,7 +143,7 @@ alias \
 	yta="youtube-dl -i --extract-audio --audio-format mp3 -f bestaudio/best -o '%(title)s.%(ext)s'" \
 	corona="curl https://corona-stats.online" \
 	coronars="curl https://corona-stats.online/serbia" \
-	dldotfiles="git clone 'https://www.github.com/0xC0LD/dotfiles'"
+	dldotfiles="git clone 'https://www.github.com/0000xFFFF/dotfiles'"
 
 # CD shortcuts
 alias \
