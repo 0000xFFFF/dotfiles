@@ -39,27 +39,43 @@ selected = 0
 menu_calls = 0
 
 mutex = Lock()
+mutex_runprog = Lock()
 
 proc = 0
 
-def doAction():
+
+def runprog_thread(lst):
+    mutex_runprog.acquire()
     global proc
+    proc = subprocess.Popen(lst)
+    mutex_runprog.release()
+    print(f"started PID: {proc.pid}")
+    os.waitpid(proc.pid, 0)
+    print(f"died: {proc.pid}")
+
+def runprog(lst):
+    t = Thread(target = runprog_thread, args = (lst))
+    t.start()
+
+# TODO: kill process menu
+#       start every process in diff thread
+
+def doAction():
     if selected == 0: return
-    elif selected == 1: proc = subprocess.Popen(["airmon-ng"])
-    elif selected == 2: proc = subprocess.Popen(["airmon-ng", "start", "wlan1"])
-    elif selected == 3: proc = subprocess.Popen(["airmon-ng", "stop", "wlan1"])
-    elif selected == 4: proc = subprocess.Popen(["/home/pi/.vip/scripts/hcx-wifi", "wlan1mon"])
-    elif selected == 5: proc = subprocess.Popen(["tail", "-f", "/home/pi/Dump/*.log"])
-    elif selected == 6: proc = subprocess.Popen(["/home/pi/.vip/scripts/pi_log"])
-    elif selected == 7: proc = subprocess.Popen(["/home/pi/.vip/scripts/pi_hcxdumptool_start"])
+    elif selected == 1: runprog(["airmon-ng"])
+    elif selected == 2: runprog(["airmon-ng", "start", "wlan1"])
+    elif selected == 3: runprog(["airmon-ng", "stop", "wlan1"])
+    elif selected == 4: runprog(["/home/pi/.vip/scripts/hcx-wifi", "wlan1mon"])
+    elif selected == 5: runprog(["/home/pi/.vip/scripts/pi_dump"])
+    elif selected == 6: runprog(["/home/pi/.vip/scripts/pi_log"])
+    elif selected == 7: runprog(["/home/pi/.vip/scripts/pi_log1"])
+    elif selected == 8: runprog(["/home/pi/.vip/scripts/pi_hcxdumptool_start"])
+    elif selected == 9: runprog(["/home/pi/.vip/scripts/pi_hcxdumptool_start_quiet"])
 
 def killProc():
     global proc
-    pid = proc.pid
-    os.kill(pid, signal.SIGKILL)
-
-OPT_MIN = 0
-OPT_MAX = 7
+    print(f"KILL: {proc.pid}")
+    os.kill(proc.pid, signal.SIGTERM)
 
 menu_items = [
     [0, ""],
@@ -67,10 +83,17 @@ menu_items = [
     [2, "airmon-ng start wlan1"],
     [3, "airmon-ng stop wlan1"],
     [4, "hcx-wifi wlan1"],
-    [5, "tail -f /home/pi/Dump/*.log"],
+    [5, "pi_dump"],
     [6, "pi_log"],
-    [7, "pi_hcxdumptool_start"]
+    [7, "pi_log1"],
+    [8, "pi_hcxdumptool_start"],
+    [9, "pi_hcxdumptool_start_quiet"]
 ]
+
+OPT_MIN = 0
+OPT_MAX = len(menu_items) - 1
+
+
 
 def menu(keyPress):
 
@@ -92,11 +115,9 @@ def menu(keyPress):
     elif selected < OPT_MIN: selected = OPT_MIN
 
     # draw
-    print("K:",keyPress,menu_calls)
+    print(f"[{keyPress}] | {selected} - {OPT_MIN}/{OPT_MAX} | {menu_calls}")
     print(ts)
-    print("> ",selected)
     print("")
-    print("OPTIONS:")
     for i in menu_items:
         print(f" {'=>' if selected == i[0] else '  '} {i[0]}. {i[1]}")
 
@@ -111,14 +132,16 @@ clearScreen()
 menu(0)
 
 def callbackMenu(channel):
-    if channel == KEY_UP_PIN:    menu(1)
-    if channel == KEY_DOWN_PIN:  menu(2)
-    if channel == KEY_LEFT_PIN:  menu(3)
-    if channel == KEY_RIGHT_PIN: menu(4)
-    if channel == KEY_PRESS_PIN: menu(5)
-    if channel == KEY1_PIN:      menu(6)
-    if channel == KEY2_PIN:      menu(7)
-    if channel == KEY3_PIN:      menu(8)
+    time.sleep(0.01)
+    if GPIO.input(channel) == 1:
+        if channel == KEY_UP_PIN:    menu(1)
+        if channel == KEY_DOWN_PIN:  menu(2)
+        if channel == KEY_LEFT_PIN:  menu(3)
+        if channel == KEY_RIGHT_PIN: menu(4)
+        if channel == KEY_PRESS_PIN: menu(5)
+        if channel == KEY1_PIN:      menu(6)
+        if channel == KEY2_PIN:      menu(7)
+        if channel == KEY3_PIN:      menu(8)
 
 
 GPIO.setmode(GPIO.BCM)
@@ -131,13 +154,16 @@ GPIO.setup(KEY1_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(KEY2_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(KEY3_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-GPIO.add_event_detect(KEY_UP_PIN,    GPIO.RISING, callback=callbackMenu)
-GPIO.add_event_detect(KEY_DOWN_PIN,  GPIO.RISING, callback=callbackMenu)
-GPIO.add_event_detect(KEY_LEFT_PIN,  GPIO.RISING, callback=callbackMenu)
-GPIO.add_event_detect(KEY_RIGHT_PIN, GPIO.RISING, callback=callbackMenu)
-GPIO.add_event_detect(KEY_PRESS_PIN, GPIO.RISING, callback=callbackMenu)
-GPIO.add_event_detect(KEY1_PIN,      GPIO.RISING, callback=callbackMenu)
-GPIO.add_event_detect(KEY2_PIN,      GPIO.RISING, callback=callbackMenu)
-GPIO.add_event_detect(KEY3_PIN,      GPIO.RISING, callback=callbackMenu)
+GPIO.add_event_detect(KEY_UP_PIN,    GPIO.RISING, callback=callbackMenu, bouncetime=10)
+GPIO.add_event_detect(KEY_DOWN_PIN,  GPIO.RISING, callback=callbackMenu, bouncetime=10)
+GPIO.add_event_detect(KEY_LEFT_PIN,  GPIO.RISING, callback=callbackMenu, bouncetime=10)
+GPIO.add_event_detect(KEY_RIGHT_PIN, GPIO.RISING, callback=callbackMenu, bouncetime=10)
+GPIO.add_event_detect(KEY_PRESS_PIN, GPIO.RISING, callback=callbackMenu, bouncetime=10)
+GPIO.add_event_detect(KEY1_PIN,      GPIO.RISING, callback=callbackMenu, bouncetime=10)
+GPIO.add_event_detect(KEY2_PIN,      GPIO.RISING, callback=callbackMenu, bouncetime=10)
+GPIO.add_event_detect(KEY3_PIN,      GPIO.RISING, callback=callbackMenu, bouncetime=10)
 
-input()
+#input()
+
+while True:
+    time.sleep(3)
