@@ -6,7 +6,7 @@ from scapy.all import *
 
 # Dot11ATIM, Dot11Ack, Dot11AssoReq, Dot11AssoResp, Dot11Auth, Dot11Beacon, Dot11Deauth, Dot11Disas, Dot11ProbeReq, Dot11ProbeResp, Dot11ReassoReq, Dot11ReassoResp, LLC
 
-interface = "wlp0s26u1u2mon"
+interface = "wlp0s29u1u3mon"
 
 channels = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ]
 def hopch(i): os.system(f"sudo iw dev '{interface}' set channel {i}")

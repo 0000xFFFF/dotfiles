@@ -31,6 +31,8 @@ common = [
 	"12345678",
 	"123456788",
 	"123456789",
+	"1234567890",
+	"1234567899",
 	"12345678910",
 	"01234567",
 	"012345678",
@@ -63,16 +65,20 @@ for x in range(0, 9+1):
 		ys = str(y) * 4
 		print(f"{xs}{ys}")
 
-# day + month + year
-# year + month + day
+
+
 for x in range(yf, yt):
 	xs = str(x).rjust(4, '0')
 	for y in range(1, 12+1):
 		ys = str(y).rjust(2, '0')
 		for z in range(1, max_month(y, x)+1):
 			zs = str(z).rjust(2, '0')
-			print(f"{zs}{ys}{xs}")
-			print(f"{xs}{ys}{zs}")
+			print(f"{zs}{ys}{xs}") # day + month + year
+			print(f"{xs}{ys}{zs}") # year + month + day
+			print(f"{ys}{zs}{xs}") # month + day + year
+			print(f"{xs}{zs}{ys}") # year + day + month
+			
+			
 
 # year + year
 for x in range(yf, yt):

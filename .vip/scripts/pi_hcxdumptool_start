@@ -3,5 +3,5 @@
 NAME="$(date +"%s")_$RANDOM"
 
 # shellcheck disable=SC2024
-sudo /home/pi/.vip/scripts/pi_hcxdumptool "$NAME" >> "/home/pi/Dump/$NAME.log" 2>&1
+sudo /home/pi/.vip/scripts/pi_hcxdumptool "$NAME" 2>&1 | tee -a "/home/pi/Dump/$NAME.log"
 

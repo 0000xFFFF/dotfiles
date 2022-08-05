@@ -39,8 +39,8 @@ match_bssid   = True # match bssid's from wifi table and just assign index ("#")
 fetch_vendor  = True # fetch vendor name from mac
 
 # channels to use
-#channels = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 ]
-channels = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ]
+channels = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 ]
+#channels = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ]
 ch = 1 # current channel
 
 # wifi (beacon) table

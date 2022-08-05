@@ -13,7 +13,7 @@ trap unhide_cursor EXIT
 printf '\e[?25l'
 
 FILES="$1"
-[ -z "$FILES" ] && FILES="*.log"
+[ -z "$FILES" ] && FILES="/home/pi/Dump/*.log"
 
 tput clear
 
@@ -39,11 +39,11 @@ getoutput() {
 	TIMENOW=$(utc)
 
 	echo -e "\n===[ COUNTERS:"
-	echo -e "\e[95mDATE TIME\e[0m.......................: \e[95m$TIMENOW\e[0m"
-	echo -e "\e[92mBEACON\e[0m + \e[32mHIDDEN\e[0m.................: \e[1;92m$COUNTER_BHB\e[0m (\e[92m$COUNTER_B\e[0m+\e[32m$COUNTER_HB\e[0m)"
-	echo -e "\e[93mPROBE RESPONSE\e[0m + \e[33mROGUE\e[0m..........: \e[1;93m$COUNTER_PRRPR\e[0m (\e[93m$COUNTER_PR\e[0m+\e[33m$COUNTER_RPR\e[0m)"
-	echo -e "\e[36mAUTHENTICATION\e[0m + \e[1;36m(RE)\e[0m\e[96mASSOCIATION\e[0m: \e[1;96m$COUNTER_AUASRAS\e[0m (\e[36m$COUNTER_AU\e[0m+\e[1;36m$COUNTER_RAS\e[0m+\e[96m$COUNTER_AS\e[0m)"
-	echo -e "\e[31mPMKID\e[0m + \e[91mPMKIDROGUE\e[0m + \e[1;31mEAPOL\e[0m......: \e[1;91m$COUNTER_H\e[0m (\e[31m$COUNTER_PK\e[0m+\e[91m$COUNTER_PKR\e[0m+\e[1;31m$COUNTER_E\e[0m)\e[0m"
+	echo -e "\e[95mT\e[0m.........: \e[95m$TIMENOW\e[0m"
+	echo -e "\e[92mBEAC\e[0m+\e[32mHIDD\e[0m.: \e[1;92m$COUNTER_BHB\e[0m (\e[92m$COUNTER_B\e[0m+\e[32m$COUNTER_HB\e[0m)"
+	echo -e "\e[93mPROB\e[0m+\e[33mROGU\e[0m.: \e[1;93m$COUNTER_PRRPR\e[0m (\e[93m$COUNTER_PR\e[0m+\e[33m$COUNTER_RPR\e[0m)"
+	echo -e "\e[36mAUTH\e[0m+\e[1;36m(RE)\e[0m\e[96mA\e[0m: \e[1;96m$COUNTER_AUASRAS\e[0m (\e[36m$COUNTER_AU\e[0m+\e[1;36m$COUNTER_RAS\e[0m+\e[96m$COUNTER_AS\e[0m)"
+	echo -e "\e[31mPMK\e[0m+\e[91mPMKR\e[0m+\e[1;31mE\e[0m: \e[1;91m$COUNTER_H\e[0m (\e[31m$COUNTER_PK\e[0m+\e[91m$COUNTER_PKR\e[0m+\e[1;31m$COUNTER_E\e[0m)\e[0m"
 	echo -e "\n===[ NEWEST HASHES:"
 	echo -e "$TAILOUT_HASH"
 	echo -e "\n===[ TAIL:"
