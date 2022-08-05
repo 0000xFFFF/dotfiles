@@ -49,10 +49,5 @@ getoutput() {
 
 tput clear
 HOME=$(tput cup 0 0)
-
-while true
-do
-	printf '%s' "$HOME"
-	getoutput
-	sleep 2
-done
+printf '%s' "$HOME"
+getoutput
