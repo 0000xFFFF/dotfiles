@@ -76,14 +76,15 @@ def doAction():
     elif selected ==  1: runprog(["airmon-ng"])
     elif selected ==  2: runprog(["airmon-ng", "start", "wlan1"])
     elif selected ==  3: runprog(["airmon-ng", "stop", "wlan1"])
-    elif selected ==  4: runprog(["/home/pi/.vip/scripts/hcx-wifi", "wlan1mon"])
+    elif selected ==  4: runprog(["/home/pi/.vip/scripts/hcx-wifi-rpi", "wlan1mon", "/home/pi/Hashes/cracked.csv"]) # TODO: stop getting input while this script is running
     elif selected ==  5: runprog(["/home/pi/.vip/scripts/pi_dump"])
     elif selected ==  6: runprog(["/home/pi/.vip/scripts/pi_log"])
     elif selected ==  7: runprog(["/home/pi/.vip/scripts/pi_log1"])
     elif selected ==  8: runprog(["/home/pi/.vip/scripts/pi_hcxdumptool_start"])
     elif selected ==  9: runprog(["/home/pi/.vip/scripts/pi_hcxdumptool_start_quiet"])
     elif selected == 10: runprog(["/home/pi/.vip/scripts/pi_running"])
-    elif selected == 11: runprog(["/home/pi/.vip/scripts/wlan-dump"])
+    elif selected == 11: runprog(["/home/pi/.vip/scripts/pi_running_kill"])
+    elif selected == 12: runprog(["/home/pi/.vip/scripts/wlan-dump"])
 
 def killProc():
     global proc
@@ -98,14 +99,15 @@ menu_items = [
     [ 1, "airmon-ng"],
     [ 2, "airmon-ng start wlan1"],
     [ 3, "airmon-ng stop wlan1"],
-    [ 4, "hcx-wifi wlan1"],
+    [ 4, "hcx-wifi-rpi wlan1mon"],
     [ 5, "pi_dump"],
     [ 6, "pi_log"],
     [ 7, "pi_log1"],
     [ 8, "pi_hcxdumptool_start"],
     [ 9, "pi_hcxdumptool_start_quiet"],
     [10, "pi_running"],
-    [11, "wlan-dump"]
+    [11, "pi_running_kill"],
+    [12, "wlan-dump"]
 ]
 
 OPT_MIN = 0

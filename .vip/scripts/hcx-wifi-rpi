@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 
+# TODO:
+# - stop pihax from getting input
+# - control this script with LCD keys like pihax
+#
+
 import sys
 import termios # getch()
 import time
@@ -23,18 +28,19 @@ ch = 1 # current channel
 
 # wifi (beacon) table
 wifis = []
-wifi_clms = ["BSSID", "ESSID", "PASSWORD", "PWR", "LAST SEEN", "#", "CH", "CRYPTO", "TIMESTAMP", "PACKETS" ]
+#wifi_clms = ["BSSID", "ESSID", "PASSWORD", "PWR", "LAST SEEN", "#", "CH", "CRYPTO", "TIMESTAMP", "PACKETS" ]
+wifi_clms = ["ESSID", "PASSWORD", "BSSID", "PWR", "#", "CH" ]
 wifi_clms_len = len(wifi_clms)
-wifi_clm_bssid     = 0
-wifi_clm_essid     = 1
-wifi_clm_passwd    = 2
-wifi_clm_pwr       = 3
-wifi_clm_lastseen  = 4
-wifi_clm_num       = 5
-wifi_clm_ch        = 6
-wifi_clm_crypto    = 7
-wifi_clm_timestamp = 8
-wifi_clm_packets   = 9
+wifi_clm_bssid      = 2
+wifi_clm_essid      = 0
+wifi_clm_passwd     = 1
+wifi_clm_pwr        = 3
+#wifi_clm_lastseen  = 4
+wifi_clm_num        = 4
+wifi_clm_ch         = 5
+#wifi_clm_crypto    = 7
+#wifi_clm_timestamp = 8
+#wifi_clm_packets   = 9
 
 sortBy = "#"
 sortBy_reverse = False
@@ -112,14 +118,14 @@ def callback(packet):
 		lst[wifi_clm_bssid]     = bssid
 		lst[wifi_clm_essid]     = essid
 		lst[wifi_clm_pwr]       = dbm_signal
-		lst[wifi_clm_lastseen]  = lastseen
+		#lst[wifi_clm_lastseen]  = lastseen
 		lst[wifi_clm_ch]        = channel
-		lst[wifi_clm_crypto]    = crypto
-		lst[wifi_clm_timestamp] = timestamp
+		#lst[wifi_clm_crypto]    = crypto
+		#lst[wifi_clm_timestamp] = timestamp
 		
 		if hasWifi:
 			lst[wifi_clm_num]     = wifis[index][wifi_clm_num]
-			lst[wifi_clm_packets] = wifis[index][wifi_clm_packets]+1
+			#lst[wifi_clm_packets] = wifis[index][wifi_clm_packets]+1
 			lst[wifi_clm_passwd]  = wifis[index][wifi_clm_passwd]
 			wifis[index] = lst
 		else:
@@ -133,7 +139,7 @@ def callback(packet):
 						passwd = i[2]
 						break
 			lst[wifi_clm_num]     = len(wifis)+1
-			lst[wifi_clm_packets] = 1
+			#lst[wifi_clm_packets] = 1
 			lst[wifi_clm_passwd]  = passwd
 			wifis.append(lst)
 		

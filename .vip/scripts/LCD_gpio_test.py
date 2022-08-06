@@ -43,4 +43,4 @@ while True:
     if not GPIO.input(KEY_RIGHT_PIN): print("RIGHT")
     if not GPIO.input(KEY_DOWN_PIN):  print("DOWN")
     if not GPIO.input(KEY_PRESS_PIN): print("PRESS")
-	time.sleep(0.1)
+    time.sleep(0.1)

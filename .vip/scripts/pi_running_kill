@@ -1,0 +1,6 @@
+#!/bin/bash
+pkill "airmon-ng"
+pkill "hcx"
+pkill "pi_dump"
+pkill "pi_log"
+pkill "tail"

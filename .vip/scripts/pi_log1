@@ -5,12 +5,6 @@ function utc() {
 	echo "$(date +"%Y-%m-%d %T")"
 }
 
-unhide_cursor() {
-    printf '\e[?25h'
-}
-trap unhide_cursor EXIT
-printf '\e[?25l'
-
 FILES="$1"
 [ -z "$FILES" ] && FILES="/home/pi/Dump/*.log"
 
@@ -40,7 +34,4 @@ getoutput() {
 	echo -e "\e[31mPMK\e[0m+\e[91mPMKR\e[0m+\e[1;31mE\e[0m: \e[1;91m$COUNTER_H\e[0m (\e[31m$COUNTER_PK\e[0m+\e[91m$COUNTER_PKR\e[0m+\e[1;31m$COUNTER_E\e[0m)\e[0m"
 }
 
-tput clear
-HOME=$(tput cup 0 0)
-printf '%s' "$HOME"
 getoutput
