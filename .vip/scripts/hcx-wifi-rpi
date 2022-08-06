@@ -1,0 +1,356 @@
+#!/usr/bin/env python3
+
+import sys
+import termios # getch()
+import time
+import atexit
+
+from scapy.all import *
+from threading import Thread
+from datetime import datetime
+from tabulate import tabulate
+from operator import itemgetter
+
+# global stuff
+running = True
+status = ("STARTED: " + datetime.now().strftime("%Y-%m-%d %H:%M:%S")) # UI status
+show_wifi     = True
+enable_wifi   = True
+
+# channels to use
+channels = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 ]
+ch = 1 # current channel
+
+# wifi (beacon) table
+wifis = []
+wifi_clms = ["BSSID", "ESSID", "PASSWORD", "PWR", "LAST SEEN", "#", "CH", "CRYPTO", "TIMESTAMP", "PACKETS" ]
+wifi_clms_len = len(wifi_clms)
+wifi_clm_bssid     = 0
+wifi_clm_essid     = 1
+wifi_clm_passwd    = 2
+wifi_clm_pwr       = 3
+wifi_clm_lastseen  = 4
+wifi_clm_num       = 5
+wifi_clm_ch        = 6
+wifi_clm_crypto    = 7
+wifi_clm_timestamp = 8
+wifi_clm_packets   = 9
+
+sortBy = "#"
+sortBy_reverse = False
+
+# 
+# global things to not touch
+#
+updateUI_mutex = threading.Lock()
+pauseUI_evt = threading.Event()
+pauseUI_evt.set()
+pauseCHHOP_evt = threading.Event()
+pauseCHHOP_evt.set()
+g_tc = os.get_terminal_size().columns
+g_tl = os.get_terminal_size().lines
+# password list from csv file
+passwords = [] # BSSID, ESSID, PASSWORD
+passwords_count = 0
+show_counter = 0
+
+
+def clearScreen():
+	os.system("clear")
+
+# print string but make sure it fits according to terminal size
+def show2(s):
+	global show_counter
+	tl = os.get_terminal_size().lines
+	if show_counter >= (tl-1): return
+	print(s)
+	show_counter += 1
+
+def show(s):
+	global g_tc 
+	global g_tl
+
+	strings = s.split("\n")
+	tc = os.get_terminal_size().columns
+	tl = os.get_terminal_size().lines
+
+	if g_tc != tc or g_tl != tl:
+		g_tc = tc
+		g_tl = tl
+		clearScreen()
+	
+	for i in strings:
+		il = len(i)
+		if il > tc: show2(i[:tc])
+		else:       show2(i + str(" " * int(int(tc)-int(il))))
+
+# sniff callback
+# this is what updates the wifi list
+def callback(packet):
+	if packet.haslayer(Dot11Beacon):
+		bssid = packet[Dot11].addr2.upper()
+		essid = packet[Dot11Elt].info.decode()
+		try:    dbm_signal = packet.dBm_AntSignal
+		except: dbm_signal = ""
+		stats = packet[Dot11Beacon].network_stats()
+		channel = stats.get("channel")
+		crypto  = stats.get("crypto")
+		timestamp = packet[Dot11Beacon].timestamp
+		lastseen =  datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+		passwd = ""
+
+		# check if wifi exists
+		hasWifi = False
+		index = 0
+		for i in range(0, len(wifis)):
+			index = i
+			if wifis[i][wifi_clm_bssid] == bssid:
+				hasWifi = True
+				break
+
+		lst = [None] * wifi_clms_len
+		lst[wifi_clm_bssid]     = bssid
+		lst[wifi_clm_essid]     = essid
+		lst[wifi_clm_pwr]       = dbm_signal
+		lst[wifi_clm_lastseen]  = lastseen
+		lst[wifi_clm_ch]        = channel
+		lst[wifi_clm_crypto]    = crypto
+		lst[wifi_clm_timestamp] = timestamp
+		
+		if hasWifi:
+			lst[wifi_clm_num]     = wifis[index][wifi_clm_num]
+			lst[wifi_clm_packets] = wifis[index][wifi_clm_packets]+1
+			lst[wifi_clm_passwd]  = wifis[index][wifi_clm_passwd]
+			wifis[index] = lst
+		else:
+			global passwords_count
+			if passwords_count:
+				global passwords
+				for i in passwords:
+					match_bssid = str(bssid).replace(":", "").replace("-", "").lower()
+					match_i     =  str(i[0]).replace(":", "").replace("-", "").lower()
+					if match_bssid == match_i and essid == i[1]:
+						passwd = i[2]
+						break
+			lst[wifi_clm_num]     = len(wifis)+1
+			lst[wifi_clm_packets] = 1
+			lst[wifi_clm_passwd]  = passwd
+			wifis.append(lst)
+		
+		return # close if
+
+
+
+def updateUI():
+
+	updateUI_mutex.acquire()
+
+	# get vars
+	global ch
+	global show_counter
+	now = datetime.now()
+	#timestr = now.strftime("%Y-%m-%d %H:%M:%S.%f")
+	timestr = now
+
+	arrowChar = "\u2193"
+	if sortBy_reverse: arrowChar = "\u2191"
+
+	# set print pos to 0x0
+	print("\033[0;0H", end='')
+	show_counter = 0 # reset show counter
+
+	# display stuff
+	show(f"CH {str(ch).rjust(2)} | {str(timestr).ljust(26)}")
+	show(f"COUNT: {len(wifis)} | PASS: {passwords_count}")
+	show(f"SORT BY: {arrowChar} {sortBy} | {status}")
+
+	if show_wifi:
+		wifis_sorted = sorted(wifis, key=itemgetter(wifi_clms.index(sortBy)), reverse=sortBy_reverse)
+		show(str(tabulate(wifis_sorted, headers=wifi_clms, tablefmt="plain")))
+		show("\n")
+	
+	updateUI_mutex.release()
+
+
+def thread_updateUI():
+	global running
+	while running:
+		if not pauseUI_evt.is_set(): pauseUI_evt.wait()
+		updateUI()
+		time.sleep(0.1)
+
+def channel_get(): return os.popen(f"iw '{interface}' info | grep channel | awk -P '{{print $2}}'").read().replace("\n", "")
+def channel_set(i): os.system(f"sudo iw dev '{interface}' set channel {i}")
+
+# next channel
+def hopch():
+	found = False
+	isSet = False
+	global channels
+	global ch
+	while True:
+		for i in channels:
+			if found:
+				ch = i
+				channel_set(i)
+				isSet = True
+				break
+			if i == ch:
+				found = True
+				continue
+		if isSet:
+			break
+
+def thread_hopch():
+	global running
+	while running:
+		if not pauseCHHOP_evt.is_set(): pauseCHHOP_evt.wait()
+		hopch()
+		time.sleep(1)
+
+def getch():
+	old_settings = termios.tcgetattr(0)
+	new_settings = old_settings[:]
+	new_settings[3] &= ~termios.ICANON
+	try:
+		termios.tcsetattr(0, termios.TCSANOW, new_settings)
+		ch = sys.stdin.read(1)
+	finally:
+		termios.tcsetattr(0, termios.TCSANOW, old_settings)
+	return ch
+
+# next sorting order
+def changeSorting():
+	found = False
+	isSet = False
+	global wifi_clms
+	global sortBy
+	while True:
+		for i in wifi_clms:
+			if found:
+				sortBy = i
+				isSet = True
+				break
+			if i == sortBy:
+				found = True
+				continue
+		if isSet:
+			break
+
+
+# exit handler
+@atexit.register
+def signal_handler():
+	# show cursor
+	print("\033[?25h")
+
+def is_root():
+    return os.geteuid() == 0
+
+if __name__ == "__main__":
+
+	try:
+
+		argv_len = len(sys.argv)
+
+		if argv_len < 2:
+			print("ABOUT: uses scapy to show nearby networks,")
+			print("       (optional) and trys to match them with the csv password list")
+			print("USAGE: " + sys.argv[0] + " <interface(mon)> <wifipasslst.csv(optional)>")
+			print("KEY COMMANDS:")
+			print("      q - quit")
+			print("      s - change sorting")
+			print("      d - change sorting order")
+			print("  SPACE - pause")
+			print("      c - hop channel")
+			print("      C - toggle auto channel hopper")
+			print("      w - show wifi table")
+			print("      W - clear wifi table")
+			print("      a - show auth table")
+			print("      A - clear auth table")
+			print("      p - show probe table")
+			print("      P - clear proble table")
+			print("      k - toggle auth collection")
+			print("      l - toggle proble collection")
+			print("")
+			exit()
+
+		if not is_root():
+			print("use root.")
+			exit()
+
+		interface = sys.argv[1]
+
+		if argv_len >= 3:
+			file_pass_path = sys.argv[2]
+			file_pass = open(file_pass_path, 'r')
+			file_pass_lines = file_pass.readlines()
+			file_pass.close()
+			for i_ in file_pass_lines:
+				i = i_.replace("\n", "")
+				isplit = i.split("|||")
+				if len(isplit) >= 3:
+					passwords.append([isplit[0],isplit[1],isplit[2]])
+			passwords_count = len(passwords)
+
+		# clear screen and hide cursor
+		clearScreen()
+		print("\033[?25l")
+
+		# threads (print / channel hopper)
+		th_ui  = Thread(target=thread_updateUI)
+		th_hop = Thread(target=thread_hopch)
+	
+		# start all threads
+		th_ui.start()
+		th_hop.start()
+
+		# start sniffing
+		th_sniff = AsyncSniffer(prn=callback, iface=interface)
+		th_sniff.start()
+
+		# handle key input
+		while running:
+			pressedKey = getch()
+
+			if pressedKey == "q":
+				running = False # send signal for the threads to close
+				th_ui.join()
+				th_hop.join()
+				exit()
+			elif pressedKey == "s":
+				changeSorting()
+			elif pressedKey == "d":
+				clearScreen()
+				sortBy_reverse = (not sortBy_reverse)
+			elif pressedKey == " ":
+				if pauseUI_evt.is_set():
+					pauseUI_evt.clear()
+					status = "RESUMED"
+				else:
+					pauseUI_evt.set()
+					status = "PAUSED"
+			elif pressedKey == "c":
+				hopch()
+			elif pressedKey == "C":
+				if pauseCHHOP_evt.is_set():
+					pauseCHHOP_evt.clear()
+					status = "PAUSED CHANNEL HOPPER"
+				else:
+					pauseCHHOP_evt.set()
+					status = "RESUMED CHANNEL HOPPER"
+			
+			elif pressedKey == "w":
+				show_wifi = (not show_wifi)
+				if show_wifi: status = "show wifi: on"
+				else:         status = "show wifi: off"
+			elif pressedKey == "W":
+				wifis = []
+				status = "cleared wifi table"
+			
+			clearScreen()
+			updateUI()
+	except KeyboardInterrupt:
+		print("Quitting...")
+		running = False
+		quit()

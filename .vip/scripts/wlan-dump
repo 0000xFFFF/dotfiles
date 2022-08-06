@@ -28,7 +28,7 @@ import subprocess
 from colorama import Fore, Back, Style
 
 
-delim = " \t"
+delim = "  "
 
 clr_reset = Style.RESET_ALL
 clr_wlan  = Style.BRIGHT + Fore.RED
@@ -50,8 +50,7 @@ header = [
 
 for i in header:
 	print(i, end=" | ")
-
-print("\n\n")
+print()
 
 for i in subprocess.run(['sudo', 'iwlist', 'scan'], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL).stdout.decode().split("\n"):
 	if "Scan completed" in i:

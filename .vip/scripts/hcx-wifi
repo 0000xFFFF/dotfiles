@@ -5,6 +5,7 @@
  - color
  - change key binding (make them better)
  - ap select
+ - fetch vendor with fixed path? really? bruh.
 
 https://wlan1nde.wordpress.com/page/2/
 https://yasoob.me/2018/09/08/sending-sniffing-wlan-beacon-frames-using-scapy/
@@ -24,16 +25,16 @@ from threading import Thread
 from datetime import datetime
 from tabulate import tabulate
 from operator import itemgetter
-from colorama import Fore, Back, Style
+#from colorama import Fore, Back, Style
 
 # global stuff
 running = True
 status = ("STARTED: " + datetime.now().strftime("%Y-%m-%d %H:%M:%S")) # UI status
 show_wifi     = True
-show_auths    = True
+show_auths    = False
 show_probes   = False
 enable_wifi   = True
-enable_auths  = True
+enable_auths  = False
 enable_probes = False
 match_bssid   = True # match bssid's from wifi table and just assign index ("#")
 fetch_vendor  = True # fetch vendor name from mac
@@ -379,7 +380,6 @@ def updateUI():
 	show_counter = 0 # reset show counter
 
 	# display stuff
-	show(f"COUNTER: {show_counter}")
 	show(f"CH {str(ch).rjust(2)} | {str(timestr).ljust(26)} | PASS: {passwords_count} | {status}")
 	show(f"COUNT: {len(wifis)}")
 	show(f"SORT BY: {arrowChar} {sortBy}")
@@ -522,20 +522,21 @@ if __name__ == "__main__":
 			print("       (optional) and trys to match them with the csv password list")
 			print("USAGE: " + sys.argv[0] + " <interface(mon)> <wifipasslst.csv(optional)>")
 			print("KEY COMMANDS:")
-			print("  q     - quit")
-			print("  s     - change sorting column")
-			print("  a     - change sorting order")
-			print("  x     - clear wifi table")
-			print("  X     - show/hide wifi table")
-			print("  z     - clear probe table")
-			print("  Z     - show/hide probe table")
-			print("  p     - toggle probe info collection")
-			print("  C     - toggle auto channel hopping")
-			print("  c     - change channel")
+			print("      q - quit")
+			print("      s - change sorting")
+			print("      d - change sorting order")
 			print("  SPACE - pause")
+			print("      c - hop channel")
+			print("      C - toggle auto channel hopper")
+			print("      w - show wifi table")
+			print("      W - clear wifi table")
+			print("      a - show auth table")
+			print("      A - clear auth table")
+			print("      p - show probe table")
+			print("      P - clear proble table")
+			print("      k - toggle auth collection")
+			print("      l - toggle proble collection")
 			print("")
-			print(" * wifi table  - Dot11Beacon")
-			print(" * probe table - Dot11ProbeReq, Dot11ProbeResp, ...")
 			exit()
 
 		if not is_root():
@@ -583,31 +584,9 @@ if __name__ == "__main__":
 				exit()
 			elif pressedKey == "s":
 				changeSorting()
-			elif pressedKey == "a":
+			elif pressedKey == "d":
 				clearScreen()
 				sortBy_reverse = (not sortBy_reverse)
-			elif pressedKey == "x":
-				wifis = []
-				status = "cleared wifi table"
-			elif pressedKey == "X":
-				show_wifi = (not show_wifi)
-				if show_wifi: status = "show wifi: on"
-				else:         status = "show wifi: off"
-			elif pressedKey == "z":
-				probes = []
-				status = "cleared probe table"
-			elif pressedKey == "Z":
-				show_probes = (not show_probes)
-				if show_probes: status = "show probes: on"
-				else:           status = "show probes: off"
-			elif pressedKey == "p":
-				enable_probes = (not enable_probes)
-				if enable_probes:
-					status = "probe collection: on"
-					show_probes = True
-				else:
-					status = "probe collection: off"
-					show_probes = False
 			elif pressedKey == " ":
 				if pauseUI_evt.is_set():
 					pauseUI_evt.clear()
@@ -615,6 +594,8 @@ if __name__ == "__main__":
 				else:
 					pauseUI_evt.set()
 					status = "PAUSED"
+			elif pressedKey == "c":
+				hopch()
 			elif pressedKey == "C":
 				if pauseCHHOP_evt.is_set():
 					pauseCHHOP_evt.clear()
@@ -622,8 +603,50 @@ if __name__ == "__main__":
 				else:
 					pauseCHHOP_evt.set()
 					status = "RESUMED CHANNEL HOPPER"
-			elif pressedKey == "c":
-				hopch()
+			
+			elif pressedKey == "w":
+				show_wifi = (not show_wifi)
+				if show_wifi: status = "show wifi: on"
+				else:         status = "show wifi: off"
+			elif pressedKey == "W":
+				wifis = []
+				status = "cleared wifi table"
+			
+			elif pressedKey == "a":
+				show_auths = (not show_auths)
+				if show_auths: status = "show auths: on"
+				else:          status = "show auths: off"
+			elif pressedKey == "A":
+				auths = []
+				status = "cleared auth table"
+
+			elif pressedKey == "p":
+				show_probes = (not show_probes)
+				if show_probes: status = "show probes: on"
+				else:           status = "show probes: off"
+			elif pressedKey == "P":
+				probes = []
+				status = "cleared probe table"
+			
+			elif pressedKey == "k":
+				enable_auths = (not enable_auths)
+				if enable_auths:
+					status = "auth collection: on"
+					show_auths = True
+				else:
+					status = "auth collection: off"
+					show_auths = False
+			elif pressedKey == "l":
+				enable_probes = (not enable_probes)
+				if enable_probes:
+					status = "probe collection: on"
+					show_probes = True
+				else:
+					status = "probe collection: off"
+					show_probes = False
+			
+			
+			
 
 			clearScreen()
 			updateUI()
