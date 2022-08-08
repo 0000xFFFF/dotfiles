@@ -32,7 +32,7 @@ status = ("STARTED: " + datetime.now().strftime("%Y-%m-%d %H:%M:%S")) # UI statu
 show_wifis    = True
 show_auths    = False
 show_probes   = False
-enable_wifi   = True
+enable_wifis  = True
 enable_auths  = False
 enable_probes = False
 match_bssid   = True # match bssid's from wifi table and just assign index ("#")
@@ -649,8 +649,8 @@ if __name__ == "__main__":
 			elif pressedKey == " ": action_pauseUI()
 			elif pressedKey == "c": action_hopch()
 			elif pressedKey == "C": action_pauseCHHOP()
-			elif pressedKey == "w": action_showWifi()
-			elif pressedKey == "W": action_clearWifi()
+			elif pressedKey == "w": action_show_wifis()
+			elif pressedKey == "W": action_clear_wifis()
 			elif pressedKey == "a": action_show_auths()
 			elif pressedKey == "A": action_clear_auths()
 			elif pressedKey == "p": action_show_probes()

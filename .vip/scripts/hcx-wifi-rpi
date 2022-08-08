@@ -20,8 +20,8 @@ from operator import itemgetter
 # global stuff
 running = True
 status = ("STARTED: " + datetime.now().strftime("%Y-%m-%d %H:%M:%S")) # UI status
-show_wifi     = True
-enable_wifi   = True
+show_wifis     = True
+enable_wifis   = True
 
 # channels to use
 channels = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 ]
@@ -169,13 +169,13 @@ def action_pauseCHHOP():
 	else:
 		pauseCHHOP_evt.set()
 		status = "RESUMED CHANNEL HOPPER"
-def action_showWifi():
-	global show_wifi
+def action_show_wifis():
+	global show_wifis
 	global status
-	show_wifi = (not show_wifi)
-	if show_wifi: status = "show wifi: on"
-	else:         status = "show wifi: off"
-def action_clearWifi():
+	show_wifis = (not show_wifis)
+	if show_wifis: status = "show wifis: on"
+	else:          status = "show wifis: off"
+def action_clear_wifis():
 	global status
 	global wifis
 	wifis = []
@@ -327,22 +327,28 @@ def callback(packet):
 def menu(keyPress):
 	mutex.acquire()
 
-	if keyPress == 3: current_wifi_prev()
-	if keyPress == 4: current_wifi_next()
+	if   keyPress == 1: action_hopch()
+	elif keyPress == 2: action_pauseCHHOP()
+	elif keyPress == 3: action_prevWifi()
+	elif keyPress == 4: action_nextWifi()
+	elif keyPress == 5: action_pauseUI()
+	elif keyPress == 6: action_clearWifi()
+	elif keyPress == 7: action_changeSorting()
+	elif keyPress == 8: action_changeSorting_order()
 
 	mutex.release()
 
 def menu_callback(channel):
     time.sleep(0.1)
     if GPIO.input(channel) == 1:
-        if channel == KEY_UP_PIN:    menu(1)
-        if channel == KEY_DOWN_PIN:  menu(2)
-        if channel == KEY_LEFT_PIN:  menu(3)
-        if channel == KEY_RIGHT_PIN: menu(4)
-        if channel == KEY_PRESS_PIN: menu(5)
-        if channel == KEY1_PIN:      menu(6)
-        if channel == KEY2_PIN:      menu(7)
-        if channel == KEY3_PIN:      menu(8)
+        if   channel == KEY_UP_PIN:    menu(1)
+        elif channel == KEY_DOWN_PIN:  menu(2)
+        elif channel == KEY_LEFT_PIN:  menu(3)
+        elif channel == KEY_RIGHT_PIN: menu(4)
+        elif channel == KEY_PRESS_PIN: menu(5)
+        elif channel == KEY1_PIN:      menu(6)
+        elif channel == KEY2_PIN:      menu(7)
+        elif channel == KEY3_PIN:      menu(8)
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(KEY_UP_PIN,    GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -419,10 +425,10 @@ if __name__ == "__main__":
 			elif pressedKey == " ": action_pauseUI()
 			elif pressedKey == "c": action_hopch()
 			elif pressedKey == "C": action_pauseCHHOP()
-			elif pressedKey == "w": action_showWifi()
-			elif pressedKey == "W": action_clearWifi()
-			elif pressedKey == "j": current_wifi_prev()
-			elif pressedKey == "k": current_wifi_next()
+			elif pressedKey == "w": action_show_wifis()
+			elif pressedKey == "W": action_clear_wifis()
+			elif pressedKey == "j": action_nextWifi()
+			elif pressedKey == "k": action_prevWifi()
 			term_clear()
 			updateUI()
 	except KeyboardInterrupt:

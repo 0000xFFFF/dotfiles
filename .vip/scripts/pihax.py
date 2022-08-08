@@ -3,6 +3,7 @@
 # TODO: kill process menu
 #       rename and sort vars
 #       print stuff with show()
+#       add getch menu
 
 import RPi.GPIO as GPIO
 import time
@@ -34,16 +35,16 @@ KEY2_PIN      = 20
 KEY3_PIN      = 16
 
 
-def clearScreen():
-	os.system("clear")
-def resetCursor():
-    print("\033[0;0H", end='')
-def hideCursor():
-	print("\033[?25l")
-def showCursor():
-	print("\033[?25h")
-def is_root():
+def checkRoot():
     return os.geteuid() == 0
+def term_clear():
+	os.system("clear")
+def term_cursor_reset():
+    print("\033[0;0H", end='')
+def term_cursor_hide():
+	print("\033[?25l")
+def term_cursor_show():
+    print("\033[?25h")
 
 def runcmd_getLines(cmd):
     output = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -181,7 +182,7 @@ GPIO.add_event_detect(KEY1_PIN,      GPIO.BOTH, callback=menu_callback, bounceti
 GPIO.add_event_detect(KEY2_PIN,      GPIO.BOTH, callback=menu_callback, bouncetime=100)
 GPIO.add_event_detect(KEY3_PIN,      GPIO.BOTH, callback=menu_callback, bouncetime=100)
 
-clearScreen()
+term_clear()
 menu(0)
 
 #input()
