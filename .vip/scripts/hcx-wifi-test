@@ -12,10 +12,10 @@ channels = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ]
 def hopch(i): os.system(f"sudo iw dev '{interface}' set channel {i}")
 
 def thread_hopch():
-	while True:
-		for i in channels:
-			hopch(i)
-			time.sleep(1)
+    while True:
+        for i in channels:
+            hopch(i)
+            time.sleep(1)
 
 
 file_Dot11ATIM       = open("hcx-wifi-test_Dot11ATIM.log", "w") 
@@ -32,26 +32,26 @@ file_Dot11ReassoReq  = open("hcx-wifi-test_Dot11ReassoReq.log", "w")
 file_Dot11ReassoResp = open("hcx-wifi-test_Dot11ReassoResp.log", "w") 
 
 def write2file(s, f):
-	g = ("[" * 20) + "\n" + s + "\n" + ("]" * 20) + "\n"
-	f.write(g)
+    g = ("[" * 20) + "\n" + s + "\n" + ("]" * 20) + "\n"
+    f.write(g)
 
 def callback(packet):
-	a = str(packet.show(dump=True))
-	if packet.haslayer(Dot11ATIM):       write2file(a, file_Dot11ATIM)
-	if packet.haslayer(Dot11Ack):        write2file(a, file_Dot11Ack)
-	if packet.haslayer(Dot11AssoReq):    write2file(a, file_Dot11AssoReq)
-	if packet.haslayer(Dot11AssoResp):   write2file(a, file_Dot11AssoResp)
-	if packet.haslayer(Dot11Auth):       write2file(a, file_Dot11Auth)
-	if packet.haslayer(Dot11Beacon):     write2file(a, file_Dot11Beacon)
-	if packet.haslayer(Dot11Deauth):     write2file(a, file_Dot11Deauth)
-	if packet.haslayer(Dot11Disas):      write2file(a, file_Dot11Disas)
-	if packet.haslayer(Dot11ProbeReq):   write2file(a, file_Dot11ProbeReq)
-	if packet.haslayer(Dot11ProbeResp):  write2file(a, file_Dot11ProbeResp)
-	if packet.haslayer(Dot11ReassoReq):  write2file(a, file_Dot11ReassoReq)
-	if packet.haslayer(Dot11ReassoResp): write2file(a, file_Dot11ReassoResp)
+    a = str(packet.show(dump=True))
+    if packet.haslayer(Dot11ATIM):       write2file(a, file_Dot11ATIM)
+    if packet.haslayer(Dot11Ack):        write2file(a, file_Dot11Ack)
+    if packet.haslayer(Dot11AssoReq):    write2file(a, file_Dot11AssoReq)
+    if packet.haslayer(Dot11AssoResp):   write2file(a, file_Dot11AssoResp)
+    if packet.haslayer(Dot11Auth):       write2file(a, file_Dot11Auth)
+    if packet.haslayer(Dot11Beacon):     write2file(a, file_Dot11Beacon)
+    if packet.haslayer(Dot11Deauth):     write2file(a, file_Dot11Deauth)
+    if packet.haslayer(Dot11Disas):      write2file(a, file_Dot11Disas)
+    if packet.haslayer(Dot11ProbeReq):   write2file(a, file_Dot11ProbeReq)
+    if packet.haslayer(Dot11ProbeResp):  write2file(a, file_Dot11ProbeResp)
+    if packet.haslayer(Dot11ReassoReq):  write2file(a, file_Dot11ReassoReq)
+    if packet.haslayer(Dot11ReassoResp): write2file(a, file_Dot11ReassoResp)
 
 if __name__ == "__main__":
-	th_hop = Thread(target=thread_hopch)
-	th_hop.start()
+    th_hop = Thread(target=thread_hopch)
+    th_hop.start()
 
-	sniff(prn=callback, iface=interface)
+    sniff(prn=callback, iface=interface)

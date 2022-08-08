@@ -3,5 +3,5 @@ MAC="$1"
 while [ -z "$MAC" ]; do read -r -p 'MAC: ' MAC ; done
 MAC="$(echo "$MAC" | tr -d ':')"
 locate "oui.txt" | while read -r line ; do
-	grep --color=auto -B 1 -A 3 -i "$MAC" "$line"
+    grep --color=auto -B 1 -A 3 -i "$MAC" "$line"
 done

@@ -3,13 +3,13 @@
 import sys
 
 if len(sys.argv) <= 1:
-	print("USAGE: " + sys.argv[0] + " <file>")
-	exit()
+    print("USAGE: " + sys.argv[0] + " <file>")
+    exit()
 
 file1 = open(sys.argv[1], 'r')
 lines1 = file1.readlines()
 file1.close()
 
 for l1 in lines1:
-	line1 = l1.replace("\n", "")
-	print(line1.lower())
+    line1 = l1.replace("\n", "")
+    print(line1.lower())

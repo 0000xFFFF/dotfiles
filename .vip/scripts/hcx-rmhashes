@@ -6,8 +6,8 @@ import sys
 import subprocess
 
 if len(sys.argv) < 3:
-	print("USAGE: " + sys.argv[0] + " <hashesFile> <hashesToRemoveFile>")
-	exit()
+    print("USAGE: " + sys.argv[0] + " <hashesFile> <hashesToRemoveFile>")
+    exit()
 
 hashes_file_file = open(sys.argv[1], 'r')
 hashes_file_lines = hashes_file_file.readlines()
@@ -19,27 +19,27 @@ remove_file_file.close()
 
 hashes_list = []
 for hashes_file_line in hashes_file_lines:
-	hashLine = hashes_file_line.replace("\n", "")
-	p = subprocess.Popen(['hcxpmktool', '-i', hashLine, '-p', ''], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-	for outL in p.stdout.read().decode().split("\n"):
-		if outL.startswith("PMK...............: "):
-			pmk = outL.replace("PMK...............: ", "")
-			hashes_list.append([pmk, hashLine])
+    hashLine = hashes_file_line.replace("\n", "")
+    p = subprocess.Popen(['hcxpmktool', '-i', hashLine, '-p', ''], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    for outL in p.stdout.read().decode().split("\n"):
+        if outL.startswith("PMK...............: "):
+            pmk = outL.replace("PMK...............: ", "")
+            hashes_list.append([pmk, hashLine])
 
 remove_list = []
 for remove_file_line in remove_file_lines:
-	removeLine = remove_file_line.replace("\n", "")
-	p = subprocess.Popen(['hcxpmktool', '-i', removeLine, '-p', ''], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-	for outL in p.stdout.read().decode().split("\n"):
-		if outL.startswith("PMK...............: "):
-			pmk = outL.replace("PMK...............: ", "")
-			remove_list.append([pmk, hashLine])
+    removeLine = remove_file_line.replace("\n", "")
+    p = subprocess.Popen(['hcxpmktool', '-i', removeLine, '-p', ''], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    for outL in p.stdout.read().decode().split("\n"):
+        if outL.startswith("PMK...............: "):
+            pmk = outL.replace("PMK...............: ", "")
+            remove_list.append([pmk, hashLine])
 
 for hashl in hashes_list:
-	contains = False
-	for rmhash in remove_list:
-		if hashl[0] == rmhash[0]:
-			contains = True
-			break
-	if not contains:
-		print(hashl[1])
+    contains = False
+    for rmhash in remove_list:
+        if hashl[0] == rmhash[0]:
+            contains = True
+            break
+    if not contains:
+        print(hashl[1])

@@ -2,7 +2,7 @@
 NORMAL="wlp0s29u1u3"
 MONITOR="wlp0s29u1u3mon"
 if [ "$1" = "mon" ]; then
-	echo -ne "$MONITOR"
+    echo -ne "$MONITOR"
 else
-	echo -ne "$NORMAL"
+    echo -ne "$NORMAL"
 fi

@@ -3,14 +3,14 @@ import codecs
 import sys
 
 if len(sys.argv) == 1:
-	print("USAGE: " + sys.argv[0] + " hex")
-	exit()
+    print("USAGE: " + sys.argv[0] + " hex")
+    exit()
 
 def hex2str(string):
-	try:
-		binary_str = codecs.decode(string, "hex")
-		return str(binary_str, 'utf-8')
-	except Exception as e:
-		return "HEX ERROR"
+    try:
+        binary_str = codecs.decode(string, "hex")
+        return str(binary_str, 'utf-8')
+    except Exception as e:
+        return "HEX ERROR"
 
 print(hex2str(sys.argv[1]))

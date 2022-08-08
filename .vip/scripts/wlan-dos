@@ -10,27 +10,27 @@ from datetime import datetime # create a timestamp for .csv filename
 
 # must be root
 if not 'SUDO_UID' in os.environ.keys():
-	print("must be root")
-	exit()
+    print("must be root")
+    exit()
 
 # test if the ESSID is already in the list file
 def check_for_essid(essid, lst):
-	check_status = True
+    check_status = True
 
-	# lst is empty
-	if len(lst) == 0: return check_status
+    # lst is empty
+    if len(lst) == 0: return check_status
 
-	for item in lst:
-		if essid in item["ESSID"]:
-			check_status = False
+    for item in lst:
+        if essid in item["ESSID"]:
+            check_status = False
 
-	return check_status
+    return check_status
 
 def stop():
-	print("\n\nCleaning up...")
-	os.system("rm -v net-dos-captures*.csv 2>/dev/null")
-	print("Quit.")
-	exit()
+    print("\n\nCleaning up...")
+    os.system("rm -v net-dos-captures*.csv 2>/dev/null")
+    print("Quit.")
+    exit()
 
 ## set to monitor mode
 #print(os.popen("wlan mon").read())
@@ -40,20 +40,20 @@ devices = re.compile("^wl\w+").findall(subprocess.run(["iwconfig"], capture_outp
 
 # no wifi interface connected
 if len(devices) == 0:
-	print("no wifi adapter")
-	exit()
+    print("no wifi adapter")
+    exit()
 
 # menu
 print("Select Interface:")
 for index, item in enumerate(devices):
-	print(f"  {index} - {item}")
+    print(f"  {index} - {item}")
 while True:
-	try: wifi_interface_choice = input("> ")
-	except KeyboardInterrupt: stop()
-	try:
-		if devices[int(wifi_interface_choice)]: break
-	except:
-		print("invalid")
+    try: wifi_interface_choice = input("> ")
+    except KeyboardInterrupt: stop()
+    try:
+        if devices[int(wifi_interface_choice)]: break
+    except:
+        print("invalid")
 
 device = devices[int(wifi_interface_choice)]
 
@@ -64,44 +64,44 @@ active_wireless_networks = [] # ap list
 
 # Loop that shows the wireless access points. We use a try except block and we will quit the loop by pressing ctrl-c.
 try:
-	while True:
-		subprocess.call("clear", shell=True)
-		for file_name in os.listdir():
-				fieldnames = ['BSSID', 'First_time_seen', 'Last_time_seen', 'channel', 'Speed', 'Privacy', 'Cipher', 'Authentication', 'Power', 'beacons', 'IV', 'LAN_IP', 'ID_length', 'ESSID', 'Key']
-				if ".csv" in file_name:
-					with open(file_name) as csv_h:
-						# reset the cursor to the beginning of the file.
-						csv_h.seek(0)
-						# We use the DictReader method and tell it to take the csv_h contents and then apply the dictionary with the fieldnames we specified above. 
-						# This creates a list of dictionaries with the keys as specified in the fieldnames.
-						csv_reader = csv.DictReader(csv_h, fieldnames=fieldnames)
-						for row in csv_reader:
-							# We want to exclude the row with BSSID.
-							if row["BSSID"] == "BSSID":
-								pass
-							# We are not interested in the client data.
-							elif row["BSSID"] == "Station MAC":
-								break
-							# Every field where an ESSID is specified will be added to the list.
-							elif check_for_essid(row["ESSID"], active_wireless_networks):
-								active_wireless_networks.append(row)
+    while True:
+        subprocess.call("clear", shell=True)
+        for file_name in os.listdir():
+                fieldnames = ['BSSID', 'First_time_seen', 'Last_time_seen', 'channel', 'Speed', 'Privacy', 'Cipher', 'Authentication', 'Power', 'beacons', 'IV', 'LAN_IP', 'ID_length', 'ESSID', 'Key']
+                if ".csv" in file_name:
+                    with open(file_name) as csv_h:
+                        # reset the cursor to the beginning of the file.
+                        csv_h.seek(0)
+                        # We use the DictReader method and tell it to take the csv_h contents and then apply the dictionary with the fieldnames we specified above. 
+                        # This creates a list of dictionaries with the keys as specified in the fieldnames.
+                        csv_reader = csv.DictReader(csv_h, fieldnames=fieldnames)
+                        for row in csv_reader:
+                            # We want to exclude the row with BSSID.
+                            if row["BSSID"] == "BSSID":
+                                pass
+                            # We are not interested in the client data.
+                            elif row["BSSID"] == "Station MAC":
+                                break
+                            # Every field where an ESSID is specified will be added to the list.
+                            elif check_for_essid(row["ESSID"], active_wireless_networks):
+                                active_wireless_networks.append(row)
 
-		print("Scanning. Press Ctrl+C to continue.\n")
-		for index, item in enumerate(active_wireless_networks):
-			print(f"[{index}]  {item['BSSID']}  {item['channel'].strip()} {item['ESSID']}")
-		time.sleep(1)
+        print("Scanning. Press Ctrl+C to continue.\n")
+        for index, item in enumerate(active_wireless_networks):
+            print(f"[{index}]  {item['BSSID']}  {item['channel'].strip()} {item['ESSID']}")
+        time.sleep(1)
 
 except KeyboardInterrupt: print("\n")
 
 # ensure input is valid
 while True:
-	try: choice = input("> ")
-	except KeyboardInterrupt: stop()
+    try: choice = input("> ")
+    except KeyboardInterrupt: stop()
 
-	try:
-		if active_wireless_networks[int(choice)]: break
-	except:
-		print("invalid")
+    try:
+        if active_wireless_networks[int(choice)]: break
+    except:
+        print("invalid")
 
 # set options
 hackbssid = active_wireless_networks[int(choice)]["BSSID"]

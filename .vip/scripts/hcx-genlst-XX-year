@@ -10,83 +10,83 @@ def print_iw(word,  i): print(i + word)
 def print_iwi(word, i): print(i + word + i)
 
 def genlst(word, callback):
-	# common sufix
-	sufix = [
-		"!",
-		"!!",
-		"!!!",
-		".",
-		"..",
-		"...",
-		"@",
-		"@@",
-		"@@@",
-		"#",
-		"123",
-		"1234",
-		"12345",
-		"123456",
-		"1234567",
-		"12345678",
-		"123456789",
-		"1234567890",
-		"12345678910",
-		"012",
-		"0123",
-		"01234",
-		"012345",
-		"0123456",
-		"01234567",
-		"012345678",
-		"0123456789",
-		"01234567890",
-		"012345678910",
-	]
+    # common sufix
+    sufix = [
+        "!",
+        "!!",
+        "!!!",
+        ".",
+        "..",
+        "...",
+        "@",
+        "@@",
+        "@@@",
+        "#",
+        "123",
+        "1234",
+        "12345",
+        "123456",
+        "1234567",
+        "12345678",
+        "123456789",
+        "1234567890",
+        "12345678910",
+        "012",
+        "0123",
+        "01234",
+        "012345",
+        "0123456",
+        "01234567",
+        "012345678",
+        "0123456789",
+        "01234567890",
+        "012345678910",
+    ]
 
-	for i in sufix:
-		callback(word, i)
-	for i in range(0, 100):
-		callback(word, str(i))
-	for x in range(2, 3):
-		for y in range(0, 10 ** (x-1)):
-			callback(word, str(y).rjust(x, '0'))
-	for i in range(1900, 2025):
-		callback(word, str(i))
+    for i in sufix:
+        callback(word, i)
+    for i in range(0, 100):
+        callback(word, str(i))
+    for x in range(2, 3):
+        for y in range(0, 10 ** (x-1)):
+            callback(word, str(y).rjust(x, '0'))
+    for i in range(1900, 2025):
+        callback(word, str(i))
 
 words = []
 def addword(word):
-	# don't add dupes to list
-	if not word in words:
-		words.append(word)
+    # don't add dupes to list
+    if not word in words:
+        words.append(word)
 
 # add word variations to list
 def wordvari(word):
-	addword(word)
-	addword(word.lower())
-	addword(word.upper())
-	addword(word.title())
-	addword(word[::-1].lower())
-	#addword(word[::-1].upper())
-	#addword(word[::-1].title())
+    addword(word)
+    addword(word.lower())
+    addword(word.upper())
+    addword(word.title())
+    addword(word[::-1].lower())
+    #addword(word[::-1].upper())
+    #addword(word[::-1].title())
 
 # print usage
 if len(sys.argv) <= 1:
-	print("ABOUT: generate wordlist from word")
-	print("USAGE: " + sys.argv[0] + " <word>")
-	exit()
+    print("ABOUT: generate wordlist from word")
+    print("USAGE: " + sys.argv[0] + " <word>")
+    exit()
 
 # get all word variations from cmd args
 for i in sys.argv[1:]:
-	wordvari(i)
+    wordvari(i)
 
 # just print word variations
 for i in words:
-	print(i)
+    print(i)
 
 # word + nums
 for i in words:
-	genlst(i, print_wi)
-	genlst(i, print_iw)
-	genlst(i, print_iwi)
+    genlst(i, print_wi)
+    genlst(i, print_iw)
+    genlst(i, print_iwi)
 
 

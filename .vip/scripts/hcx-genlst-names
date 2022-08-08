@@ -6,9 +6,9 @@ import sys
 
 # print usage
 if len(sys.argv) <= 1:
-	print("ABOUT: generate wordlist from names")
-	print("USAGE: " + sys.argv[0] + " <namesFile>")
-	exit()
+    print("ABOUT: generate wordlist from names")
+    print("USAGE: " + sys.argv[0] + " <namesFile>")
+    exit()
 
 
 file_path = sys.argv[1]
@@ -19,8 +19,8 @@ file.close()
 
 print("#!/bin/bash -x")
 for i_ in file_lines:
-	i = i_.replace("\n", "")
-	print(f"hcx-genlst-XXXX '{i}' | strings -n 8 >> new.txt")
+    i = i_.replace("\n", "")
+    print(f"hcx-genlst-XXXX '{i}' | strings -n 8 >> new.txt")
 
 
 print("sort -u new.txt > new_sorted.txt")

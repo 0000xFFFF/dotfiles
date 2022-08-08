@@ -10,28 +10,28 @@ devices = re.compile("^wl\w+").findall(subprocess.run(["iwconfig"], capture_outp
 
 # no wifi interface connected
 if len(devices) == 0:
-	print("no wifi adapter")
-	exit()
+    print("no wifi adapter")
+    exit()
 
 # menu
 print("Select Interface:")
 for index, item in enumerate(devices):
-	print(f"  {index} - {item}")
+    print(f"  {index} - {item}")
 while True:
-	try: wifi_interface_choice = input("> ")
-	except KeyboardInterrupt: stop()
-	try:
-		if devices[int(wifi_interface_choice)]: break
-	except:
-		print("invalid")
+    try: wifi_interface_choice = input("> ")
+    except KeyboardInterrupt: stop()
+    try:
+        if devices[int(wifi_interface_choice)]: break
+    except:
+        print("invalid")
 
 device = devices[int(wifi_interface_choice)]
 
 f = ""
 if len(sys.argv) >= 2:
-	f = sys.argv[1]
+    f = sys.argv[1]
 
 if f:
-	os.system("sudo hcx-wifi " + device + " \"" + f + "\"")
+    os.system("sudo hcx-wifi " + device + " \"" + f + "\"")
 else:
-	os.system("sudo hcx-wifi " + device)
+    os.system("sudo hcx-wifi " + device)

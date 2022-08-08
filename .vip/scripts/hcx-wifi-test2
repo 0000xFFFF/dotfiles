@@ -12,18 +12,18 @@ channels = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ]
 def hopch(i): os.system(f"sudo iw dev '{interface}' set channel {i}")
 
 def thread_hopch():
-	while True:
-		for i in channels:
-			hopch(i)
-			time.sleep(1)
+    while True:
+        for i in channels:
+            hopch(i)
+            time.sleep(1)
 
 def callback(packet):
-	if packet.haslayer(Dot11Deauth):
-		print(packet.addr1, packet.addr2, packet.addr3)
+    if packet.haslayer(Dot11Deauth):
+        print(packet.addr1, packet.addr2, packet.addr3)
 
 
 if __name__ == "__main__":
-	th_hop = Thread(target=thread_hopch)
-	th_hop.start()
+    th_hop = Thread(target=thread_hopch)
+    th_hop.start()
 
-	sniff(prn=callback, iface=interface)
+    sniff(prn=callback, iface=interface)

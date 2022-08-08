@@ -57,27 +57,27 @@ lines = subprocess.run(["tshark", "-D"], capture_output=True).stdout.decode()
 devices = []
 
 for line in lines.split("\n"):
-	if line:
-		items = line.split(" ")
-		if len(items) >= 2:
-			devices.append(line.split(" ")[1])
+    if line:
+        items = line.split(" ")
+        if len(items) >= 2:
+            devices.append(line.split(" ")[1])
 
 # no wifi interface connected
 if len(devices) == 0:
-	print("no wifi adapter")
-	exit()
+    print("no wifi adapter")
+    exit()
 
 # menu
 print("Select Interface:")
 for index, item in enumerate(devices):
-	print(f"  {index} - {item}")
+    print(f"  {index} - {item}")
 while True:
-	try: wifi_interface_choice = input("> ")
-	except KeyboardInterrupt: stop()
-	try:
-		if devices[int(wifi_interface_choice)]: break
-	except:
-		print("invalid")
+    try: wifi_interface_choice = input("> ")
+    except KeyboardInterrupt: stop()
+    try:
+        if devices[int(wifi_interface_choice)]: break
+    except:
+        print("invalid")
 
 device = devices[int(wifi_interface_choice)]
 

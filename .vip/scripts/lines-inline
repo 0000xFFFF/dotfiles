@@ -7,8 +7,8 @@
 import sys
 
 if len(sys.argv) <= 2:
-	print("USAGE: " + sys.argv[0] + " <file1> <file2>")
-	exit()
+    print("USAGE: " + sys.argv[0] + " <file1> <file2>")
+    exit()
 
 file1 = open(sys.argv[1], 'r')
 lines1 = file1.readlines()
@@ -20,11 +20,11 @@ file2.close()
 
 
 for l1 in lines1:
-	line1 = l1.replace("\n", "")
-	exists = False
-	for l2 in lines2:
-		line2 = l2.replace("\n", "")
-		if line2 in line1:
-			print(line1)
-			break
+    line1 = l1.replace("\n", "")
+    exists = False
+    for l2 in lines2:
+        line2 = l2.replace("\n", "")
+        if line2 in line1:
+            print(line1)
+            break
 

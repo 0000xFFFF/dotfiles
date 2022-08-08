@@ -4,8 +4,8 @@ import sys
 import subprocess
 
 if len(sys.argv) < 2:
-	print("USAGE: " + sys.argv[0] + " <hashesFile>")
-	exit()
+    print("USAGE: " + sys.argv[0] + " <hashesFile>")
+    exit()
 
 hashes_file_file = open(sys.argv[1], 'r')
 hashes_file_lines = hashes_file_file.readlines()
@@ -13,21 +13,21 @@ hashes_file_file.close()
 
 hashes_list = []
 for hashes_file_line in hashes_file_lines:
-	hashLine = hashes_file_line.replace("\n", "")
-	p = subprocess.Popen(['hcxpmktool', '-i', hashLine, '-p', ''], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-	pmk = ""
-	for outL in p.stdout.read().decode().split("\n"):
-		if outL.startswith("PMK...............: "):
-			pmk = outL.replace("PMK...............: ", "")
-			break
-	
-	contains = False
-	for i in hashes_list:
-		if i[0] == pmk:
-			contains = True
-			break
-	if not contains: hashes_list.append([pmk, hashLine])
+    hashLine = hashes_file_line.replace("\n", "")
+    p = subprocess.Popen(['hcxpmktool', '-i', hashLine, '-p', ''], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    pmk = ""
+    for outL in p.stdout.read().decode().split("\n"):
+        if outL.startswith("PMK...............: "):
+            pmk = outL.replace("PMK...............: ", "")
+            break
+
+    contains = False
+    for i in hashes_list:
+        if i[0] == pmk:
+            contains = True
+            break
+    if not contains: hashes_list.append([pmk, hashLine])
 
 
 for i in hashes_list:
-	print(i[1])
+    print(i[1])

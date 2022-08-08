@@ -5,9 +5,9 @@ from operator import itemgetter
 
 
 if len(sys.argv) < 2:
-	print("ABOUT: count string len")
-	print("USAGE: " + sys.argv[0] + " <file>")
-	exit()
+    print("ABOUT: count string len")
+    print("USAGE: " + sys.argv[0] + " <file>")
+    exit()
 
 file_path = sys.argv[1]
 file_file = open(file_path, 'r')
@@ -18,24 +18,24 @@ items = []
 counter = 0
 lines_l = len(file_lines)
 for i_ in file_lines:
-	i = i_.replace("\n", "")
+    i = i_.replace("\n", "")
 
-	l = len(i)
-	counter = 1
+    l = len(i)
+    counter = 1
 
-	exists = False
-	for item in items:
-		if l == item[0]:
-			exists = True
-			item[1] += 1
-			break
-	
-	if not exists:
-		items.append([l, counter])
+    exists = False
+    for item in items:
+        if l == item[0]:
+            exists = True
+            item[1] += 1
+            break
+
+    if not exists:
+        items.append([l, counter])
 
 
 items = sorted(items, key=itemgetter(1))
 
 
 for i in items:
-	print(f"{i[0]}\t{i[1]}\t({i[1]/lines_l*100:.2f}%)")
+    print(f"{i[0]}\t{i[1]}\t({i[1]/lines_l*100:.2f}%)")

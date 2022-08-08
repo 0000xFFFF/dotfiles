@@ -4,8 +4,8 @@ import sys
 
 # get args
 if len(sys.argv) < 2:
-	print("USAGE: " + sys.argv[0] + " <video>")
-	exit()
+    print("USAGE: " + sys.argv[0] + " <video>")
+    exit()
 
 
 file_path = sys.argv[1]

@@ -4,7 +4,7 @@ link="$(< "$FILE" fzf --layout=reverse)"
 [ -z "$link" ] && exit
 
 RUN() {
-	if ! mpv --volume=50 --geometry=100%:100% --autofit-larger=700 "${link%% *}"; then RUN; fi
+    if ! mpv --volume=50 --geometry=100%:100% --autofit-larger=700 "${link%% *}"; then RUN; fi
 }
 
 RUN
