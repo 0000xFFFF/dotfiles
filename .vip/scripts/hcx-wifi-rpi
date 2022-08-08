@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 
-# TODO:
-# - stop pihax from getting input
-# - control this script with LCD keys like pihax
-#
-
 import sys
 import termios # getch()
 import time
@@ -347,7 +342,7 @@ def menu(keyPress):
     elif keyPress == 3: action_prevWifi()
     elif keyPress == 4: action_nextWifi()
     elif keyPress == 5: action_pauseUI()
-    elif keyPress == 6: action_clear_wifis()
+    elif keyPress == 6: action_quit()
     elif keyPress == 7: action_changeSorting()
     elif keyPress == 8: action_changeSorting_order()
     term_clear()
