@@ -1,8 +1,8 @@
 #!/bin/bash
 
 function utc() {
-    #echo "$(date +"%Y-%m-%d %T:%N (%s)")"
-    echo "$(date +"%Y-%m-%d %T")"
+	#echo "$(date +"%Y-%m-%d %T:%N (%s)")"
+	echo "$(date +"%Y-%m-%d %T")"
 }
 
 unhide_cursor() {
@@ -18,7 +18,7 @@ tput clear
 
 while true
 do
-    tput cup 0 0
-    /home/pi/.vip/scripts/pi_log1
-    sleep 2
+	tput cup 0 0
+	/home/pi/.vip/scripts/pi_log1
+	sleep 2
 done

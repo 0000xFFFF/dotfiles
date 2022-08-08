@@ -35,7 +35,7 @@ GPIO.setup(KEY2_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(KEY3_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 while True:
-    if not GPIO.input(KEY1_PIN): print("KEY1")
+    if not GPIO.input(KEY1_PIN): exit()
     if not GPIO.input(KEY2_PIN): print("KEY2")
     if not GPIO.input(KEY3_PIN): print("KEY3")
     if not GPIO.input(KEY_UP_PIN):    print("UP")

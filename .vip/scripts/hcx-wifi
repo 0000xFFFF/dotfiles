@@ -15,9 +15,9 @@ sniff(prn=lambda x:x.summary(), iface="wlp0s26u1u2mon")
 '''
 
 import sys
-import termios # getch()
 import time
 import atexit
+import getchlib
 
 from scapy.all import *
 from threading import Thread
@@ -118,16 +118,6 @@ def term_cursor_hide():
 def term_cursor_show():
     print("\033[?25h")
 
-def term_getch():
-    old_settings = termios.tcgetattr(0)
-    new_settings = old_settings[:]
-    new_settings[3] &= ~termios.ICANON
-    try:
-        termios.tcsetattr(0, termios.TCSANOW, new_settings)
-        ch = sys.stdin.read(1)
-    finally:
-        termios.tcsetattr(0, termios.TCSANOW, old_settings)
-    return ch
 def term_show_print(s):
     global show_counter
     tl = os.get_terminal_size().lines
@@ -208,9 +198,8 @@ else:
 
 def action_quit():
     global running
+    print("Quitting...")
     running = False # send signal for the threads to close
-    th_ui.join()
-    th_hop.join()
     exit()
 def action_changeSorting():
     found = False
@@ -629,8 +618,11 @@ if __name__ == "__main__":
 
         # threads (print / channel hopper)
         th_ui  = Thread(target=thread_updateUI)
-        th_hop = Thread(target=thread_hopch)
+        th_ui.daemon = True
 
+        th_hop = Thread(target=thread_hopch)
+        th_hop.daemon = True
+        
         # start all threads
         th_ui.start()
         th_hop.start()
@@ -641,7 +633,7 @@ if __name__ == "__main__":
 
         # handle key input
         while running:
-            pressedKey = term_getch()
+            pressedKey = getchlib.getkey()
 
             if   pressedKey == "q": action_quit()
             elif pressedKey == "s": action_changeSorting()
@@ -661,6 +653,4 @@ if __name__ == "__main__":
             term_clear()
             updateUI()
     except KeyboardInterrupt:
-        print("Quitting...")
-        running = False
-        exit()
+        action_quit()

@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
 import sys
-import termios # getch()
 import time
-import atexit
 import RPi.GPIO as GPIO
-
+import atexit
+#import getchlib
 from scapy.all import *
 from threading import Thread
 from datetime import datetime
@@ -88,16 +87,6 @@ def term_cursor_hide():
 def term_cursor_show():
     print("\033[?25h")
 
-def term_getch():
-    old_settings = termios.tcgetattr(0)
-    new_settings = old_settings[:]
-    new_settings[3] &= ~termios.ICANON
-    try:
-        termios.tcsetattr(0, termios.TCSANOW, new_settings)
-        ch = sys.stdin.read(1)
-    finally:
-        termios.tcsetattr(0, termios.TCSANOW, old_settings)
-    return ch
 def term_show_print(s):
     global show_counter
     tl = os.get_terminal_size().lines
@@ -139,10 +128,8 @@ def signal_handler():
 
 def action_quit():
     global running
-    running = False # send signal for the threads to close
-    th_ui.join()
-    th_hop.join()
-    exit()
+    running = False
+    #exit()
 def action_changeSorting():
     found = False
     isSet = False
@@ -251,7 +238,8 @@ def updateUI():
     term_show(f"CH {str(ch).rjust(2)} | {str(timestr).ljust(26)}")
     len_wifis = len(wifis)
     term_show(f"PASS: {passwords_count} | {current_wifi} / {len_wifis-1} ({len_wifis}) | ")
-    term_show(f"SORT BY: {arrowChar} {sortBy} | {status}")
+    term_show(f"SORT BY: {arrowChar} {sortBy}")
+    term_show(f"> {status}")
 
     wifis_sorted = sorted(wifis, key=itemgetter(wifi_clms.index(sortBy)), reverse=sortBy_reverse)
     #term_show(str(tabulate(wifis_sorted, headers=wifi_clms, tablefmt="plain")))
@@ -259,7 +247,7 @@ def updateUI():
 
     if len(wifis) > 0:
         try:
-            term_show(f"+{'='*45}")
+            term_show(f"+{'='*35}")
             term_show(f"BSSID.....: {wifis_sorted[current_wifi][wifi_clm_bssid]}")
             term_show(f"ESSID.....: {wifis_sorted[current_wifi][wifi_clm_essid]}")
             term_show(f"PASSWORD..: {wifis_sorted[current_wifi][wifi_clm_passwd]}")
@@ -270,7 +258,7 @@ def updateUI():
             term_show(f"CRYPTO....: {wifis_sorted[current_wifi][wifi_clm_crypto]}")
             term_show(f"TIMESTAMP.: {wifis_sorted[current_wifi][wifi_clm_timestamp]}")
             term_show(f"PACKETS...: {wifis_sorted[current_wifi][wifi_clm_packets]}")
-            term_show(f"+{'='*45}")
+            term_show(f"+{'='*35}")
         except:
             pass
     updateUI_mutex.release()
@@ -335,8 +323,6 @@ def callback(packet):
         return # close if
 
 def menu(keyPress):
-    menu_mutex.acquire()
-
     if   keyPress == 1: action_hopch()
     elif keyPress == 2: action_pauseCHHOP()
     elif keyPress == 3: action_prevWifi()
@@ -348,38 +334,43 @@ def menu(keyPress):
     term_clear()
     updateUI()
 
-    menu_mutex.release()
+#menu_callback_block = False
+#def menu_callback(channel):
+#    global menu_callback_block
+#    if menu_callback_block: return
+#
+#    if GPIO.input(channel) == 1:
+#        menu_callback_block = True
+#        if   channel == KEY_UP_PIN:    menu(1)
+#        elif channel == KEY_DOWN_PIN:  menu(2)
+#        elif channel == KEY_LEFT_PIN:  menu(3)
+#        elif channel == KEY_RIGHT_PIN: menu(4)
+#        elif channel == KEY_PRESS_PIN: menu(5)
+#        elif channel == KEY1_PIN:      menu(6)
+#        elif channel == KEY2_PIN:      menu(7)
+#        elif channel == KEY3_PIN:      menu(8)
+#        menu_callback_block = False
 
-def menu_callback(channel):
-    time.sleep(0.1)
-    if GPIO.input(channel) == 1:
-        if   channel == KEY_UP_PIN:    menu(1)
-        elif channel == KEY_DOWN_PIN:  menu(2)
-        elif channel == KEY_LEFT_PIN:  menu(3)
-        elif channel == KEY_RIGHT_PIN: menu(4)
-        elif channel == KEY_PRESS_PIN: menu(5)
-        elif channel == KEY1_PIN:      menu(6)
-        elif channel == KEY2_PIN:      menu(7)
-        elif channel == KEY3_PIN:      menu(8)
-
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(KEY_UP_PIN,    GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(KEY_DOWN_PIN,  GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(KEY_LEFT_PIN,  GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(KEY_RIGHT_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(KEY_PRESS_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(KEY1_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(KEY2_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(KEY3_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-GPIO.add_event_detect(KEY_UP_PIN,    GPIO.BOTH, callback=menu_callback, bouncetime=100)
-GPIO.add_event_detect(KEY_DOWN_PIN,  GPIO.BOTH, callback=menu_callback, bouncetime=100)
-GPIO.add_event_detect(KEY_LEFT_PIN,  GPIO.BOTH, callback=menu_callback, bouncetime=100)
-GPIO.add_event_detect(KEY_RIGHT_PIN, GPIO.BOTH, callback=menu_callback, bouncetime=100)
-GPIO.add_event_detect(KEY_PRESS_PIN, GPIO.BOTH, callback=menu_callback, bouncetime=100)
-GPIO.add_event_detect(KEY1_PIN,      GPIO.BOTH, callback=menu_callback, bouncetime=100)
-GPIO.add_event_detect(KEY2_PIN,      GPIO.BOTH, callback=menu_callback, bouncetime=100)
-GPIO.add_event_detect(KEY3_PIN,      GPIO.BOTH, callback=menu_callback, bouncetime=100)
+def gpio_setup():
+    btime = 50
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(KEY_UP_PIN,    GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_DOWN_PIN,  GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_LEFT_PIN,  GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_RIGHT_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_PRESS_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY1_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY2_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY3_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    # # i guess you can't use this in a sub program :P
+    #GPIO.add_event_detect(KEY_UP_PIN,    GPIO.RISING, callback=menu_callback, bouncetime=btime)
+    #GPIO.add_event_detect(KEY_DOWN_PIN,  GPIO.RISING, callback=menu_callback, bouncetime=btime)
+    #GPIO.add_event_detect(KEY_LEFT_PIN,  GPIO.RISING, callback=menu_callback, bouncetime=btime)
+    #GPIO.add_event_detect(KEY_RIGHT_PIN, GPIO.RISING, callback=menu_callback, bouncetime=btime)
+    #GPIO.add_event_detect(KEY_PRESS_PIN, GPIO.RISING, callback=menu_callback, bouncetime=btime)
+    #GPIO.add_event_detect(KEY1_PIN,      GPIO.RISING, callback=menu_callback, bouncetime=btime)
+    #GPIO.add_event_detect(KEY2_PIN,      GPIO.RISING, callback=menu_callback, bouncetime=btime)
+    #GPIO.add_event_detect(KEY3_PIN,      GPIO.RISING, callback=menu_callback, bouncetime=btime)
 
 if __name__ == "__main__":
 
@@ -418,9 +409,9 @@ if __name__ == "__main__":
 
         # threads (print / channel hopper)
         th_ui  = Thread(target=thread_updateUI)
+        th_ui.daemon = True
         th_hop = Thread(target=thread_hopch)
-
-        # start all threads
+        th_hop.daemon = True
         th_ui.start()
         th_hop.start()
 
@@ -428,22 +419,37 @@ if __name__ == "__main__":
         th_sniff = AsyncSniffer(prn=callback, iface=interface)
         th_sniff.start()
 
-        # handle key input
+        # setup pi gpio
+        gpio_setup()
+
         while running:
-            pressedKey = term_getch()
-            if   pressedKey == "q": action_quit()
-            elif pressedKey == "s": action_changeSorting()
-            elif pressedKey == "d": action_changeSorting_order()
-            elif pressedKey == " ": action_pauseUI()
-            elif pressedKey == "c": action_hopch()
-            elif pressedKey == "C": action_pauseCHHOP()
-            elif pressedKey == "w": action_show_wifis()
-            elif pressedKey == "W": action_clear_wifis()
-            elif pressedKey == "j": action_nextWifi()
-            elif pressedKey == "k": action_prevWifi()
-            term_clear()
-            updateUI()
+            if   not GPIO.input(KEY_UP_PIN):    menu(1)
+            elif not GPIO.input(KEY_DOWN_PIN):  menu(2)
+            elif not GPIO.input(KEY_LEFT_PIN):  menu(3)
+            elif not GPIO.input(KEY_RIGHT_PIN): menu(4)
+            elif not GPIO.input(KEY_PRESS_PIN): menu(5)
+            elif not GPIO.input(KEY1_PIN):      menu(6)
+            elif not GPIO.input(KEY2_PIN):      menu(7)
+            elif not GPIO.input(KEY3_PIN):      menu(8)
+            time.sleep(0.2)
+
+        th_ui.join()
+        th_hop.join()
+
+        # # handle key input
+        # while running:
+        #     pressedKey = getchlib.getkey()
+        #     if   pressedKey == "q": raise KeyboardInterrupt
+        #     elif pressedKey == "s": action_changeSorting()
+        #     elif pressedKey == "d": action_changeSorting_order()
+        #     elif pressedKey == " ": action_pauseUI()
+        #     elif pressedKey == "c": action_hopch()
+        #     elif pressedKey == "C": action_pauseCHHOP()
+        #     elif pressedKey == "w": action_show_wifis()
+        #     elif pressedKey == "W": action_clear_wifis()
+        #     elif pressedKey == "j": action_nextWifi()
+        #     elif pressedKey == "k": action_prevWifi()
+        #     term_clear()
+        #     updateUI()
     except KeyboardInterrupt:
-        print("Quitting...")
-        running = False
-        exit()
+        action_quit()

@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
 
-# TODO: kill process menu
-#       rename and sort vars
-#       print stuff with show()
-#       add getch menu
-
-import RPi.GPIO as GPIO
+import os
+import sys
 import time
 import subprocess
 import signal
-import os
+#import getchlib
+import RPi.GPIO as GPIO
 from colorama import Fore, Back, Style
 from threading import Thread, Lock
 from datetime import datetime
@@ -34,6 +31,12 @@ KEY1_PIN      = 21
 KEY2_PIN      = 20
 KEY3_PIN      = 16
 
+# glbl stuff
+running = True
+running_menu = False
+menu_opt = 0
+menu_calls = 0
+proc = 0
 
 def checkRoot():
     return os.geteuid() == 0
@@ -46,63 +49,21 @@ def term_cursor_hide():
 def term_cursor_show():
     print("\033[?25h")
 
-def runcmd_getLines(cmd):
-    output = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    return output.stdout.read().decode().split("\n")
-
-fetch_processes = [ "hcx", "pi_log", "pi_dump", "tail" ]
-def getProcesses():
-    for i in fetch_processes:
-        runcmd_getLines(i)
-
-
-menu_opt = 0
-menu_calls = 0
-menu_mutex = Lock()
-runprog_mutex = Lock()
-proc = 0
-
-def runprog_thread(lst):
-    runprog_mutex.acquire()
+def runprog_wait(lst):
     global proc
     proc = subprocess.Popen(lst)
-    runprog_mutex.release()
     print(f"started PID: {proc.pid}")
     os.waitpid(proc.pid, 0)
     print(f"died: {proc.pid}")
-
 def runprog(lst):
-    t = Thread(target = runprog_thread, args = (lst,))
+    t = Thread(target = runprog_wait, args = (lst,))
     t.start()
-
-def doAction():
-    if   menu_opt ==  0: return
-    elif menu_opt ==  1: runprog(["airmon-ng"])
-    elif menu_opt ==  2: runprog(["airmon-ng", "start", "wlan1"])
-    elif menu_opt ==  3: runprog(["airmon-ng", "stop", "wlan1"])
-    elif menu_opt ==  4: runprog(["/home/pi/.vip/scripts/hcx-wifi-rpi", "wlan1mon", "/home/pi/Hashes/cracked.csv"]) # TODO: stop getting input while this script is running
-    elif menu_opt ==  5: runprog(["/home/pi/.vip/scripts/pi_dump"])
-    elif menu_opt ==  6: runprog(["/home/pi/.vip/scripts/pi_log"])
-    elif menu_opt ==  7: runprog(["/home/pi/.vip/scripts/pi_log1"])
-    elif menu_opt ==  8: runprog(["/home/pi/.vip/scripts/pi_hcxdumptool_start"])
-    elif menu_opt ==  9: runprog(["/home/pi/.vip/scripts/pi_hcxdumptool_start_quiet"])
-    elif menu_opt == 10: runprog(["/home/pi/.vip/scripts/pi_running"])
-    elif menu_opt == 11: runprog(["/home/pi/.vip/scripts/pi_running_kill"])
-    elif menu_opt == 12: runprog(["/home/pi/.vip/scripts/wlan-dump"])
-
-def killProc():
-    global proc
-    print(f"KILL: {proc.pid}")
-    try:
-        os.kill(proc.pid, signal.SIGTERM)
-    except ProcessLookupError:
-        print("ProcessLookupError")
 
 menu_items = [
     [ 0, ""],
     [ 1, "airmon-ng"],
     [ 2, "airmon-ng start wlan1"],
-    [ 3, "airmon-ng stop wlan1"],
+    [ 3, "airmon-ng stop wlan1mon"],
     [ 4, "hcx-wifi-rpi wlan1mon"],
     [ 5, "pi_dump"],
     [ 6, "pi_log"],
@@ -111,31 +72,81 @@ menu_items = [
     [ 9, "pi_hcxdumptool_start_quiet"],
     [10, "pi_running"],
     [11, "pi_running_kill"],
-    [12, "wlan-dump"]
+    [12, "wlan-dump"],
+    [13, "exa /home/pi/Dump"],
+    [14, "exa -lah /home/pi/Dump"],
 ]
 
 OPT_MIN = 0
 OPT_MAX = len(menu_items) - 1
 
+def action_opt_cap():
+    global menu_opt
+    global OPT_MIN
+    global OPT_MAX
+    if   menu_opt > OPT_MAX: menu_opt = OPT_MAX
+    elif menu_opt < OPT_MIN: menu_opt = OPT_MIN
+def action_opt_up():
+    global menu_opt
+    menu_opt -= 1
+    action_opt_cap()
+def action_opt_down():
+    global menu_opt
+    menu_opt += 1
+    action_opt_cap()
+def action_quit():
+    global running
+    print("Quitting...")
+    running = False
+
+def action_run():
+    global menu_opt
+    if   menu_opt ==  0: return
+    elif menu_opt ==  1: runprog(["airmon-ng"])
+    elif menu_opt ==  2: runprog(["airmon-ng", "start", "wlan1"])
+    elif menu_opt ==  3: runprog(["airmon-ng", "stop", "wlan1mon"])
+    elif menu_opt ==  4: runprog_wait(["python", "/home/pi/.vip/scripts/hcx-wifi-rpi", "wlan1mon", "/home/pi/Hashes/cracked.csv"])
+    elif menu_opt ==  5: runprog(["/home/pi/.vip/scripts/pi_dump"])
+    elif menu_opt ==  6: runprog(["/home/pi/.vip/scripts/pi_log"])
+    elif menu_opt ==  7: runprog(["/home/pi/.vip/scripts/pi_log1"])
+    elif menu_opt ==  8: runprog(["/home/pi/.vip/scripts/pi_hcxdumptool_start"])
+    elif menu_opt ==  9: runprog(["/home/pi/.vip/scripts/pi_hcxdumptool_start_quiet"])
+    elif menu_opt == 10: runprog(["/home/pi/.vip/scripts/pi_running"])
+    elif menu_opt == 11: runprog(["/home/pi/.vip/scripts/pi_running_kill"])
+    elif menu_opt == 12: runprog(["/home/pi/.vip/scripts/wlan-dump"])
+    elif menu_opt == 13: runprog(["exa", "/home/pi/Dump"])
+    elif menu_opt == 14: runprog(["exa", "-lah", "/home/pi/Dump"])
+
+def action_kill():
+    global proc
+    try:
+        print(f"KILL: {proc.pid}")
+        os.kill(proc.pid, signal.SIGTERM)
+    except ProcessLookupError:
+        print("ProcessLookupError")
+    except:
+        print("process not found")
+
 def menu(keyPress):
 
-    menu_mutex.acquire()
+    global running_menu
+    if running_menu: return
+
+    running_menu = True
 
     global menu_opt
     global menu_calls
     global menu_items
-    resetCursor()
-    if keyPress == 3: clearScreen()
+    term_cursor_reset()
 
     menu_calls += 1
-    if   keyPress == 1: menu_opt -= 1
-    elif keyPress == 2: menu_opt += 1
-    if   menu_opt > OPT_MAX: menu_opt = OPT_MAX
-    elif menu_opt < OPT_MIN: menu_opt = OPT_MIN
+    if   keyPress == 1: action_opt_up()
+    elif keyPress == 2: action_opt_down()
+    elif keyPress == 3: term_clear()
 
     # draw
     print(f"[{keyPress}] | {menu_opt} - {OPT_MIN}/{OPT_MAX} | {menu_calls}")
-    print(datetime.now())
+    print(str(datetime.now()))
     print("")
     for i in menu_items:
         num = str(i[0]).rjust(3, " ")
@@ -145,46 +156,85 @@ def menu(keyPress):
         else:
             print(f"    {num}. {cmd}")
 
-    if keyPress == 5: doAction()
-    if keyPress == 6: killProc()
-    if keyPress == 4: clearScreen()
+    if   keyPress == 4: term_clear()
+    elif keyPress == 5: action_run()
+    elif keyPress == 6: action_kill()
+    elif keyPress == 8: action_quit()
 
-    menu_mutex.release()
+    running_menu = False
 
+menu_callback_block = False
 def menu_callback(channel):
-    time.sleep(0.1)
+    global menu_callback_block
+    if menu_callback_block: return
+
     if GPIO.input(channel) == 1:
-        if channel == KEY_UP_PIN:    menu(1)
-        if channel == KEY_DOWN_PIN:  menu(2)
-        if channel == KEY_LEFT_PIN:  menu(3)
-        if channel == KEY_RIGHT_PIN: menu(4)
-        if channel == KEY_PRESS_PIN: menu(5)
-        if channel == KEY1_PIN:      menu(6)
-        if channel == KEY2_PIN:      menu(7)
-        if channel == KEY3_PIN:      menu(8)
+        menu_callback_block = True
+        if   channel == KEY_UP_PIN:    menu(1)
+        elif channel == KEY_DOWN_PIN:  menu(2)
+        elif channel == KEY_LEFT_PIN:  menu(3)
+        elif channel == KEY_RIGHT_PIN: menu(4)
+        elif channel == KEY_PRESS_PIN: menu(5)
+        elif channel == KEY1_PIN:      menu(6)
+        elif channel == KEY2_PIN:      menu(7)
+        elif channel == KEY3_PIN:      menu(8)
+        time.sleep(0.2)
+        menu_callback_block = False
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(KEY_UP_PIN,    GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(KEY_DOWN_PIN,  GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(KEY_LEFT_PIN,  GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(KEY_RIGHT_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(KEY_PRESS_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(KEY1_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(KEY2_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(KEY3_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
+def gpio_setup():
+    btime = 200
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(KEY_UP_PIN,    GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_DOWN_PIN,  GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_LEFT_PIN,  GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_RIGHT_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_PRESS_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY1_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY2_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY3_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.add_event_detect(KEY_UP_PIN,    GPIO.RISING, callback=menu_callback, bouncetime=btime)
+    GPIO.add_event_detect(KEY_DOWN_PIN,  GPIO.RISING, callback=menu_callback, bouncetime=btime)
+    GPIO.add_event_detect(KEY_LEFT_PIN,  GPIO.RISING, callback=menu_callback, bouncetime=btime)
+    GPIO.add_event_detect(KEY_RIGHT_PIN, GPIO.RISING, callback=menu_callback, bouncetime=btime)
+    GPIO.add_event_detect(KEY_PRESS_PIN, GPIO.RISING, callback=menu_callback, bouncetime=btime)
+    GPIO.add_event_detect(KEY1_PIN,      GPIO.RISING, callback=menu_callback, bouncetime=btime)
+    GPIO.add_event_detect(KEY2_PIN,      GPIO.RISING, callback=menu_callback, bouncetime=btime)
+    GPIO.add_event_detect(KEY3_PIN,      GPIO.RISING, callback=menu_callback, bouncetime=btime)
 
-GPIO.add_event_detect(KEY_UP_PIN,    GPIO.BOTH, callback=menu_callback, bouncetime=100)
-GPIO.add_event_detect(KEY_DOWN_PIN,  GPIO.BOTH, callback=menu_callback, bouncetime=100)
-GPIO.add_event_detect(KEY_LEFT_PIN,  GPIO.BOTH, callback=menu_callback, bouncetime=100)
-GPIO.add_event_detect(KEY_RIGHT_PIN, GPIO.BOTH, callback=menu_callback, bouncetime=100)
-GPIO.add_event_detect(KEY_PRESS_PIN, GPIO.BOTH, callback=menu_callback, bouncetime=100)
-GPIO.add_event_detect(KEY1_PIN,      GPIO.BOTH, callback=menu_callback, bouncetime=100)
-GPIO.add_event_detect(KEY2_PIN,      GPIO.BOTH, callback=menu_callback, bouncetime=100)
-GPIO.add_event_detect(KEY3_PIN,      GPIO.BOTH, callback=menu_callback, bouncetime=100)
+if __name__ == "__main__":
 
-term_clear()
-menu(0)
+    if not checkRoot():
+        print("use root.")
+        exit()
 
-#input()
-while True:
-    time.sleep(5)
+    gpio_setup()
+
+    term_clear()
+    menu(0)
+
+
+    try:
+        while running: time.sleep(2)
+    except: print("\n")
+
+    #while running:
+    #    try:
+    #        pressedKey = getchlib.getkey()
+    #        if   pressedKey == "w": menu(1)
+    #        elif pressedKey == "s": menu(2)
+    #        elif pressedKey == "a": menu(3)
+    #        elif pressedKey == "d": menu(4)
+    #        elif pressedKey == "q": action_quit()
+    #        elif pressedKey == "e": menu(5)
+    #        elif pressedKey == "r": menu(6)
+    #        elif pressedKey == "f": menu(7)
+    #        elif pressedKey == "v": menu(8)
+    #        elif pressedKey == '\x1b[A': menu(1)
+    #        elif pressedKey == '\x1b[B': menu(2)
+    #        elif pressedKey == '\x1b[D': menu(3)
+    #        elif pressedKey == '\x1b[C': menu(4)
+    #    except KeyboardInterrupt:
+    #        action_quit()
+
+
+
