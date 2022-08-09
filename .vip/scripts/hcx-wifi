@@ -105,6 +105,7 @@ g_tl = os.get_terminal_size().lines
 # password list from csv file
 passwords = [] # BSSID, ESSID, PASSWORD
 passwords_count = 0
+passwords_count_matched = 0
 show_counter = 0
 
 def checkRoot():
@@ -337,9 +338,9 @@ def updateUI():
     show_counter = 0 # reset show counter
 
     # display stuff
-    term_show(f"CH {str(ch).rjust(2)} | {str(timestr).ljust(26)} | PASS: {passwords_count} | {status}")
-    term_show(f"COUNT: {len(wifis)}")
-    term_show(f"SORT BY: {arrowChar} {sortBy}")
+    term_show(f"CH {str(ch).rjust(2)} | {str(timestr).ljust(26)} | COUNT: {len(wifis)} | PASS: {passwords_count} ({passwords_count_matched}) | SORT BY: {arrowChar} {sortBy}")
+    term_show(f"> {status}")
+    term_show(f"")
 
     if show_wifis:
         wifis_sorted = sorted(wifis, key=itemgetter(wifi_clms.index(sortBy)), reverse=sortBy_reverse)
@@ -436,6 +437,7 @@ def callback(packet):
             wifis[index] = lst
         else:
             global passwords_count
+            global passwords_count_matched
             if passwords_count:
                 global passwords
                 for i in passwords:
@@ -443,6 +445,7 @@ def callback(packet):
                     match_i     =  str(i[0]).replace(":", "").replace("-", "").lower()
                     if match_bssid == match_i and essid == i[1]:
                         passwd = i[2]
+                        passwords_count_matched += 1
                         break
             lst[wifi_clm_num]     = len(wifis)+1
             lst[wifi_clm_packets] = 1

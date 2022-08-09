@@ -55,6 +55,7 @@ g_tl = os.get_terminal_size().lines
 # password list from csv file
 passwords = [] # BSSID, ESSID, PASSWORD
 passwords_count = 0
+passwords_count_matched = 0
 current_wifi = 0
 show_counter = 0
 
@@ -89,13 +90,15 @@ def term_cursor_hide():
 def term_cursor_show():
     print("\033[?25h")
 
-def term_show_print(s):
+def term_show_print(s, color):
     global show_counter
     tl = os.get_terminal_size().lines
     if show_counter >= (tl-1): return
+    print(color, end='')
     print(s)
+    print(f"{Style.RESET_ALL}", end='')
     show_counter += 1
-def term_show(s):
+def term_show(s, color):
     global g_tc
     global g_tl
     strings = s.split("\n")
@@ -107,8 +110,8 @@ def term_show(s):
         term_clear()
     for i in strings:
         il = len(i)
-        if il > tc: term_show_print(i[:tc])
-        else:       term_show_print(i + str(" " * int(int(tc)-int(il))))
+        if il > tc: term_show_print(i[:tc], color)
+        else:       term_show_print(i + str(" " * int(int(tc)-int(il))), color)
 
 def loadPasswords(filePath):
     global passwords
@@ -130,7 +133,7 @@ def signal_handler():
 
 def action_quit():
     global running
-    print("Quitting...")
+    print("\n\nQuitting...")
     running = False
     #exit()
 def action_changeSorting():
@@ -235,31 +238,32 @@ def updateUI():
     show_counter = 0 # reset show counter
 
     # display stuff
-    term_show(f"{Style.BRIGHT}{Fore.MAGENTA}TIME: {str(timestr).ljust(26)}{Style.RESET_ALL}")
-    term_show(f"{Style.BRIGHT}{Fore.YELLOW}CHANNEL: {str(ch).rjust(2)}{Style.RESET_ALL}")
-    term_show(f"{Style.BRIGHT}{Fore.RED}PASSWORDS: {passwords_count}{Style.RESET_ALL}")
-    term_show(f"{Style.BRIGHT}{Fore.GREEN}WIFIS: {current_wifi} / {len_wifis-1} ({len_wifis})")
-    term_show(f"{Style.BRIGHT}{Fore.BLUE}SORT BY: {arrowChar} {sortBy}{Style.RESET_ALL}")
-    term_show(f"{Style.BRIGHT}{Fore.CYAN}> {status}{Style.RESET_ALL}")
+    global g_tl
+    global g_tc
+    term_show(f"TIME: {str(timestr).ljust(26)}"                           , f"{Style.BRIGHT}{Fore.MAGENTA}")
+    term_show(f"CHANNEL: {str(ch).rjust(2)}"                              , f"{Style.BRIGHT}{Fore.YELLOW}")
+    term_show(f"PASSWORDS: {passwords_count} ({passwords_count_matched})" , f"{Style.BRIGHT}{Fore.RED}")
+    term_show(f"WIFIS: {current_wifi} / {len_wifis-1} ({len_wifis})"      , f"{Style.BRIGHT}{Fore.GREEN}")
+    term_show(f"SORT BY: {arrowChar} {sortBy}"                            , f"{Style.BRIGHT}{Fore.BLUE}")
+    term_show(f"> {status}"                                               , f"{Style.BRIGHT}{Fore.CYAN}")
 
     wifis_sorted = sorted(wifis, key=itemgetter(wifi_clms.index(sortBy)), reverse=sortBy_reverse)
 
     if len(wifis) > 0:
         try:
-            term_show(f"{Style.NORMAL}{Fore.BLUE}+{'='*30}{Style.RESET_ALL}")
-            term_show(f"{Style.BRIGHT}{Fore.CYAN}BSSID.....: {wifis_sorted[current_wifi][wifi_clm_bssid]}{Style.RESET_ALL}")
-            term_show(f"{Style.BRIGHT}{Fore.GREEN}ESSID.....: {wifis_sorted[current_wifi][wifi_clm_essid]}{Style.RESET_ALL}")
-            term_show(f"{Style.BRIGHT}{Fore.RED}PASSWORD..: {wifis_sorted[current_wifi][wifi_clm_passwd]}{Style.RESET_ALL}")
-            term_show(f"{Style.BRIGHT}{Fore.WHITE}PWR.......: {wifis_sorted[current_wifi][wifi_clm_pwr]}{Style.RESET_ALL}")
-            term_show(f"{Style.BRIGHT}{Fore.BLUE}LAST SEEN.: {wifis_sorted[current_wifi][wifi_clm_lastseen]}{Style.RESET_ALL}")
-            term_show(f"{Style.NORMAL}{Fore.YELLOW}#.........: {wifis_sorted[current_wifi][wifi_clm_num]}{Style.RESET_ALL}")
-            term_show(f"{Style.NORMAL}{Fore.GREEN}CH........: {wifis_sorted[current_wifi][wifi_clm_ch]}{Style.RESET_ALL}")
-            term_show(f"{Style.NORMAL}{Fore.RED}CRYPTO....: {wifis_sorted[current_wifi][wifi_clm_crypto]}{Style.RESET_ALL}")
-            term_show(f"{Style.BRIGHT}{Fore.WHITE}TIMESTAMP.: {wifis_sorted[current_wifi][wifi_clm_timestamp]}{Style.RESET_ALL}")
-            term_show(f"{Style.NORMAL}{Fore.WHITE}PACKETS...: {wifis_sorted[current_wifi][wifi_clm_packets]}{Style.RESET_ALL}")
-            term_show(f"{Style.NORMAL}{Fore.BLUE}+{'='*30}{Style.RESET_ALL}")
+            term_show("", "")
+            term_show(f"BSSID: {wifis_sorted[current_wifi][wifi_clm_bssid]}"     , f"{Style.BRIGHT}{Fore.CYAN}"  )
+            term_show(f"ESSID: {wifis_sorted[current_wifi][wifi_clm_essid]}"     , f"{Style.BRIGHT}{Fore.GREEN}" )
+            term_show(f"PASS.: {wifis_sorted[current_wifi][wifi_clm_passwd]}"    , f"{Style.BRIGHT}{Fore.RED}"   )
+            term_show(f"PWR..: {wifis_sorted[current_wifi][wifi_clm_pwr]}"       , f"{Style.BRIGHT}{Fore.WHITE}" )
+            term_show(f"SEEN.: {wifis_sorted[current_wifi][wifi_clm_lastseen]}"  , f"{Style.BRIGHT}{Fore.BLUE}"  )
+            term_show(f"#....: {wifis_sorted[current_wifi][wifi_clm_num]}"       , f"{Style.NORMAL}{Fore.YELLOW}")
+            term_show(f"CH...: {wifis_sorted[current_wifi][wifi_clm_ch]}"        , f"{Style.NORMAL}{Fore.GREEN}" )
+            term_show(f"CRYP.: {wifis_sorted[current_wifi][wifi_clm_crypto]}"    , f"{Style.NORMAL}{Fore.RED}"   )
+            term_show(f"STAMP: {wifis_sorted[current_wifi][wifi_clm_timestamp]}" , f"{Style.BRIGHT}{Fore.WHITE}" )
+            term_show(f"RECV.: {wifis_sorted[current_wifi][wifi_clm_packets]}"   , f"{Style.NORMAL}{Fore.WHITE}" )
         except:
-            term_show("\n"*10)
+            term_show("\n"*10, f"{Style.RESET_ALL}")
             pass
 
     updateUI_mutex.release()
@@ -308,6 +312,7 @@ def callback(packet):
             wifis[index] = lst
         else:
             global passwords_count
+            global passwords_count_matched
             if passwords_count:
                 global passwords
                 for i in passwords:
@@ -315,6 +320,7 @@ def callback(packet):
                     match_i     =  str(i[0]).replace(":", "").replace("-", "").lower()
                     if match_bssid == match_i and essid == i[1]:
                         passwd = i[2]
+                        passwords_count_matched += 1
                         break
             lst[wifi_clm_num]     = len(wifis)+1
             lst[wifi_clm_packets] = 1
@@ -332,7 +338,7 @@ def menu(keyPress):
     elif keyPress == 6: action_quit() ; return
     elif keyPress == 7: action_changeSorting()
     elif keyPress == 8: action_changeSorting_order()
-    #term_clear()
+    term_clear()
     updateUI()
 
 #menu_callback_block = False
@@ -453,4 +459,10 @@ if __name__ == "__main__":
         #     term_clear()
         #     updateUI()
     except KeyboardInterrupt:
+        action_quit()
+    except Exception as e:
+        if hasattr(e, 'message'):
+            print(e.message)
+        else:
+            print(e)
         action_quit()

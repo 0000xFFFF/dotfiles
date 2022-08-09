@@ -105,7 +105,7 @@ def action_opt_down():
     action_opt_cap()
 def action_quit():
     global running
-    print("Quitting...")
+    print("\n\nQuitting...")
     running = False
 
 def action_run():
@@ -233,7 +233,6 @@ if __name__ == "__main__":
             elif not GPIO.input(KEY3_PIN):      menu(8)
             time.sleep(0.2)
     except:
-        print("\n")
         action_quit()
 
     #while running:
