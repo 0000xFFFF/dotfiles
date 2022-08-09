@@ -5,6 +5,7 @@ import sys
 import time
 import subprocess
 import signal
+import atexit
 #import getchlib
 import RPi.GPIO as GPIO
 from colorama import Fore, Back, Style
@@ -48,15 +49,23 @@ def term_cursor_hide():
     print("\033[?25l")
 def term_cursor_show():
     print("\033[?25h")
+def term_blank():
+    term_cursor_hide()
+    term_clear()
 
-def runprog_wait(lst):
+
+@atexit.register
+def signal_handler():
+    term_cursor_show()
+
+def runprog(lst):
     global proc
     proc = subprocess.Popen(lst)
     print(f"started PID: {proc.pid}")
     os.waitpid(proc.pid, 0)
     print(f"died: {proc.pid}")
-def runprog(lst):
-    t = Thread(target = runprog_wait, args = (lst,))
+def runproga(lst):
+    t = Thread(target = runprog, args = (lst,))
     t.start()
 
 menu_items = [
@@ -105,12 +114,12 @@ def action_run():
     elif menu_opt ==  1: runprog(["airmon-ng"])
     elif menu_opt ==  2: runprog(["airmon-ng", "start", "wlan1"])
     elif menu_opt ==  3: runprog(["airmon-ng", "stop", "wlan1mon"])
-    elif menu_opt ==  4: runprog_wait(["python", "/home/pi/.vip/scripts/hcx-wifi-rpi", "wlan1mon", "/home/pi/Hashes/cracked.csv"])
-    elif menu_opt ==  5: runprog(["/home/pi/.vip/scripts/pi_dump"])
-    elif menu_opt ==  6: runprog(["/home/pi/.vip/scripts/pi_log"])
+    elif menu_opt ==  4: runprog(["python", "/home/pi/.vip/scripts/hcx-wifi-rpi", "wlan1mon", "/home/pi/Hashes/cracked.csv"])
+    elif menu_opt ==  5: runproga(["/home/pi/.vip/scripts/pi_dump"])
+    elif menu_opt ==  6: runproga(["/home/pi/.vip/scripts/pi_log"])
     elif menu_opt ==  7: runprog(["/home/pi/.vip/scripts/pi_log1"])
-    elif menu_opt ==  8: runprog(["/home/pi/.vip/scripts/pi_hcxdumptool_start"])
-    elif menu_opt ==  9: runprog(["/home/pi/.vip/scripts/pi_hcxdumptool_start_quiet"])
+    elif menu_opt ==  8: runproga(["/home/pi/.vip/scripts/pi_hcxdumptool_start"])
+    elif menu_opt ==  9: runproga(["/home/pi/.vip/scripts/pi_hcxdumptool_start_quiet"])
     elif menu_opt == 10: runprog(["/home/pi/.vip/scripts/pi_running"])
     elif menu_opt == 11: runprog(["/home/pi/.vip/scripts/pi_running_kill"])
     elif menu_opt == 12: runprog(["/home/pi/.vip/scripts/wlan-dump"])
@@ -142,44 +151,43 @@ def menu(keyPress):
     menu_calls += 1
     if   keyPress == 1: action_opt_up()
     elif keyPress == 2: action_opt_down()
-    elif keyPress == 3: term_clear()
+    elif keyPress == 3: term_blank()
 
     # draw
-    print(f"[{keyPress}] | {menu_opt} - {OPT_MIN}/{OPT_MAX} | {menu_calls}")
-    print(str(datetime.now()))
+    print(f"{Style.BRIGHT}{Fore.RED}[{keyPress}]{Style.RESET_ALL} | {Style.BRIGHT}{Fore.YELLOW}{menu_opt} <- {OPT_MIN}-{OPT_MAX}{Style.RESET_ALL} | {Style.BRIGHT}{Fore.CYAN}{menu_calls}{Style.RESET_ALL}")
+    print(f"{Style.BRIGHT}{Fore.GREEN}{str(datetime.now())}{Style.RESET_ALL}")
     print("")
     for i in menu_items:
         num = str(i[0]).rjust(3, " ")
         cmd = i[1]
         if menu_opt == i[0]:
-            print(f"{Style.NORMAL}{Fore.GREEN} => {num}. {cmd} {Style.RESET_ALL}")
+            print(f"{Style.NORMAL}{Back.WHITE}{Fore.BLACK} => {num}. {cmd}{Style.RESET_ALL}")
         else:
             print(f"    {num}. {cmd}")
 
-    if   keyPress == 4: term_clear()
+    if   keyPress == 4: term_blank()
     elif keyPress == 5: action_run()
     elif keyPress == 6: action_kill()
     elif keyPress == 8: action_quit()
 
     running_menu = False
 
-menu_callback_block = False
-def menu_callback(channel):
-    global menu_callback_block
-    if menu_callback_block: return
-
-    if GPIO.input(channel) == 1:
-        menu_callback_block = True
-        if   channel == KEY_UP_PIN:    menu(1)
-        elif channel == KEY_DOWN_PIN:  menu(2)
-        elif channel == KEY_LEFT_PIN:  menu(3)
-        elif channel == KEY_RIGHT_PIN: menu(4)
-        elif channel == KEY_PRESS_PIN: menu(5)
-        elif channel == KEY1_PIN:      menu(6)
-        elif channel == KEY2_PIN:      menu(7)
-        elif channel == KEY3_PIN:      menu(8)
-        time.sleep(0.2)
-        menu_callback_block = False
+#menu_callback_block = False
+#def menu_callback(channel):
+#    global menu_callback_block
+#    if menu_callback_block: return
+#
+#    if GPIO.input(channel) == 1:
+#        menu_callback_block = True
+#        if   channel == KEY_UP_PIN:    menu(1)
+#        elif channel == KEY_DOWN_PIN:  menu(2)
+#        elif channel == KEY_LEFT_PIN:  menu(3)
+#        elif channel == KEY_RIGHT_PIN: menu(4)
+#        elif channel == KEY_PRESS_PIN: menu(5)
+#        elif channel == KEY1_PIN:      menu(6)
+#        elif channel == KEY2_PIN:      menu(7)
+#        elif channel == KEY3_PIN:      menu(8)
+#        menu_callback_block = False
 
 def gpio_setup():
     btime = 200
@@ -192,14 +200,14 @@ def gpio_setup():
     GPIO.setup(KEY1_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(KEY2_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(KEY3_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.add_event_detect(KEY_UP_PIN,    GPIO.RISING, callback=menu_callback, bouncetime=btime)
-    GPIO.add_event_detect(KEY_DOWN_PIN,  GPIO.RISING, callback=menu_callback, bouncetime=btime)
-    GPIO.add_event_detect(KEY_LEFT_PIN,  GPIO.RISING, callback=menu_callback, bouncetime=btime)
-    GPIO.add_event_detect(KEY_RIGHT_PIN, GPIO.RISING, callback=menu_callback, bouncetime=btime)
-    GPIO.add_event_detect(KEY_PRESS_PIN, GPIO.RISING, callback=menu_callback, bouncetime=btime)
-    GPIO.add_event_detect(KEY1_PIN,      GPIO.RISING, callback=menu_callback, bouncetime=btime)
-    GPIO.add_event_detect(KEY2_PIN,      GPIO.RISING, callback=menu_callback, bouncetime=btime)
-    GPIO.add_event_detect(KEY3_PIN,      GPIO.RISING, callback=menu_callback, bouncetime=btime)
+    #GPIO.add_event_detect(KEY_UP_PIN,    GPIO.RISING, callback=menu_callback, bouncetime=btime)
+    #GPIO.add_event_detect(KEY_DOWN_PIN,  GPIO.RISING, callback=menu_callback, bouncetime=btime)
+    #GPIO.add_event_detect(KEY_LEFT_PIN,  GPIO.RISING, callback=menu_callback, bouncetime=btime)
+    #GPIO.add_event_detect(KEY_RIGHT_PIN, GPIO.RISING, callback=menu_callback, bouncetime=btime)
+    #GPIO.add_event_detect(KEY_PRESS_PIN, GPIO.RISING, callback=menu_callback, bouncetime=btime)
+    #GPIO.add_event_detect(KEY1_PIN,      GPIO.RISING, callback=menu_callback, bouncetime=btime)
+    #GPIO.add_event_detect(KEY2_PIN,      GPIO.RISING, callback=menu_callback, bouncetime=btime)
+    #GPIO.add_event_detect(KEY3_PIN,      GPIO.RISING, callback=menu_callback, bouncetime=btime)
 
 if __name__ == "__main__":
 
@@ -209,13 +217,24 @@ if __name__ == "__main__":
 
     gpio_setup()
 
-    term_clear()
+    term_blank()
     menu(0)
 
 
     try:
-        while running: time.sleep(2)
-    except: print("\n")
+        while running:
+            if   not GPIO.input(KEY_UP_PIN):    menu(1)
+            elif not GPIO.input(KEY_DOWN_PIN):  menu(2)
+            elif not GPIO.input(KEY_LEFT_PIN):  menu(3)
+            elif not GPIO.input(KEY_RIGHT_PIN): menu(4)
+            elif not GPIO.input(KEY_PRESS_PIN): menu(5)
+            elif not GPIO.input(KEY1_PIN):      menu(6)
+            elif not GPIO.input(KEY2_PIN):      menu(7)
+            elif not GPIO.input(KEY3_PIN):      menu(8)
+            time.sleep(0.2)
+    except:
+        print("\n")
+        action_quit()
 
     #while running:
     #    try:
