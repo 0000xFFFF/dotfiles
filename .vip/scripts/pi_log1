@@ -5,7 +5,7 @@ function utc() {
 	echo "$(date +"%Y-%m-%d %T")"
 }
 
-FILES="$1"
+FILES="$@"
 [ -z "$FILES" ] && FILES="/home/pi/Dump/*.log"
 
 getoutput() {
@@ -26,6 +26,7 @@ getoutput() {
 
 	echo -e "\e[95mDATE TIME\e[0m: \e[95m$TIMENOW\e[0m"
 	echo -e ""
+	echo -e "$FILES"
 	echo -e "\e[92mBEACON\e[0m.............: \e[92m$COUNTER_B\e[0m"
 	echo -e "\e[32mHIDDEN BEACON\e[0m......: \e[32m$COUNTER_HB\e[0m"
 	echo -e "\e[93mPROBERESPONSE\e[0m......: \e[93m$COUNTER_PR\e[0m"
@@ -33,9 +34,10 @@ getoutput() {
 	echo -e "\e[96mAUTHENTICATION\e[0m.....: \e[96m$COUNTER_AU\e[0m"
 	echo -e "\e[36mASSOCIATION\e[0m........: \e[36m$COUNTER_AS\e[0m"
 	echo -e "\e[1;36mREASSOCIATION\e[0m......: \e[1;36m$COUNTER_RAS\e[0m"
-	echo -e "\e[31mPMKID\e[0m..............: \e[31m$COUNTER_H\e[0m"
-	echo -e "\e[91mPMKIDROGUE\e[0m.........: \e[91m$COUNTER_H\e[0m"
-	echo -e "\e[1;31mEAPOL\e[0m..............: \e[1;31m$COUNTER_H\e[0m"
+	echo -e "\e[31mPMKID\e[0m..............: \e[31m$COUNTER_PK\e[0m"
+	echo -e "\e[91mPMKIDROGUE\e[0m.........: \e[91m$COUNTER_PKR\e[0m"
+	echo -e "\e[1;31mEAPOL\e[0m..............: \e[1;31m$COUNTER_E\e[0m"
+	echo -e "\e[1;97mHASHES\e[0m.............: \e[1;97m$COUNTER_H\e[0m"
 }
 
 getoutput
