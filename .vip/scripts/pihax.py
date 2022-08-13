@@ -84,6 +84,8 @@ menu_items = [
     [12, "wlan-dump"],
     [13, "exa /home/pi/Dump"],
     [14, "exa -lah /home/pi/Dump"],
+    [15, "shutdown -P now"],
+    [16, "shutdown -r now"],
 ]
 
 OPT_MIN = 0
@@ -125,6 +127,12 @@ def action_run():
     elif menu_opt == 12: runprog(["/home/pi/.vip/scripts/wlan-dump"])
     elif menu_opt == 13: runprog(["exa", "/home/pi/Dump"])
     elif menu_opt == 14: runprog(["exa", "-lah", "/home/pi/Dump"])
+    elif menu_opt == 15:
+        runprog(["shutdown", "-P", "now"])
+        action_quit()
+    elif menu_opt == 16:
+        runprog(["shutdown", "-r", "now"])
+        action_quit()
 
 def action_kill():
     global proc

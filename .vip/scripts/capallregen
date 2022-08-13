@@ -1,0 +1,18 @@
+#!/bin/bash
+
+
+echo "copy ..."
+while read -r line ; do
+	cp "$line" "/media/HDD/Root/dump/cap/all/."
+done <<< "$(find "/media/HDD/Root/dump/cap/dump/" -name "*cap*")"
+echo "copy done"
+
+echo "hcx-cap ..."
+hcx-cap
+echo "hcx-cap done"
+
+echo "rm *.cap *.pcapng ..."
+rm -v /media/HDD/Root/dump/cap/all/*.cap /media/HDD/Root/dump/cap/all/*.pcapng
+echo "rm done"
+
+
