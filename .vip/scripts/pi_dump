@@ -1,2 +1,2 @@
 #!/bin/bash
-tail -f /home/pi/Dump/*.log
+cat /home/pi/Dump/*.log

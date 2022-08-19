@@ -17,4 +17,4 @@ sort -u all.txt > all_uniq.txt
 echo "-- apuniq.txt"
 hcx-uniq all_uniq.txt > apuniq.txt
 
-hcx-rmcracked "apuniq.txt"
+hcx-divide "apuniq.txt"

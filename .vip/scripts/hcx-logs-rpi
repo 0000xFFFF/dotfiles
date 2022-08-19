@@ -9,18 +9,16 @@ from colorama import Fore, Back, Style
 from operator import itemgetter
 from tabulate import tabulate
 from datetime import datetime
-
 import RPi.GPIO as GPIO
 
-# pins
-RST_PIN = 25
-CS_PIN  = 8
-DC_PIN  = 24
-RST    = 27
-DC     = 25
-BL     = 24
-bus    = 0
-device = 0
+RST_PIN       = 25
+CS_PIN        = 8
+DC_PIN        = 24
+RST           = 27
+DC            = 25
+BL            = 24
+bus           = 0
+device        = 0
 KEY_UP_PIN    = 6
 KEY_DOWN_PIN  = 19
 KEY_LEFT_PIN  = 5
@@ -31,7 +29,6 @@ KEY2_PIN      = 20
 KEY3_PIN      = 16
 
 def gpio_setup():
-    btime = 200
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(KEY_UP_PIN,    GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(KEY_DOWN_PIN,  GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -46,10 +43,18 @@ def gpio_setup():
 running = True
 menu_opt = 0
 
+term_show_count = 0
+g_tc = os.get_terminal_size().columns
+g_tl = os.get_terminal_size().lines
+def term_show_count_reset():
+    global term_show_count
+    term_show_count = 0
 def term_clear():
     os.system("clear")
+    term_show_count_reset()
 def term_cursor_reset():
     print("\033[0;0H", end='')
+    term_show_count_reset()
 def term_cursor_hide():
     print("\033[?25l")
 def term_cursor_show():
@@ -57,6 +62,26 @@ def term_cursor_show():
 def term_blank():
     term_cursor_hide()
     term_clear()
+def term_show_print(printStr, color = ""):
+    global term_show_count
+    tl = os.get_terminal_size().lines
+    if term_show_count >= (tl-1): return
+    print(f"{color}{printStr}{Style.RESET_ALL}")
+    term_show_count += 1
+def term_show(s, color = ""):
+    global g_tc
+    global g_tl
+    strings = s.split("\n")
+    tc = os.get_terminal_size().columns
+    tl = os.get_terminal_size().lines
+    if g_tc != tc or g_tl != tl:
+        g_tc = tc
+        g_tl = tl
+        term_clear()
+    for i in strings:
+        il = len(i)
+        if il > tc: term_show_print(i[:tc], color)
+        else:       term_show_print(i + str(" " * int(int(tc)-int(il))), color)
 
 @atexit.register
 def signal_handler():
@@ -73,6 +98,7 @@ def remove_control_chars(s):
 
 # load log data
 loadlogdata_dir = os.getcwd()
+loadlogdata_count = 0
 list_BEACON = []
 list_HIDDENBEACON = []
 list_PROBERESPONSE = []
@@ -175,8 +201,8 @@ def getItems_EAPOL(line):
     mac2 = lst[3].upper()
     list_EAPOL_append([essid, mac1, mac2])
     list_HASH_append([essid, mac1, mac2])
-lastLoadTime = ""
-def loaddata(line):
+loadlogdata_last = ""
+def loadlogdata_line(line):
     if   "[BEACON]"              in line: getItems_BEACON(line)
     elif "[HIDDEN BEACON]"       in line: getItems_HIDDENBEACON(line)
     elif "[PROBERESPONSE]"       in line: getItems_PROBERESPONSE(line)
@@ -200,9 +226,11 @@ def loadlogdata():
     global list_PMKID
     global list_PMKIDROGUE
     global list_EAPOL
-    global lastLoadTime
+    global loadlogdata_last
+    global loadlogdata_count
 
-    lastLoadTime = datetime.now()
+    loadlogdata_last = datetime.now()
+    loadlogdata_count = 0
 
     list_BEACON = []
     list_HIDDENBEACON = []
@@ -224,8 +252,9 @@ def loadlogdata():
             if p.endswith(".log"):
                 f = open(p, 'r')
                 lines = f.readlines()
-                for line in lines: loaddata(line)
+                for line in lines: loadlogdata_line(line)
                 f.close()
+                loadlogdata_count += 1
     except FileNotFoundError:
         print("FileNotFoundError")
         exit(1)
@@ -282,7 +311,7 @@ def submenu_draw():
     global submenu_goforw
     global submenu_selected
 
-    term_clear()
+    term_cursor_reset()
     back = submenu_selected-submenu_goback
     forw = submenu_selected+submenu_goforw
 
@@ -294,19 +323,15 @@ def submenu_draw():
         back = forw - (submenu_goback+submenu_goforw)
         if back <= 0: back = 0
 
-    sb = Style.BRIGHT
-    fw = Fore.WHITE
-    fr = Fore.RED
-    ra = Style.RESET_ALL
-    print(f"{sb}{fw}{back+1}{ra},{sb}{fw}{submenu_selected+1}{ra},{sb}{fw}{forw+1}{ra} / {sb}{fr}{submenu_items_li+1}{ra}")
+    term_show(f"{back+1},{submenu_selected+1},{forw+1} / {submenu_items_li+1}" , f"{Style.BRIGHT}{Fore.WHITE}")
     if back >= 0:
         for i in submenu_items[back:submenu_selected]:
-            print(f"  {i[0]}")
+            term_show(f"  {i[0]}")
     if submenu_items_li != -1:
-        print(f"{sb}{fw}>{ra} {submenu_items[submenu_selected][0]}")
+        term_show(f"> {submenu_items[submenu_selected][0]}" , f"{Style.BRIGHT}{Fore.WHITE}")
     if forw <= submenu_items_li and submenu_selected+1 <= submenu_items_li:
         for i in submenu_items[submenu_selected+1:forw+1]:
-            print(f"  {i[0]}")
+            term_show(f"  {i[0]}")
 def submenu_up():
     global submenu_selected
     submenu_selected -= 1
@@ -335,11 +360,9 @@ def submenu(listType):
     global submenu_selected
     global submenu_items_li
     global submenu_skip
-
     term_clear()
     submenu_load(listType)
     submenu_running = True
-
 
     sleept = 0.1
     while submenu_running:
@@ -378,6 +401,8 @@ def action_toggleSort():
     global submenu_sorted
     submenu_sorted = (not submenu_sorted)
     menu_updateItems()
+def action_cat():
+    print(os.popen(f"/home/pi/.vip/scripts/pi_dump").read())
 def action_run():
     global menu_opt
     if   menu_opt ==  0: action_toggleSort()
@@ -422,7 +447,8 @@ def menu_updateItems(reloadData = False):
 def menu(keyPress):
     global menu_opt
     global menu_items
-    global lastLoadTime
+    global loadlogdata_last
+
     term_cursor_reset()
 
     if   keyPress == 1: action_up()
@@ -431,21 +457,21 @@ def menu(keyPress):
     elif keyPress == 4: menu_updateItems(True)
     elif keyPress == 5:
         action_run()
-        term_clear()
-    elif keyPress == 7:
-        action_toggleSort()
-        term_clear()
+        term_blank()
+    elif keyPress == 7: action_toggleSort()
 
     # draw
-    print(f"{Style.BRIGHT}{Fore.GREEN}{str(datetime.now())}{Style.RESET_ALL}")
-    print(f"{Style.BRIGHT}{Fore.MAGENTA}{lastLoadTime}{Style.RESET_ALL}")
+    term_show(f"LOG FILES: {loadlogdata_count}" , f"{Style.BRIGHT}{Fore.RED}")
+    term_show(f"{str(datetime.now())}"          , f"{Style.BRIGHT}{Fore.GREEN}")
+    term_show(f"{loadlogdata_last}"             , f"{Style.BRIGHT}{Fore.MAGENTA}")
     for i in menu_items:
         num = str(i[0]).rjust(3, " ")
         cmd = i[1]
-        if menu_opt == i[0]: print(f"{Style.BRIGHT}{Back.BLUE}{Fore.WHITE}>{num}.{Style.RESET_ALL} {cmd}{Style.RESET_ALL}")
-        else:                print(f" {num}. {cmd}")
+        if menu_opt == i[0]: term_show(f">{num}. {cmd}" , f"{Style.BRIGHT}{Back.BLUE}{Fore.WHITE}")
+        else:                term_show(f" {num}. {cmd}")
 
-    if keyPress == 6: action_quit()
+    if   keyPress == 6: action_quit()
+    elif keyPress == 8: action_cat()
 
 if __name__ == "__main__":
 
@@ -468,5 +494,11 @@ if __name__ == "__main__":
             elif not GPIO.input(KEY2_PIN):      menu(7)
             elif not GPIO.input(KEY3_PIN):      menu(8)
             time.sleep(0.2)
-    except:
+
+    except KeyboardInterrupt:
         action_quit()
+    except Exception as e:
+        if hasattr(e, 'message'): print(e.message)
+        else: print(e)
+        action_quit()
+

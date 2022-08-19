@@ -38,7 +38,7 @@ for hashes_file_line in hashes_file_lines:
     mac   = split[4].upper()
     essid = hex2str(split[5])
 
-    passwd = ""
+    passwd = "UNCRACKED"
     for hcitem in hashcat_items:
         if hcitem[0] in hashLine:
             passwd = hcitem[1]

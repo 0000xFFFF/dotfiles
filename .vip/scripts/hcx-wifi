@@ -99,7 +99,7 @@ updateUI_mutex = threading.Lock()
 pauseUI_evt = threading.Event()
 pauseUI_evt.set()
 pauseCHHOP_evt = threading.Event()
-pauseCHHOP_evt.set()
+#pauseCHHOP_evt.set() # uncomment to enable ch hopper by default
 g_tc = os.get_terminal_size().columns
 g_tl = os.get_terminal_size().lines
 # password list from csv file
@@ -622,7 +622,10 @@ if __name__ == "__main__":
 
         th_hop = Thread(target=thread_hopch)
         th_hop.daemon = True
-        
+
+        # pause ch hopper
+        action_pauseCHHOP()        
+
         # start all threads
         th_ui.start()
         th_hop.start()

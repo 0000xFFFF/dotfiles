@@ -13,15 +13,88 @@ from tabulate import tabulate
 from operator import itemgetter
 from colorama import Fore, Back, Style
 
+
+RST_PIN       = 25
+CS_PIN        = 8
+DC_PIN        = 24
+RST           = 27
+DC            = 25
+BL            = 24
+bus           = 0
+device        = 0
+KEY_UP_PIN    = 6
+KEY_DOWN_PIN  = 19
+KEY_LEFT_PIN  = 5
+KEY_RIGHT_PIN = 26
+KEY_PRESS_PIN = 13
+KEY1_PIN      = 21
+KEY2_PIN      = 20
+KEY3_PIN      = 16
+
+def gpio_setup():
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(KEY_UP_PIN,    GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_DOWN_PIN,  GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_LEFT_PIN,  GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_RIGHT_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_PRESS_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY1_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY2_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY3_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+
+def checkRoot(): return os.geteuid() == 0
+
+term_show_count = 0
+g_tc = os.get_terminal_size().columns
+g_tl = os.get_terminal_size().lines
+def term_show_count_reset():
+    global term_show_count
+    term_show_count = 0
+def term_clear():
+    os.system("clear")
+    term_show_count_reset()
+def term_cursor_reset():
+    print("\033[0;0H", end='')
+    term_show_count_reset()
+def term_cursor_hide():
+    print("\033[?25l")
+def term_cursor_show():
+    print("\033[?25h")
+def term_blank():
+    term_cursor_hide()
+    term_clear()
+def term_show_print(printStr, color = ""):
+    global term_show_count
+    tl = os.get_terminal_size().lines
+    if term_show_count >= (tl-1): return
+    print(f"{color}{printStr}{Style.RESET_ALL}")
+    term_show_count += 1
+def term_show(s, color = ""):
+    global g_tc
+    global g_tl
+    strings = s.split("\n")
+    tc = os.get_terminal_size().columns
+    tl = os.get_terminal_size().lines
+    if g_tc != tc or g_tl != tl:
+        g_tc = tc
+        g_tl = tl
+        term_clear()
+    for i in strings:
+        il = len(i)
+        if il > tc: term_show_print(i[:tc], color)
+        else:       term_show_print(i + str(" " * int(int(tc)-int(il))), color)
+
+# exit handler
+@atexit.register
+def signal_handler():
+    term_cursor_show()
+
 # global stuff
 running = True
 status = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")) # UI status
 show_wifis     = True
 enable_wifis   = True
-
-# channels to use
-channels = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 ]
-ch = 1 # current channel
 
 # wifi (beacon) table
 wifis = []
@@ -44,74 +117,18 @@ sortBy_reverse = False
 #
 # global things to not touch
 #
+interface = ""
 updateUI_mutex = threading.Lock()
 menu_mutex = threading.Lock()
 pauseUI_evt = threading.Event()
 pauseUI_evt.set()
 pauseCHHOP_evt = threading.Event()
-pauseCHHOP_evt.set()
-g_tc = os.get_terminal_size().columns
-g_tl = os.get_terminal_size().lines
+#pauseCHHOP_evt.set() # uncomment to enable ch hopper by default
 # password list from csv file
 passwords = [] # BSSID, ESSID, PASSWORD
 passwords_count = 0
 passwords_count_matched = 0
 current_wifi = 0
-show_counter = 0
-
-RST_PIN = 25
-CS_PIN  = 8
-DC_PIN  = 24
-
-RST    = 27
-DC     = 25
-BL     = 24
-bus    = 0
-device = 0
-
-# LCD keys
-KEY_UP_PIN    = 6
-KEY_DOWN_PIN  = 19
-KEY_LEFT_PIN  = 5
-KEY_RIGHT_PIN = 26
-KEY_PRESS_PIN = 13
-KEY1_PIN      = 21
-KEY2_PIN      = 20
-KEY3_PIN      = 16
-
-def checkRoot():
-    return os.geteuid() == 0
-def term_clear():
-    os.system("clear")
-def term_cursor_reset():
-    print("\033[0;0H", end='')
-def term_cursor_hide():
-    print("\033[?25l")
-def term_cursor_show():
-    print("\033[?25h")
-
-def term_show_print(s, color):
-    global show_counter
-    tl = os.get_terminal_size().lines
-    if show_counter >= (tl-1): return
-    print(color, end='')
-    print(s)
-    print(f"{Style.RESET_ALL}", end='')
-    show_counter += 1
-def term_show(s, color):
-    global g_tc
-    global g_tl
-    strings = s.split("\n")
-    tc = os.get_terminal_size().columns
-    tl = os.get_terminal_size().lines
-    if g_tc != tc or g_tl != tl:
-        g_tc = tc
-        g_tl = tl
-        term_clear()
-    for i in strings:
-        il = len(i)
-        if il > tc: term_show_print(i[:tc], color)
-        else:       term_show_print(i + str(" " * int(int(tc)-int(il))), color)
 
 def loadPasswords(filePath):
     global passwords
@@ -126,15 +143,12 @@ def loadPasswords(filePath):
             passwords.append([isplit[0],isplit[1],isplit[2]])
     passwords_count = len(passwords)
 
-# exit handler
-@atexit.register
-def signal_handler():
-    term_cursor_show()
-
 def action_quit():
-    global running
     print("\n\nQuitting...")
+    global running
     running = False
+    pauseUI_evt.set()
+    pauseCHHOP_evt.set()
     #exit()
 def action_changeSorting():
     found = False
@@ -196,8 +210,19 @@ def action_nextWifi():
     l = len(wifis)
     if current_wifi > l: current_wifi = l
 
-def channel_get(): return os.popen(f"iw '{interface}' info | grep channel | awk -P '{{print $2}}'").read().replace("\n", "")
-def channel_set(i): os.system(f"sudo iw dev '{interface}' set channel {i}")
+
+# channels to use
+channels = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 ]
+
+def channel_get():
+    global interface
+    return int(os.popen(f"iw '{interface}' info | grep channel").read().split()[1])
+
+ch = 1
+
+def channel_set(i):
+    global interface
+    os.system(f"sudo iw dev '{interface}' set channel {i}")
 def action_hopch():
     found = False
     isSet = False
@@ -206,7 +231,7 @@ def action_hopch():
     while True:
         for i in channels:
             if found:
-                ch = i
+                #ch = i
                 channel_set(i)
                 isSet = True
                 break
@@ -215,10 +240,17 @@ def action_hopch():
                 continue
         if isSet:
             break
+def thread_getch():
+    global running
+    global ch
+    while running:
+        ch = channel_get()
+        time.sleep(0.5)
 def thread_hopch():
     global running
-    while running:
+    while True:
         if not pauseCHHOP_evt.is_set(): pauseCHHOP_evt.wait()
+        if not running: break
         action_hopch()
         time.sleep(1)
 
@@ -228,14 +260,14 @@ def updateUI():
 
     # get/set vars
     global ch
-    global show_counter
+    global term_show_count
     global current_wifi
     timestr = str(datetime.now())
     len_wifis = len(wifis)
     arrowChar = "\u2193"
     if sortBy_reverse: arrowChar = "\u2191"
     term_cursor_reset() # set print pos to 0x0
-    show_counter = 0 # reset show counter
+    term_show_count = 0 # reset show counter
 
     # display stuff
     global g_tl
@@ -251,7 +283,7 @@ def updateUI():
 
     if len(wifis) > 0:
         try:
-            term_show("", "")
+            term_show("")
             term_show(f"BSSID: {wifis_sorted[current_wifi][wifi_clm_bssid]}"     , f"{Style.BRIGHT}{Fore.CYAN}"  )
             term_show(f"ESSID: {wifis_sorted[current_wifi][wifi_clm_essid]}"     , f"{Style.BRIGHT}{Fore.GREEN}" )
             term_show(f"PASS.: {wifis_sorted[current_wifi][wifi_clm_passwd]}"    , f"{Style.BRIGHT}{Fore.RED}"   )
@@ -263,7 +295,7 @@ def updateUI():
             term_show(f"STAMP: {wifis_sorted[current_wifi][wifi_clm_timestamp]}" , f"{Style.BRIGHT}{Fore.WHITE}" )
             term_show(f"RECV.: {wifis_sorted[current_wifi][wifi_clm_packets]}"   , f"{Style.NORMAL}{Fore.WHITE}" )
         except:
-            term_show("\n"*10, f"{Style.RESET_ALL}")
+            term_show("\n"*10)
             pass
 
     updateUI_mutex.release()
@@ -273,8 +305,6 @@ def thread_updateUI():
         if not pauseUI_evt.is_set(): pauseUI_evt.wait()
         updateUI()
         time.sleep(0.1)
-
-
 
 def crypto2str(cl):
     return ','.join(cl)
@@ -346,44 +376,6 @@ def menu(keyPress):
     #term_clear()
     updateUI()
 
-#menu_callback_block = False
-#def menu_callback(channel):
-#    global menu_callback_block
-#    if menu_callback_block: return
-#
-#    if GPIO.input(channel) == 1:
-#        menu_callback_block = True
-#        if   channel == KEY_UP_PIN:    menu(1)
-#        elif channel == KEY_DOWN_PIN:  menu(2)
-#        elif channel == KEY_LEFT_PIN:  menu(3)
-#        elif channel == KEY_RIGHT_PIN: menu(4)
-#        elif channel == KEY_PRESS_PIN: menu(5)
-#        elif channel == KEY1_PIN:      menu(6)
-#        elif channel == KEY2_PIN:      menu(7)
-#        elif channel == KEY3_PIN:      menu(8)
-#        menu_callback_block = False
-
-def gpio_setup():
-    btime = 50
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(KEY_UP_PIN,    GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(KEY_DOWN_PIN,  GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(KEY_LEFT_PIN,  GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(KEY_RIGHT_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(KEY_PRESS_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(KEY1_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(KEY2_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(KEY3_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    # # i guess you can't use this in a sub program :P
-    #GPIO.add_event_detect(KEY_UP_PIN,    GPIO.RISING, callback=menu_callback, bouncetime=btime)
-    #GPIO.add_event_detect(KEY_DOWN_PIN,  GPIO.RISING, callback=menu_callback, bouncetime=btime)
-    #GPIO.add_event_detect(KEY_LEFT_PIN,  GPIO.RISING, callback=menu_callback, bouncetime=btime)
-    #GPIO.add_event_detect(KEY_RIGHT_PIN, GPIO.RISING, callback=menu_callback, bouncetime=btime)
-    #GPIO.add_event_detect(KEY_PRESS_PIN, GPIO.RISING, callback=menu_callback, bouncetime=btime)
-    #GPIO.add_event_detect(KEY1_PIN,      GPIO.RISING, callback=menu_callback, bouncetime=btime)
-    #GPIO.add_event_detect(KEY2_PIN,      GPIO.RISING, callback=menu_callback, bouncetime=btime)
-    #GPIO.add_event_detect(KEY3_PIN,      GPIO.RISING, callback=menu_callback, bouncetime=btime)
-
 if __name__ == "__main__":
 
     try:
@@ -422,9 +414,12 @@ if __name__ == "__main__":
         # threads (print / channel hopper)
         th_ui  = Thread(target=thread_updateUI)
         th_ui.daemon = True
+        th_ch = Thread(target=thread_getch)
+        th_ch.daemon = True
         th_hop = Thread(target=thread_hopch)
         th_hop.daemon = True
         th_ui.start()
+        th_ch.start()
         th_hop.start()
 
         # start sniffing
@@ -448,26 +443,9 @@ if __name__ == "__main__":
         th_ui.join()
         th_hop.join()
 
-        # # handle key input
-        # while running:
-        #     pressedKey = getchlib.getkey()
-        #     if   pressedKey == "q": raise KeyboardInterrupt
-        #     elif pressedKey == "s": action_changeSorting()
-        #     elif pressedKey == "d": action_changeSorting_order()
-        #     elif pressedKey == " ": action_pauseUI()
-        #     elif pressedKey == "c": action_hopch()
-        #     elif pressedKey == "C": action_pauseCHHOP()
-        #     elif pressedKey == "w": action_show_wifis()
-        #     elif pressedKey == "W": action_clear_wifis()
-        #     elif pressedKey == "j": action_nextWifi()
-        #     elif pressedKey == "k": action_prevWifi()
-        #     term_clear()
-        #     updateUI()
     except KeyboardInterrupt:
         action_quit()
     except Exception as e:
-        if hasattr(e, 'message'):
-            print(e.message)
-        else:
-            print(e)
+        if hasattr(e, 'message'): print(e.message)
+        else: print(e)
         action_quit()
