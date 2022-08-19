@@ -343,7 +343,7 @@ def menu(keyPress):
     elif keyPress == 6: action_quit() ; return
     elif keyPress == 7: action_changeSorting()
     elif keyPress == 8: action_changeSorting_order()
-    term_clear()
+    #term_clear()
     updateUI()
 
 #menu_callback_block = False
