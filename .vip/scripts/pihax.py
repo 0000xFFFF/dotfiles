@@ -36,7 +36,6 @@ KEY3_PIN      = 16
 running = True
 running_menu = False
 menu_opt = 0
-menu_calls = 0
 proc = 0
 
 def checkRoot():
@@ -70,22 +69,18 @@ def runproga(lst):
 
 menu_items = [
     [ 0, ""],
-    [ 1, "airmon-ng"],
-    [ 2, "airmon-ng start wlan1"],
-    [ 3, "airmon-ng stop wlan1mon"],
-    [ 4, "hcx-wifi-rpi wlan1mon"],
-    [ 5, "pi_dump"],
-    [ 6, "pi_log"],
-    [ 7, "pi_log1"],
-    [ 8, "pi_hcxdumptool_start"],
-    [ 9, "pi_hcxdumptool_start_quiet"],
-    [10, "pi_running"],
-    [11, "pi_running_kill"],
-    [12, "wlan-dump"],
-    [13, "exa /home/pi/Dump"],
-    [14, "exa -lah /home/pi/Dump"],
-    [15, "shutdown -P now"],
-    [16, "shutdown -r now"],
+    [ 1, "wlan"],
+    [ 2, "wlan monitor"],
+    [ 3, "wlan fix"],
+    [ 4, "hcx-wifi-rpi"],
+    [ 5, "hcx-logs-rpi"],
+    [ 6, "dumptool"],
+    [ 7, "dumptool quiet"],
+    [ 8, "show running"],
+    [ 9, "kill all"],
+    [10, "scan wifis"],
+    [11, "reboot"],
+    [12, "poweroff"],
 ]
 
 OPT_MIN = 0
@@ -116,22 +111,18 @@ def action_run():
     elif menu_opt ==  1: runprog(["airmon-ng"])
     elif menu_opt ==  2: runprog(["airmon-ng", "start", "wlan1"])
     elif menu_opt ==  3: runprog(["airmon-ng", "stop", "wlan1mon"])
-    elif menu_opt ==  4: runprog(["python", "/home/pi/.vip/scripts/hcx-wifi-rpi", "wlan1mon", "/home/pi/Hashes/cracked.csv"])
-    elif menu_opt ==  5: runproga(["/home/pi/.vip/scripts/pi_dump"])
-    elif menu_opt ==  6: runproga(["/home/pi/.vip/scripts/pi_log"])
-    elif menu_opt ==  7: runprog(["/home/pi/.vip/scripts/pi_log1"])
-    elif menu_opt ==  8: runproga(["/home/pi/.vip/scripts/pi_hcxdumptool_start"])
-    elif menu_opt ==  9: runproga(["/home/pi/.vip/scripts/pi_hcxdumptool_start_quiet"])
-    elif menu_opt == 10: runprog(["/home/pi/.vip/scripts/pi_running"])
-    elif menu_opt == 11: runprog(["/home/pi/.vip/scripts/pi_running_kill"])
-    elif menu_opt == 12: runprog(["/home/pi/.vip/scripts/wlan-dump"])
-    elif menu_opt == 13: runprog(["exa", "/home/pi/Dump"])
-    elif menu_opt == 14: runprog(["exa", "-lah", "/home/pi/Dump"])
-    elif menu_opt == 15:
-        runprog(["shutdown", "-P", "now"])
-        action_quit()
-    elif menu_opt == 16:
+    elif menu_opt ==  4: runprog(["/home/pi/.vip/scripts/hcx-wifi-rpi", "wlan1mon", "/home/pi/Hashes/cracked.csv"])
+    elif menu_opt ==  5: runprog(["/home/pi/.vip/scripts/hcx-logs-rpi", "/home/pi/Dump"])
+    elif menu_opt ==  6: runproga(["/home/pi/.vip/scripts/pi_hcxdumptool_start"])
+    elif menu_opt ==  7: runproga(["/home/pi/.vip/scripts/pi_hcxdumptool_start_quiet"])
+    elif menu_opt ==  8: runprog(["/home/pi/.vip/scripts/pi_running"])
+    elif menu_opt ==  9: runprog(["/home/pi/.vip/scripts/pi_running_kill"])
+    elif menu_opt == 10: runprog(["/home/pi/.vip/scripts/wlan-dump"])
+    elif menu_opt == 11:
         runprog(["shutdown", "-r", "now"])
+        action_quit()
+    elif menu_opt == 12:
+        runprog(["shutdown", "-P", "now"])
         action_quit()
 
 def action_kill():
@@ -152,26 +143,22 @@ def menu(keyPress):
     running_menu = True
 
     global menu_opt
-    global menu_calls
     global menu_items
     term_cursor_reset()
 
-    menu_calls += 1
     if   keyPress == 1: action_opt_up()
     elif keyPress == 2: action_opt_down()
     elif keyPress == 3: term_blank()
 
     # draw
-    print(f"{Style.BRIGHT}{Fore.RED}[{keyPress}]{Style.RESET_ALL} | {Style.BRIGHT}{Fore.YELLOW}{menu_opt} <- {OPT_MIN}-{OPT_MAX}{Style.RESET_ALL} | {Style.BRIGHT}{Fore.CYAN}{menu_calls}{Style.RESET_ALL}")
     print(f"{Style.BRIGHT}{Fore.GREEN}{str(datetime.now())}{Style.RESET_ALL}")
-    print("")
     for i in menu_items:
         num = str(i[0]).rjust(3, " ")
         cmd = i[1]
         if menu_opt == i[0]:
-            print(f"{Style.NORMAL}{Back.WHITE}{Fore.BLACK} => {num}. {cmd}{Style.RESET_ALL}")
+            print(f"{Style.NORMAL}{Back.WHITE}{Fore.BLACK}>{num}. {cmd}{Style.RESET_ALL}")
         else:
-            print(f"    {num}. {cmd}")
+            print(f" {num}. {cmd}")
 
     if   keyPress == 4: term_blank()
     elif keyPress == 5: action_run()
@@ -227,7 +214,6 @@ if __name__ == "__main__":
 
     term_blank()
     menu(0)
-
 
     try:
         while running:

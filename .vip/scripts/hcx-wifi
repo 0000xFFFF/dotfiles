@@ -326,9 +326,6 @@ def updateUI():
     # get vars
     global ch
     global show_counter
-    now = datetime.now()
-    #timestr = now.strftime("%Y-%m-%d %H:%M:%S.%f")
-    timestr = now
 
     arrowChar = "\u2193"
     if sortBy_reverse: arrowChar = "\u2191"
@@ -338,7 +335,7 @@ def updateUI():
     show_counter = 0 # reset show counter
 
     # display stuff
-    term_show(f"CH {str(ch).rjust(2)} | {str(timestr).ljust(26)} | COUNT: {len(wifis)} | PASS: {passwords_count} ({passwords_count_matched}) | SORT BY: {arrowChar} {sortBy}")
+    term_show(f"CH {str(ch).rjust(2)} | {str(datetime.now()).ljust(26)} | COUNT: {len(wifis)} | PASS: {passwords_count} ({passwords_count_matched}) | SORT BY: {arrowChar} {sortBy}")
     term_show(f"> {status}")
     term_show(f"")
 

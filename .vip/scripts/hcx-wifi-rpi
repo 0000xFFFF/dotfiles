@@ -15,7 +15,7 @@ from colorama import Fore, Back, Style
 
 # global stuff
 running = True
-status = ("STARTED: " + datetime.now().strftime("%Y-%m-%d %H:%M:%S")) # UI status
+status = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")) # UI status
 show_wifis     = True
 enable_wifis   = True
 
@@ -240,7 +240,7 @@ def updateUI():
     # display stuff
     global g_tl
     global g_tc
-    term_show(f"TIME: {str(timestr).ljust(26)}"                           , f"{Style.BRIGHT}{Fore.MAGENTA}")
+    term_show(f"{str(timestr).ljust(26)}"                                 , f"{Style.BRIGHT}{Fore.MAGENTA}")
     term_show(f"CHANNEL: {str(ch).rjust(2)}"                              , f"{Style.BRIGHT}{Fore.YELLOW}")
     term_show(f"PASSWORDS: {passwords_count} ({passwords_count_matched})" , f"{Style.BRIGHT}{Fore.RED}")
     term_show(f"WIFIS: {current_wifi} / {len_wifis-1} ({len_wifis})"      , f"{Style.BRIGHT}{Fore.GREEN}")
@@ -274,6 +274,11 @@ def thread_updateUI():
         updateUI()
         time.sleep(0.1)
 
+
+
+def crypto2str(cl):
+    return ','.join(cl)
+
 def callback(packet):
     if packet.haslayer(Dot11Beacon):
         bssid = packet[Dot11].addr2.upper()
@@ -302,7 +307,7 @@ def callback(packet):
         lst[wifi_clm_pwr]       = dbm_signal
         lst[wifi_clm_lastseen]  = lastseen
         lst[wifi_clm_ch]        = channel
-        lst[wifi_clm_crypto]    = crypto
+        lst[wifi_clm_crypto]    = crypto2str(crypto)
         lst[wifi_clm_timestamp] = timestamp
 
         if hasWifi:
