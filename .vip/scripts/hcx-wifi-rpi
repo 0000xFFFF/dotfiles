@@ -272,28 +272,26 @@ def updateUI():
     # display stuff
     global g_tl
     global g_tc
-    term_show(f"{str(timestr).ljust(26)}"                                 , f"{Style.BRIGHT}{Fore.MAGENTA}")
-    term_show(f"CHANNEL: {str(ch).rjust(2)}"                              , f"{Style.BRIGHT}{Fore.YELLOW}")
-    term_show(f"PASSWORDS: {passwords_count} ({passwords_count_matched})" , f"{Style.BRIGHT}{Fore.RED}")
-    term_show(f"WIFIS: {current_wifi} / {len_wifis-1} ({len_wifis})"      , f"{Style.BRIGHT}{Fore.GREEN}")
-    term_show(f"SORT BY: {arrowChar} {sortBy}"                            , f"{Style.BRIGHT}{Fore.BLUE}")
-    term_show(f"> {status}"                                               , f"{Style.BRIGHT}{Fore.CYAN}")
+    term_show(f"{str(timestr).ljust(26)}"                                                                     , f"{Style.BRIGHT}{Fore.MAGENTA}")
+    term_show(f"CHANNEL: {str(ch).rjust(2)}"                                                                  , f"{Style.BRIGHT}{Fore.YELLOW}")
+    term_show(f"SORT BY: {arrowChar} {sortBy}"                                                                , f"{Style.BRIGHT}{Fore.BLUE}")
+    term_show(f"{current_wifi} / {len_wifis-1} ({len_wifis}) | {passwords_count} ({passwords_count_matched})" , f"{Style.BRIGHT}{Fore.GREEN}")
+    term_show(f"> {status}"                                                                                   , f"{Style.BRIGHT}{Fore.WHITE}")
 
     wifis_sorted = sorted(wifis, key=itemgetter(wifi_clms.index(sortBy)), reverse=sortBy_reverse)
 
     if len(wifis) > 0:
         try:
-            term_show("")
             term_show(f"BSSID: {wifis_sorted[current_wifi][wifi_clm_bssid]}"     , f"{Style.BRIGHT}{Fore.CYAN}"  )
             term_show(f"ESSID: {wifis_sorted[current_wifi][wifi_clm_essid]}"     , f"{Style.BRIGHT}{Fore.GREEN}" )
             term_show(f"PASS.: {wifis_sorted[current_wifi][wifi_clm_passwd]}"    , f"{Style.BRIGHT}{Fore.RED}"   )
             term_show(f"PWR..: {wifis_sorted[current_wifi][wifi_clm_pwr]}"       , f"{Style.BRIGHT}{Fore.WHITE}" )
             term_show(f"SEEN.: {wifis_sorted[current_wifi][wifi_clm_lastseen]}"  , f"{Style.BRIGHT}{Fore.BLUE}"  )
-            term_show(f"#....: {wifis_sorted[current_wifi][wifi_clm_num]}"       , f"{Style.NORMAL}{Fore.YELLOW}")
-            term_show(f"CH...: {wifis_sorted[current_wifi][wifi_clm_ch]}"        , f"{Style.NORMAL}{Fore.GREEN}" )
-            term_show(f"CRYP.: {wifis_sorted[current_wifi][wifi_clm_crypto]}"    , f"{Style.NORMAL}{Fore.RED}"   )
+            term_show(f"#....: {wifis_sorted[current_wifi][wifi_clm_num]}"       , f"{Style.BRIGHT}{Fore.YELLOW}")
+            term_show(f"CH...: {wifis_sorted[current_wifi][wifi_clm_ch]}"        , f"{Style.BRIGHT}{Fore.GREEN}" )
+            term_show(f"CRYP.: {wifis_sorted[current_wifi][wifi_clm_crypto]}"    , f"{Style.BRIGHT}{Fore.RED}"   )
             term_show(f"STAMP: {wifis_sorted[current_wifi][wifi_clm_timestamp]}" , f"{Style.BRIGHT}{Fore.WHITE}" )
-            term_show(f"RECV.: {wifis_sorted[current_wifi][wifi_clm_packets]}"   , f"{Style.NORMAL}{Fore.WHITE}" )
+            term_show(f"RECV.: {wifis_sorted[current_wifi][wifi_clm_packets]}"   , f"{Style.BRIGHT}{Fore.WHITE}" )
         except:
             term_show("\n"*10)
             pass

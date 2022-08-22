@@ -42,7 +42,7 @@ def gpio_setup():
 # glbl stuff
 running = True
 running_menu = False
-menu_opt = 0
+menu_opt = 1
 proc = 0
 
 def checkRoot(): return os.geteuid() == 0
@@ -102,39 +102,35 @@ def runproga(lst):
     t.start()
 
 menu_items = [
-    [ 0, ""],
     [ 1, "ping google"],
     [ 2, "wlan"],
     [ 3, "wlan monitor"],
     [ 4, "wlan fix"],
-    [ 5, "hcx-wifi-rpi"],
-    [ 6, "hcx-logs-rpi"],
-    [ 7, "dumptool"],
-    [ 8, "dumptool quiet"],
-    [ 9, "show running"],
-    [10, "kill all"],
-    [11, "scan wifis"],
-    [12, "reboot"],
-    [13, "poweroff"],
+    [ 5, "hcx-wifi-rpi pass"],
+    [ 6, "hcx-wifi-rpi hashed"],
+    [ 7, "hcx-logs-rpi"],
+    [ 8, "dumptool"],
+    [ 9, "dumptool quiet"],
+    [10, "show running"],
+    [11, "kill all"],
+    [12, "scan wifis"],
+    [13, "reboot"],
+    [14, "poweroff"],
 ]
 
 OPT_MIN = 0
-OPT_MAX = len(menu_items) - 1
+OPT_MAX = len(menu_items)
 
-def action_opt_cap():
-    global menu_opt
-    global OPT_MIN
-    global OPT_MAX
-    if   menu_opt > OPT_MAX: menu_opt = OPT_MAX
-    elif menu_opt < OPT_MIN: menu_opt = OPT_MIN
 def action_opt_up():
     global menu_opt
+    global OPT_MIN
     menu_opt -= 1
-    action_opt_cap()
+    if menu_opt < OPT_MIN: menu_opt = OPT_MIN
 def action_opt_down():
     global menu_opt
+    global OPT_MAX
     menu_opt += 1
-    action_opt_cap()
+    if menu_opt > OPT_MAX: menu_opt = OPT_MAX
 def action_quit():
     global running
     print("\n\nQuitting...")
@@ -142,22 +138,22 @@ def action_quit():
 
 def action_run():
     global menu_opt
-    if   menu_opt ==  0: return
-    elif menu_opt ==  1: runproga(["ping", "8.8.8.8"])
+    if   menu_opt ==  1: runproga(["ping", "8.8.8.8"])
     elif menu_opt ==  2: runprog(["airmon-ng"])
     elif menu_opt ==  3: runprog(["airmon-ng", "start", "wlan1"])
     elif menu_opt ==  4: runprog(["airmon-ng", "stop", "wlan1mon"])
     elif menu_opt ==  5: runprog(["/home/pi/.vip/scripts/hcx-wifi-rpi", "wlan1mon", "/home/pi/Hashes/passlst.csv"])
-    elif menu_opt ==  6: runprog(["/home/pi/.vip/scripts/hcx-logs-rpi", "/home/pi/Dump"])
-    elif menu_opt ==  7: runproga(["/home/pi/.vip/scripts/pi_hcxdumptool_start"])
-    elif menu_opt ==  8: runproga(["/home/pi/.vip/scripts/pi_hcxdumptool_start_quiet"])
-    elif menu_opt ==  9: runprog(["/home/pi/.vip/scripts/pi_running"])
-    elif menu_opt == 10: runprog(["/home/pi/.vip/scripts/pi_running_kill"])
-    elif menu_opt == 11: runprog(["/home/pi/.vip/scripts/wlan-dump"])
-    elif menu_opt == 12:
+    elif menu_opt ==  6: runprog(["/home/pi/.vip/scripts/hcx-wifi-rpi", "wlan1mon", "/home/pi/Hashes/hashedlst.csv"])
+    elif menu_opt ==  7: runprog(["/home/pi/.vip/scripts/hcx-logs-rpi", "/home/pi/Dump"])
+    elif menu_opt ==  8: runproga(["/home/pi/.vip/scripts/pi_hcxdumptool_start"])
+    elif menu_opt ==  9: runproga(["/home/pi/.vip/scripts/pi_hcxdumptool_start_quiet"])
+    elif menu_opt == 10: runprog(["/home/pi/.vip/scripts/pi_running"])
+    elif menu_opt == 11: runprog(["/home/pi/.vip/scripts/pi_running_kill"])
+    elif menu_opt == 12: runprog(["/home/pi/.vip/scripts/wlan-dump"])
+    elif menu_opt == 13:
         runprog(["shutdown", "-r", "now"])
         action_quit()
-    elif menu_opt == 13:
+    elif menu_opt == 14:
         runprog(["shutdown", "-P", "now"])
         action_quit()
 

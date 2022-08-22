@@ -1,7 +1,7 @@
 #!/bin/bash
 
-echo "-- passlst.csv"
-hcx-wifi-genpasslst "$1" | sort -u > passlst.csv
+echo "-- hashedlst.csv"
+hcx-wifi-genpasslst "$1" | sort -u > hashedlst.csv
 
 echo "-- hashcat_cracked.txt"
 hashcat -m 22000 --show "$1" > hashcat_cracked.txt
@@ -17,4 +17,7 @@ echo "-- cracked.txt"
 lines-inline "$1" hashcat_cracked_idonly.txt > cracked.txt
 echo "-- uncracked.txt"
 hcx-rmhashes "$1" cracked.txt > uncracked.txt
+
+echo "-- passlst.csv"
+hcx-wifi-genpasslst "cracked.txt" | sort -u > passlst.csv
 
