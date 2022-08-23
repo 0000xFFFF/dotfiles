@@ -325,8 +325,9 @@ def menu_deauth():
         elif not GPIO.input(KEY_PRESS_PIN): menu_deauth_running = False
         elif not GPIO.input(KEY_LEFT_PIN): menu_deauth_draw(cur)
         time.sleep(sleep_input)
-
+    
     # resume
+    term_clear()
     if res1: pauseUI_evt.set()
     if res2: pauseCHHOP_evt.set()
 
