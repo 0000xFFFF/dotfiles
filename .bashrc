@@ -87,6 +87,7 @@ alias \
 	updatedb="s updatedb" \
 	tree="tree -C" \
 	diff="diff --color=auto" \
+	cat="cat -v" \
 	ccat="highlight --out-format=ansi" \
 	ffmpeg="ffmpeg -hide_banner" \
 	ffprobe="ffprobe -hide_banner" \
