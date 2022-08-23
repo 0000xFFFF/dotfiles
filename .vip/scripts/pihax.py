@@ -118,7 +118,7 @@ menu_items = [
     [14, "poweroff"],
 ]
 
-OPT_MIN = 0
+OPT_MIN = 1
 OPT_MAX = len(menu_items)
 
 def action_opt_up():
