@@ -4,7 +4,7 @@ import os
 import sys
 import time
 import atexit
-import getchlib
+#import getchlib
 from colorama import Fore, Back, Style
 from operator import itemgetter
 from tabulate import tabulate
@@ -99,39 +99,79 @@ def remove_control_chars(s):
 # load log data
 loadlogdata_dir = os.getcwd()
 loadlogdata_count = 0
-list_BEACON = []
-list_HIDDENBEACON = []
-list_PROBERESPONSE = []
-list_ROGUEPROBERESPONSE = []
-list_AUTHENTICATION = []
-list_ASSOCIATION = []
-list_REASSOCIATION = []
-list_PMKID = []
-list_PMKIDROGUE = []
-list_EAPOL = []
-list_HASH = []
-def list_BEACON_append(item):
-    if not item in list_BEACON: list_BEACON.append(item)
-def list_HIDDENBEACON_append(item):
-    if not item in list_HIDDENBEACON: list_HIDDENBEACON.append(item)
-def list_PROBERESPONSE_append(item):
-    if not item in list_PROBERESPONSE: list_PROBERESPONSE.append(item)
-def list_ROGUEPROBERESPONSE_append(item):
-    if not item in list_ROGUEPROBERESPONSE: list_ROGUEPROBERESPONSE.append(item)
-def list_AUTHENTICATION_append(item):
-    if not item in list_AUTHENTICATION: list_AUTHENTICATION.append(item)
-def list_ASSOCIATION_append(item):
-    if not item in list_ASSOCIATION: list_ASSOCIATION.append(item)
-def list_REASSOCIATION_append(item):
-    if not item in list_REASSOCIATION: list_REASSOCIATION.append(item)
-def list_PMKID_append(item):
-    if not item in list_PMKID: list_PMKID.append(item)
-def list_PMKIDROGUE_append(item):
-    if not item in list_PMKIDROGUE: list_PMKIDROGUE.append(item)
-def list_EAPOL_append(item):
-    if not item in list_EAPOL: list_EAPOL.append(item)
-def list_HASH_append(item):
-    if not item in list_HASH: list_HASH.append(item)
+
+list_master = []
+list_master_len = 0
+
+list_type_BEACON             = 1
+list_type_HIDDENBEACON       = 2
+list_type_PROBERESPONSE      = 3
+list_type_ROGUEPROBERESPONSE = 4
+list_type_AUTHENTICATION     = 5
+list_type_ASSOCIATION        = 6
+list_type_REASSOCIATION      = 7
+list_type_PMKID              = 8
+list_type_PMKIDROGUE         = 9
+list_type_EAPOL              = 10
+
+list_count_BEACON             = 0
+list_count_HIDDENBEACON       = 0
+list_count_PROBERESPONSE      = 0
+list_count_ROGUEPROBERESPONSE = 0
+list_count_AUTHENTICATION     = 0
+list_count_ASSOCIATION        = 0
+list_count_REASSOCIATION      = 0
+list_count_PMKID              = 0
+list_count_PMKIDROGUE         = 0
+list_count_EAPOL              = 0
+
+list_color_SORT               = Style.BRIGHT + Fore.MAGENTA
+list_color_BEACON             = Style.BRIGHT + Fore.GREEN
+list_color_HIDDENBEACON       = Style.NORMAL + Fore.GREEN
+list_color_PROBERESPONSE      = Style.BRIGHT + Fore.YELLOW
+list_color_ROGUEPROBERESPONSE = Style.NORMAL + Fore.YELLOW
+list_color_AUTHENTICATION     = Style.BRIGHT + Fore.BLUE
+list_color_ASSOCIATION        = Style.BRIGHT + Fore.CYAN
+list_color_REASSOCIATION      = Style.NORMAL + Fore.CYAN
+list_color_PMKID              = Style.BRIGHT + Fore.RED
+list_color_PMKIDROGUE         = Style.NORMAL + Fore.RED
+list_color_EAPOL              = Style.BRIGHT + Fore.WHITE
+list_color_HASH               = Style.NORMAL + Fore.WHITE
+
+def list_append(typ, item, doprint = False):
+    global list_count_BEACON
+    global list_count_HIDDENBEACON
+    global list_count_PROBERESPONSE
+    global list_count_ROGUEPROBERESPONSE
+    global list_count_AUTHENTICATION
+    global list_count_ASSOCIATION
+    global list_count_REASSOCIATION
+    global list_count_PMKID
+    global list_count_PMKIDROGUE
+    global list_count_EAPOL
+    if not [typ, item] in list_master:
+        if   typ == list_type_BEACON:             list_count_BEACON             += 1
+        elif typ == list_type_HIDDENBEACON:       list_count_HIDDENBEACON       += 1
+        elif typ == list_type_PROBERESPONSE:      list_count_PROBERESPONSE      += 1
+        elif typ == list_type_ROGUEPROBERESPONSE: list_count_ROGUEPROBERESPONSE += 1
+        elif typ == list_type_AUTHENTICATION:     list_count_AUTHENTICATION     += 1
+        elif typ == list_type_ASSOCIATION:        list_count_ASSOCIATION        += 1
+        elif typ == list_type_REASSOCIATION:      list_count_REASSOCIATION      += 1
+        elif typ == list_type_PMKID:              list_count_PMKID              += 1
+        elif typ == list_type_PMKIDROGUE:         list_count_PMKIDROGUE         += 1
+        elif typ == list_type_EAPOL:              list_count_EAPOL              += 1
+        list_master.append([typ, item])
+        if doprint:
+            if   typ == list_type_BEACON:             print(list_color_BEACON             + str(list_count_BEACON            ) + " " + item[0] + Style.RESET_ALL)
+            elif typ == list_type_HIDDENBEACON:       print(list_color_HIDDENBEACON       + str(list_count_HIDDENBEACON      ) + " " + item[0] + Style.RESET_ALL)
+            elif typ == list_type_PROBERESPONSE:      print(list_color_PROBERESPONSE      + str(list_count_PROBERESPONSE     ) + " " + item[0] + Style.RESET_ALL)
+            elif typ == list_type_ROGUEPROBERESPONSE: print(list_color_ROGUEPROBERESPONSE + str(list_count_ROGUEPROBERESPONSE) + " " + item[0] + Style.RESET_ALL)
+            elif typ == list_type_AUTHENTICATION:     print(list_color_AUTHENTICATION     + str(list_count_AUTHENTICATION    ) + " " + item[0] + Style.RESET_ALL)
+            elif typ == list_type_ASSOCIATION:        print(list_color_ASSOCIATION        + str(list_count_ASSOCIATION       ) + " " + item[0] + Style.RESET_ALL)
+            elif typ == list_type_REASSOCIATION:      print(list_color_REASSOCIATION      + str(list_count_REASSOCIATION     ) + " " + item[0] + Style.RESET_ALL)
+            elif typ == list_type_PMKID:              print(list_color_PMKID              + str(list_count_PMKID             ) + " " + item[0] + Style.RESET_ALL)
+            elif typ == list_type_PMKIDROGUE:         print(list_color_PMKIDROGUE         + str(list_count_PMKIDROGUE        ) + " " + item[0] + Style.RESET_ALL)
+            elif typ == list_type_EAPOL:              print(list_color_EAPOL              + str(list_count_EAPOL             ) + " " + item[0] + Style.RESET_ALL)
 
 def makeList(line, splitby):
     return remove_control_chars(line).split(splitby)[0].split()
@@ -139,109 +179,109 @@ def makeList2(line, splitby):
     items_n_pmk = remove_control_chars(line).split(splitby)
     return items_n_pmk[0].split(), items_n_pmk[1].split()[0]
 
-def getItems_BEACON(line):
+def getItems_BEACON(line, doprint = False):
     lst = makeList(line, " [BEACON]")
     essid = " ".join(lst[4:])
     bssid = lst[3].upper()
-    list_BEACON_append([essid, bssid])
-def getItems_HIDDENBEACON(line):
+    list_append(list_type_BEACON, [essid, bssid], doprint)
+def getItems_HIDDENBEACON(line, doprint = False):
     lst = makeList(line, " [HIDDEN BEACON]")
     bssid = lst[3].upper()
-    list_HIDDENBEACON_append([bssid])
-def getItems_PROBERESPONSE(line):
+    list_append(list_type_HIDDENBEACON, [bssid], doprint)
+def getItems_PROBERESPONSE(line, doprint = False):
     lst = makeList(line, " [PROBERESPONSE]")
     essid = " ".join(lst[4:])
     mac1 = lst[2].upper()
     mac2 = lst[3].upper()
-    list_PROBERESPONSE_append([essid, mac1, mac2])
-def getItems_ROGUEPROBERESPONSE(line):
+    list_append(list_type_PROBERESPONSE, [essid, mac1, mac2], doprint)
+def getItems_ROGUEPROBERESPONSE(line, doprint = False):
     lst = makeList(line, " [ROGUE PROBERESPONSE]")
     essid = " ".join(lst[4:])
     mac1 = lst[2].upper()
     mac2 = lst[3].upper()
-    list_ROGUEPROBERESPONSE_append([essid, mac1, mac2])
-def getItems_AUTHENTICATION(line):
+    list_append(list_type_ROGUEPROBERESPONSE, [essid, mac1, mac2], doprint)
+def getItems_AUTHENTICATION(line, doprint = False):
     lst = makeList(line, " [AUTHENTICATION]")
     essid = " ".join(lst[4:])
     mac1 = lst[2].upper()
     mac2 = lst[3].upper()
-    list_AUTHENTICATION_append([essid, mac1, mac2])
-def getItems_ASSOCIATION(line):
+    list_append(list_type_AUTHENTICATION, [essid, mac1, mac2], doprint)
+def getItems_ASSOCIATION(line, doprint = False):
     line_noctrlchars = remove_control_chars(line)
     tosplit = line_noctrlchars.replace(" [ASSOCIATION]", "")
     lst = tosplit.split()
     essid = " ".join(lst[4:])
     mac1 = lst[2].upper()
     mac2 = lst[3].upper()
-    list_ASSOCIATION_append([essid, mac1, mac2])
-def getItems_REASSOCIATION(line):
+    list_append(list_type_ASSOCIATION, [essid, mac1, mac2], doprint)
+def getItems_REASSOCIATION(line, doprint = False):
     lst = makeList(line, " [REASSOCIATION]")
     essid = " ".join(lst[4:])
     mac1 = lst[2].upper()
     mac2 = lst[3].upper()
-    list_REASSOCIATION_append([essid, mac1, mac2])
-def getItems_PMKID(line):
+    list_append(list_type_REASSOCIATION, [essid, mac1, mac2], doprint)
+def getItems_PMKID(line, doprint = False):
     lst, pmkid = makeList2(line, " [PMKID:")
     essid = " ".join(lst[4:])
     mac1 = lst[2].upper()
     mac2 = lst[3].upper()
-    list_PMKID_append([essid, mac1, mac2, pmkid])
-    list_HASH_append([essid, mac1, mac2, pmkid])
-def getItems_PMKIDROGUE(line):
+    list_append(list_type_PMKID, [essid, mac1, mac2, pmkid], doprint)
+def getItems_PMKIDROGUE(line, doprint = False):
     lst, pmkid = makeList2(line, " [PMKIDROGUE:")
     essid = " ".join(lst[4:])
     mac1 = lst[2].upper()
     mac2 = lst[3].upper()
-    list_PMKIDROGUE_append([essid, mac1, mac2, pmkid])
-    list_HASH_append([essid, mac1, mac2, pmkid])
-def getItems_EAPOL(line):
+    list_append(list_type_PMKIDROGUE, [essid, mac1, mac2, pmkid], doprint)
+def getItems_EAPOL(line, doprint = False):
     lst = makeList(line, " [EAPOL:")
     essid = " ".join(lst[4:])
     mac1 = lst[2].upper()
     mac2 = lst[3].upper()
-    list_EAPOL_append([essid, mac1, mac2])
-    list_HASH_append([essid, mac1, mac2])
+    list_append(list_type_EAPOL, [essid, mac1, mac2], doprint)
+
+
 loadlogdata_last = ""
-def loadlogdata_line(line):
-    if   "[BEACON]"              in line: getItems_BEACON(line)
-    elif "[HIDDEN BEACON]"       in line: getItems_HIDDENBEACON(line)
-    elif "[PROBERESPONSE]"       in line: getItems_PROBERESPONSE(line)
-    elif "[ROGUE PROBERESPONSE]" in line: getItems_ROGUEPROBERESPONSE(line)
-    elif "[AUTHENTICATION]"      in line: getItems_AUTHENTICATION(line)
-    elif "[ASSOCIATION]"         in line: getItems_ASSOCIATION(line)
-    elif "[REASSOCIATION]"       in line: getItems_REASSOCIATION(line)
-    elif "[PMKID:"               in line: getItems_PMKID(line)
-    elif "[PMKIDROGUE:"          in line: getItems_PMKIDROGUE(line)
-    elif "[EAPOL:"               in line: getItems_EAPOL(line)
+def loadlogdata_line(line, doprint = False):
+    if   "[BEACON]"              in line: getItems_BEACON(line, doprint)
+    elif "[HIDDEN BEACON]"       in line: getItems_HIDDENBEACON(line, doprint)
+    elif "[PROBERESPONSE]"       in line: getItems_PROBERESPONSE(line, doprint)
+    elif "[ROGUE PROBERESPONSE]" in line: getItems_ROGUEPROBERESPONSE(line, doprint)
+    elif "[AUTHENTICATION]"      in line: getItems_AUTHENTICATION(line, doprint)
+    elif "[ASSOCIATION]"         in line: getItems_ASSOCIATION(line, doprint)
+    elif "[REASSOCIATION]"       in line: getItems_REASSOCIATION(line, doprint)
+    elif "[PMKID:"               in line: getItems_PMKID(line, doprint)
+    elif "[PMKIDROGUE:"          in line: getItems_PMKIDROGUE(line, doprint)
+    elif "[EAPOL:"               in line: getItems_EAPOL(line, doprint)
 def loadlogdata():
 
     global loadlogdata_dir
-    global list_BEACON
-    global list_HIDDENBEACON
-    global list_PROBERESPONSE
-    global list_ROGUEPROBERESPONSE
-    global list_AUTHENTICATION
-    global list_ASSOCIATION
-    global list_REASSOCIATION
-    global list_PMKID
-    global list_PMKIDROGUE
-    global list_EAPOL
-    global loadlogdata_last
+    global list_master
+    global list_master_len
+    global list_count_BEACON
+    global list_count_HIDDENBEACON
+    global list_count_PROBERESPONSE
+    global list_count_ROGUEPROBERESPONSE
+    global list_count_AUTHENTICATION
+    global list_count_ASSOCIATION
+    global list_count_REASSOCIATION
+    global list_count_PMKID
+    global list_count_PMKIDROGUE
+    global list_count_EAPOL
     global loadlogdata_count
+    global loadlogdata_last
 
-    loadlogdata_last = datetime.now()
+    list_master.clear()
+    list_count_BEACON             = 0
+    list_count_HIDDENBEACON       = 0
+    list_count_PROBERESPONSE      = 0
+    list_count_ROGUEPROBERESPONSE = 0
+    list_count_AUTHENTICATION     = 0
+    list_count_ASSOCIATION        = 0
+    list_count_REASSOCIATION      = 0
+    list_count_PMKID              = 0
+    list_count_PMKIDROGUE         = 0
+    list_count_EAPOL              = 0
     loadlogdata_count = 0
-
-    list_BEACON = []
-    list_HIDDENBEACON = []
-    list_PROBERESPONSE = []
-    list_ROGUEPROBERESPONSE = []
-    list_AUTHENTICATION = []
-    list_ASSOCIATION = []
-    list_REASSOCIATION = []
-    list_PMKID = []
-    list_PMKIDROGUE = []
-    list_EAPOL = []
 
     # load log data
     try:
@@ -258,6 +298,47 @@ def loadlogdata():
     except FileNotFoundError:
         print("FileNotFoundError")
         exit(1)
+    
+    loadlogdata_last = datetime.now()
+    list_master_len = len(list_master)
+
+def loadtaildata_init():
+    global list_master
+    global list_master_len
+    global list_count_BEACON
+    global list_count_HIDDENBEACON
+    global list_count_PROBERESPONSE
+    global list_count_ROGUEPROBERESPONSE
+    global list_count_AUTHENTICATION
+    global list_count_ASSOCIATION
+    global list_count_REASSOCIATION
+    global list_count_PMKID
+    global list_count_PMKIDROGUE
+    global list_count_EAPOL
+    list_master.clear()
+    list_count_BEACON             = 0
+    list_count_HIDDENBEACON       = 0
+    list_count_PROBERESPONSE      = 0
+    list_count_ROGUEPROBERESPONSE = 0
+    list_count_AUTHENTICATION     = 0
+    list_count_ASSOCIATION        = 0
+    list_count_REASSOCIATION      = 0
+    list_count_PMKID              = 0
+    list_count_PMKIDROGUE         = 0
+    list_count_EAPOL              = 0
+def loadtaildata():
+
+    global list_master
+    global list_master_len
+
+    # load log data
+    try:
+        lines = os.popen(f"/home/pi/.vip/scripts/pi_dump").read().split("\n")
+        for line in lines: loadlogdata_line(line, True)
+    except FileNotFoundError:
+        print("FileNotFoundError")
+        exit(1)
+    list_master_len = len(list_master)
 
 submenu_running = True
 submenu_items = []
@@ -267,42 +348,55 @@ submenu_sorted = False
 submenu_goback = 6
 submenu_goforw = 6
 submenu_skip = 10
+def submenu_getItems(t):
+    global list_master
+    lst = []
+    for i in list_master:
+        if t == i[0]:
+            lst.append(i[1])
+    return lst
+def submenu_getItemsHashes():
+    global list_master
+    lst = []
+    for i in list_master:
+        if i[0] == list_type_PMKID or i[0] == list_type_PMKIDROGUE or i[0] == list_type_EAPOL:
+            lst.append(i[1])
+    return lst
 def submenu_load(listType):
     global submenu_items
     global submenu_items_li
     global submenu_selected
     global submenu_sorted
 
-    submenu_items = []
+    submenu_items.clear()
 
     if submenu_sorted:
-        if   listType ==  1: submenu_items = sorted(list_BEACON             , key=itemgetter(0))
-        elif listType ==  2: submenu_items = sorted(list_HIDDENBEACON       , key=itemgetter(0))
-        elif listType ==  3: submenu_items = sorted(list_PROBERESPONSE      , key=itemgetter(0))
-        elif listType ==  4: submenu_items = sorted(list_ROGUEPROBERESPONSE , key=itemgetter(0))
-        elif listType ==  5: submenu_items = sorted(list_AUTHENTICATION     , key=itemgetter(0))
-        elif listType ==  6: submenu_items = sorted(list_ASSOCIATION        , key=itemgetter(0))
-        elif listType ==  7: submenu_items = sorted(list_REASSOCIATION      , key=itemgetter(0))
-        elif listType ==  8: submenu_items = sorted(list_PMKID              , key=itemgetter(0))
-        elif listType ==  9: submenu_items = sorted(list_PMKIDROGUE         , key=itemgetter(0))
-        elif listType == 10: submenu_items = sorted(list_EAPOL              , key=itemgetter(0))
-        elif listType == 11: submenu_items = sorted(list_HASH               , key=itemgetter(0))
+        if   listType ==  1: submenu_items = sorted(submenu_getItems(list_type_BEACON)             , key=itemgetter(0))
+        elif listType ==  2: submenu_items = sorted(submenu_getItems(list_type_HIDDENBEACON)       , key=itemgetter(0))
+        elif listType ==  3: submenu_items = sorted(submenu_getItems(list_type_PROBERESPONSE)      , key=itemgetter(0))
+        elif listType ==  4: submenu_items = sorted(submenu_getItems(list_type_ROGUEPROBERESPONSE) , key=itemgetter(0))
+        elif listType ==  5: submenu_items = sorted(submenu_getItems(list_type_AUTHENTICATION)     , key=itemgetter(0))
+        elif listType ==  6: submenu_items = sorted(submenu_getItems(list_type_ASSOCIATION)        , key=itemgetter(0))
+        elif listType ==  7: submenu_items = sorted(submenu_getItems(list_type_REASSOCIATION)      , key=itemgetter(0))
+        elif listType ==  8: submenu_items = sorted(submenu_getItems(list_type_PMKID)              , key=itemgetter(0))
+        elif listType ==  9: submenu_items = sorted(submenu_getItems(list_type_PMKIDROGUE)         , key=itemgetter(0))
+        elif listType == 10: submenu_items = sorted(submenu_getItems(list_type_EAPOL)              , key=itemgetter(0))
+        elif listType == 11: submenu_items = sorted(submenu_getItemsHashes()                       , key=itemgetter(0))
     else:
-        if   listType ==  1: submenu_items = list_BEACON
-        elif listType ==  2: submenu_items = list_HIDDENBEACON
-        elif listType ==  3: submenu_items = list_PROBERESPONSE
-        elif listType ==  4: submenu_items = list_ROGUEPROBERESPONSE
-        elif listType ==  5: submenu_items = list_AUTHENTICATION
-        elif listType ==  6: submenu_items = list_ASSOCIATION
-        elif listType ==  7: submenu_items = list_REASSOCIATION
-        elif listType ==  8: submenu_items = list_PMKID
-        elif listType ==  9: submenu_items = list_PMKIDROGUE
-        elif listType == 10: submenu_items = list_EAPOL
-        elif listType == 11: submenu_items = list_HASH
+        if   listType ==  1: submenu_items = submenu_getItems(list_type_BEACON)
+        elif listType ==  2: submenu_items = submenu_getItems(list_type_HIDDENBEACON)
+        elif listType ==  3: submenu_items = submenu_getItems(list_type_PROBERESPONSE)
+        elif listType ==  4: submenu_items = submenu_getItems(list_type_ROGUEPROBERESPONSE)
+        elif listType ==  5: submenu_items = submenu_getItems(list_type_AUTHENTICATION)
+        elif listType ==  6: submenu_items = submenu_getItems(list_type_ASSOCIATION)
+        elif listType ==  7: submenu_items = submenu_getItems(list_type_REASSOCIATION)
+        elif listType ==  8: submenu_items = submenu_getItems(list_type_PMKID)
+        elif listType ==  9: submenu_items = submenu_getItems(list_type_PMKIDROGUE)
+        elif listType == 10: submenu_items = submenu_getItems(list_type_EAPOL)
+        elif listType == 11: submenu_items = submenu_getItemsHashes()
 
     submenu_items_li = len(submenu_items)-1
     submenu_selected = submenu_items_li
-
 def submenu_draw():
     global submenu_items
     global submenu_items_li
@@ -370,7 +464,7 @@ def submenu(listType):
 
         while running:
             time.sleep(sleept)
-            if not GPIO.input(KEY_UP_PIN):      submenu_up() ; break
+            if   not GPIO.input(KEY_UP_PIN):    submenu_up() ; break
             elif not GPIO.input(KEY_DOWN_PIN):  submenu_down() ; break
             elif not GPIO.input(KEY_LEFT_PIN):  submenu_selected = 0 ; break
             elif not GPIO.input(KEY_RIGHT_PIN): submenu_selected = submenu_items_li ; break
@@ -425,24 +519,53 @@ def menu_updateItems(reloadData = False):
     global menu_items
     global OPT_MIN
     global OPT_MAX
-    menu_items = []
-    len_list_PMKID      = len(list_PMKID)
-    len_list_PMKIDROGUE = len(list_PMKIDROGUE)
-    len_list_EAPOL      = len(list_EAPOL)
-    menu_items.append([ 0, Style.BRIGHT + Fore.MAGENTA + f"SORTED ({submenu_sorted})"                                     + Style.RESET_ALL])
-    menu_items.append([ 1, Style.BRIGHT + Fore.GREEN   + f"BEACON..: {len(list_BEACON)}"                                  + Style.RESET_ALL])
-    menu_items.append([ 2, Style.BRIGHT + Fore.GREEN   + f"H BEACON: {len(list_HIDDENBEACON)}"                            + Style.RESET_ALL])
-    menu_items.append([ 3, Style.BRIGHT + Fore.YELLOW  + f"PROBES..: {len(list_PROBERESPONSE)}"                           + Style.RESET_ALL])
-    menu_items.append([ 4, Style.BRIGHT + Fore.YELLOW  + f"ROG PRO.: {len(list_ROGUEPROBERESPONSE)}"                      + Style.RESET_ALL])
-    menu_items.append([ 5, Style.BRIGHT + Fore.CYAN    + f"AUTHS...: {len(list_AUTHENTICATION)}"                          + Style.RESET_ALL])
-    menu_items.append([ 6, Style.BRIGHT + Fore.CYAN    + f"ASSOCS..: {len(list_ASSOCIATION)}"                             + Style.RESET_ALL])
-    menu_items.append([ 7, Style.BRIGHT + Fore.CYAN    + f"REASSOCS: {len(list_REASSOCIATION)}"                           + Style.RESET_ALL])
-    menu_items.append([ 8, Style.BRIGHT + Fore.RED     + f"PMKID...: {len_list_PMKID}"                                    + Style.RESET_ALL])
-    menu_items.append([ 9, Style.BRIGHT + Fore.RED     + f"PMKIDR..: {len_list_PMKIDROGUE}"                               + Style.RESET_ALL])
-    menu_items.append([10, Style.BRIGHT + Fore.RED     + f"EAPOL...: {len_list_EAPOL}"                                    + Style.RESET_ALL])
-    menu_items.append([11, Style.BRIGHT + Fore.WHITE   + f"HASHES..: {len_list_PMKID+len_list_PMKIDROGUE+len_list_EAPOL}" + Style.RESET_ALL])
+    menu_items.clear()
+
+    global list_master
+    global list_count_BEACON
+    global list_count_HIDDENBEACON
+    global list_count_PROBERESPONSE
+    global list_count_ROGUEPROBERESPONSE
+    global list_count_AUTHENTICATION
+    global list_count_ASSOCIATION
+    global list_count_REASSOCIATION
+    global list_count_PMKID
+    global list_count_PMKIDROGUE
+    global list_count_EAPOL
+
+    list_count_HASH = list_count_PMKID + list_count_PMKIDROGUE + list_count_EAPOL
+    menu_items.append([ 0, list_color_SORT               + f"SORT ({submenu_sorted})"                + Style.RESET_ALL])
+    menu_items.append([ 1, list_color_BEACON             + f"BEACO: {list_count_BEACON}"             + Style.RESET_ALL])
+    menu_items.append([ 2, list_color_HIDDENBEACON       + f"HBEAC: {list_count_HIDDENBEACON}"       + Style.RESET_ALL])
+    menu_items.append([ 3, list_color_PROBERESPONSE      + f"PROBE: {list_count_PROBERESPONSE}"      + Style.RESET_ALL])
+    menu_items.append([ 4, list_color_ROGUEPROBERESPONSE + f"RPROO: {list_count_ROGUEPROBERESPONSE}" + Style.RESET_ALL])
+    menu_items.append([ 5, list_color_AUTHENTICATION     + f"AUTHS: {list_count_AUTHENTICATION}"     + Style.RESET_ALL])
+    menu_items.append([ 6, list_color_ASSOCIATION        + f"ASSOC: {list_count_ASSOCIATION}"        + Style.RESET_ALL])
+    menu_items.append([ 7, list_color_REASSOCIATION      + f"REASS: {list_count_REASSOCIATION}"      + Style.RESET_ALL])
+    menu_items.append([ 8, list_color_PMKID              + f"PMKID: {list_count_PMKID}"              + Style.RESET_ALL])
+    menu_items.append([ 9, list_color_PMKIDROGUE         + f"PMKRO: {list_count_PMKIDROGUE}"         + Style.RESET_ALL])
+    menu_items.append([10, list_color_EAPOL              + f"EAPOL: {list_count_EAPOL}"              + Style.RESET_ALL])
+    menu_items.append([11, list_color_HASH               + f"HASHS: {list_count_HASH}"               + Style.RESET_ALL])
     OPT_MIN = 0
     OPT_MAX = len(menu_items) - 1
+
+tail_running = False
+def tail():
+
+    global tail_running
+    tail_running = True
+
+    # init
+    term_clear()
+    loadtaildata_init()
+
+    while tail_running:
+        loadtaildata()
+        if not GPIO.input(KEY2_PIN): tail_running = False
+        time.sleep(0.1)
+    
+    term_clear()
+    menu_updateItems(True)
 
 def menu(keyPress):
     global menu_opt
@@ -458,12 +581,15 @@ def menu(keyPress):
     elif keyPress == 5:
         action_run()
         term_blank()
-    elif keyPress == 7: action_toggleSort()
+    elif keyPress == 7:
+        action_toggleSort()
+        term_blank()
+    elif keyPress == 8: tail()
 
     # draw
-    term_show(f"LOG FILES: {loadlogdata_count}" , f"{Style.BRIGHT}{Fore.RED}")
-    term_show(f"{str(datetime.now())}"          , f"{Style.BRIGHT}{Fore.GREEN}")
-    term_show(f"{loadlogdata_last}"             , f"{Style.BRIGHT}{Fore.MAGENTA}")
+    term_show(f"LOGS: {loadlogdata_count} / {list_master_len}" , f"{Style.BRIGHT}{Fore.RED}")
+    term_show(f"{str(datetime.now())}"                         , f"{Style.BRIGHT}{Fore.GREEN}")
+    term_show(f"{loadlogdata_last}"                            , f"{Style.BRIGHT}{Fore.MAGENTA}")
     for i in menu_items:
         num = str(i[0]).rjust(3, " ")
         cmd = i[1]
@@ -471,7 +597,7 @@ def menu(keyPress):
         else:                term_show(f" {num}. {cmd}")
 
     if   keyPress == 6: action_quit()
-    elif keyPress == 8: action_cat()
+
 
 if __name__ == "__main__":
 

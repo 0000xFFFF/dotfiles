@@ -1,2 +1,2 @@
 #!/bin/bash
-cat /home/pi/Dump/*.log
+tail /home/pi/Dump/*.log 2>/dev/null
