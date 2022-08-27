@@ -561,9 +561,9 @@ def tail():
 
     while tail_running:
         loadtaildata()
-        if not GPIO.input(KEY2_PIN): tail_running = False
+        if not GPIO.input(KEY_LEFT_PIN): tail_running = False
         time.sleep(0.1)
-    
+
     term_clear()
     menu_updateItems(True)
 
