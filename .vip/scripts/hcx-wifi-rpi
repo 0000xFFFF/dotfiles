@@ -151,7 +151,9 @@ def channel_get():
     return int(os.popen(f"iw '{interface}' info | grep channel").read().split()[1])
 def channel_set(i):
     global interface
-    os.system(f"sudo iw dev '{interface}' set channel {i}")
+    proc = subprocess.Popen(["sudo", "iw", "dev", interface, "set", "channel", str(i)])
+    os.waitpid(proc.pid, 0)
+
 def action_hopch():
     found = False
     isSet = False
