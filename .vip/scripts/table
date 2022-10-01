@@ -1,32 +1,42 @@
 #!/usr/bin/env python3
 import sys
-import time
-import atexit
-import getchlib
-
 from tabulate import tabulate
 from operator import itemgetter
 #from colorama import Fore, Back, Style
 
+if len(sys.argv) < 2:
+    print("USAGE: " + sys.argv[0] + " <file.csv> [delim] [-h]")
+    print("* delim default = whitepace")
+    print(" -h = first line is header")
+    exit()
 
 items = []
 
-f = open(sys.argv[1], 'r')
+filename = sys.argv[1]
+delim = ""
+clm = ""
+hasHeader = False
+if len(sys.argv) >= 3: delim = sys.argv[2]
+if len(sys.argv) >= 4 and sys.argv[3] == "-h": hasHeader = True
+
+f = open(filename, 'r')
 lines = f.readlines()
 f.close()
 for i_ in lines:
     i = i_.replace("\n", "")
-    a = i.split()
+    if delim: a = i.split(delim)
+    else:     a = i.split()
     items.append(a)
 
 heads = []
 heads_len = len(items[0])
-for i in range(heads_len):
-    heads.append(i)
 
-sortwith = 0
-if len(sys.argv) >= 3:
-    sortwith = int(sys.argv[2])
+if hasHeader:
+    heads = items[0]
+    del items[0]
+else:
+    for i in range(heads_len):
+        heads.append(i)
 
-print(tabulate(sorted(items, key=itemgetter(sortwith)), headers=heads))
+print(tabulate(items, headers=heads))
 
