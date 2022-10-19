@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import os
 import sys
@@ -496,6 +496,7 @@ def action_toggleSort():
     submenu_sorted = (not submenu_sorted)
     menu_updateItems()
 def action_cat():
+    term_blank()
     print(os.popen(f"/home/pi/.vip/scripts/pi_dump").read())
 def action_run():
     global menu_opt
@@ -511,6 +512,7 @@ def action_run():
     elif menu_opt ==  9: submenu(9)
     elif menu_opt == 10: submenu(10)
     elif menu_opt == 11: submenu(11)
+    term_blank()
 
 def menu_updateItems(reloadData = False):
 
@@ -578,12 +580,7 @@ def menu(keyPress):
     elif keyPress == 2: action_down()
     elif keyPress == 3: term_blank()
     elif keyPress == 4: menu_updateItems(True)
-    elif keyPress == 5:
-        action_run()
-        term_blank()
-    elif keyPress == 7:
-        action_toggleSort()
-        term_blank()
+    elif keyPress == 5: action_run()      
     elif keyPress == 8: tail()
 
     # draw
@@ -597,6 +594,7 @@ def menu(keyPress):
         else:                term_show(f" {num}. {cmd}")
 
     if   keyPress == 6: action_quit()
+    elif keyPress == 7: action_cat()
 
 
 if __name__ == "__main__":

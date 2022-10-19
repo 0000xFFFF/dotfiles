@@ -47,22 +47,7 @@ proc = 0
 path_device = "/tmp/wlan-rpi_device"
 selected_device = ""
 
-menu_items = [
-    [ 1, "ping google"],
-    [ 2, "wlan-rpi"],
-    [ 3, "wlan load"],
-    [ 4, "hcx-wifi-rpi pass"],
-    [ 5, "hcx-wifi-rpi hashed"],
-    [ 6, "hcx-logs-rpi"],
-    [ 7, "dumptool"],
-    [ 8, "dumptool quiet"],
-    [ 9, "show running"],
-    [10, "kill all"],
-    [11, "scan wifis"],
-    [12, "reboot"],
-    [13, "poweroff"],
-]
-
+menu_items = []
 OPT_MIN = 1
 OPT_MAX = len(menu_items)
 
@@ -112,16 +97,6 @@ def term_show(s, color = ""):
 def signal_handler():
     term_cursor_show()
 
-def runprog(lst):
-    global proc
-    proc = subprocess.Popen(lst)
-    print(f"started PID: {proc.pid}")
-    os.waitpid(proc.pid, 0)
-    print(f"died: {proc.pid}")
-def runproga(lst):
-    t = Thread(target = runprog, args = (lst,))
-    t.start()
-
 def action_opt_up():
     global menu_opt
     global OPT_MIN
@@ -137,6 +112,14 @@ def action_quit():
     print("\n\nQuitting...")
     running = False
 
+def action_select():
+    global selected_device
+    global path_device
+    selected_device = menu_items[menu_opt-1][1][1]
+
+    f = open(path_device, "w")
+    f.write(selected_device)
+    f.close()
 def action_load():
     global selected_device
     global path_device
@@ -145,37 +128,35 @@ def action_load():
             selected_device = f.readline().rstrip()
     except:
         pass
-    
+def action_updateItems():
+
     term_blank()
-    print(f"loaded: {selected_device}")
 
-def action_run():
-    global menu_opt
-    if   menu_opt ==  1: runproga(["ping", "8.8.8.8"])
-    elif menu_opt ==  2: runprog(["/home/pi/.vip/scripts/wlan-rpi"])
-    elif menu_opt ==  3: action_load()
-    elif menu_opt ==  4: runprog(["/home/pi/.vip/scripts/hcx-wifi-rpi", selected_device, "/home/pi/Hashes/passlst.csv"])
-    elif menu_opt ==  5: runprog(["/home/pi/.vip/scripts/hcx-wifi-rpi", selected_device, "/home/pi/Hashes/hashedlst.csv"])
-    elif menu_opt ==  6: runprog(["/home/pi/.vip/scripts/hcx-logs-rpi", "/home/pi/Dump"])
-    elif menu_opt ==  7: runproga(["/home/pi/.vip/scripts/pi_hcxdumptool_start", selected_device])
-    elif menu_opt ==  8: runproga(["/home/pi/.vip/scripts/pi_hcxdumptool_start_quiet", selected_device])
-    elif menu_opt ==  9: runprog(["/home/pi/.vip/scripts/pi_running"])
-    elif menu_opt == 10: runprog(["/home/pi/.vip/scripts/pi_running_kill"])
-    elif menu_opt == 11: runprog(["/home/pi/.vip/scripts/wlan-dump"])
-    elif menu_opt == 12:
-        runprog(["shutdown", "-r", "now"])
-        action_quit()
-    elif menu_opt == 13:
-        runprog(["shutdown", "-P", "now"])
-        action_quit()
+    global menu_items
+    global OPT_MIN
+    global OPT_MAX
+    menu_items = []
 
-def action_kill():
-    global proc
-    try:
-        print(f"KILL: {proc.pid}")
-        os.kill(proc.pid, signal.SIGTERM)
-    except ProcessLookupError: print("ProcessLookupError")
-    except: print("process not found")
+    proc = subprocess.Popen(['sudo', 'airmon-ng'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    for line in proc.stdout.read().decode().split("\n"):
+        if not line: continue
+        clms = line.split()
+        if clms[0] == "PHY" and clms[1] == "Interface" and clms[2] == "Driver" and clms[3] == "Chipset": continue
+        menu_items.append([len(menu_items)+1, clms])
+    
+    OPT_MIN = 1
+    OPT_MAX = len(menu_items)
+
+def action_monitor(enable):
+    term_blank()
+    action = "start"
+    if not enable: action = "stop"
+    cmd = ['sudo', 'airmon-ng', action, selected_device]
+    print(' '.join(cmd))
+    proc = subprocess.Popen(cmd)
+    print(f"started PID: {proc.pid}")
+    os.waitpid(proc.pid, 0)
+    print(f"died: {proc.pid}")
 
 def menu(keyPress):
 
@@ -192,21 +173,25 @@ def menu(keyPress):
     if   keyPress == 1: action_opt_up()
     elif keyPress == 2: action_opt_down()
     elif keyPress == 3: term_blank()
+    elif keyPress == 4: action_updateItems()
+    elif keyPress == 5: action_select()
 
     # draw
-    term_show(f"{str(datetime.now())}"       , f"{Style.BRIGHT}{Fore.GREEN}")
-    term_show(f"device -> {selected_device}" , f"{Style.BRIGHT}{Fore.RED}")
-
+    term_show(f"{str(datetime.now())}", f"{Style.BRIGHT}{Fore.GREEN}")
     for i in menu_items:
-        num = str(i[0]).rjust(3, " ")
-        cmd = i[1]
-        if menu_opt == i[0]: term_show(f">{num}. {cmd}" , f"{Style.NORMAL}{Back.WHITE}{Fore.BLACK}")
-        else:                term_show(f" {num}. {cmd}")
+        num = str(i[0]).rjust(2, " ")
+        lst = " ".join(i[1])
+        if i[1][1] == selected_device:
+            if menu_opt == i[0]: term_show(f">{num}. {lst}" , f"{Style.NORMAL}{Back.WHITE}{Fore.RED}")
+            else:                term_show(f" {num}. {lst}" , f"{Fore.RED}")
+        else:
+            if menu_opt == i[0]: term_show(f">{num}. {lst}" , f"{Style.NORMAL}{Back.WHITE}{Fore.BLACK}")
+            else:                term_show(f" {num}. {lst}")
 
-    if   keyPress == 4: term_blank()
-    elif keyPress == 5: action_run()
-    elif keyPress == 6: action_kill()
-    elif keyPress == 8: action_quit()
+    
+    if   keyPress == 6: action_quit()
+    elif keyPress == 7: action_monitor(True)
+    elif keyPress == 8: action_monitor(False)
 
     running_menu = False
 
@@ -220,6 +205,7 @@ if __name__ == "__main__":
 
     term_blank()
     action_load()
+    action_updateItems()
     menu(0)
 
     try:
