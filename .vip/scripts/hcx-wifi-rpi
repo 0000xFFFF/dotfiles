@@ -13,7 +13,6 @@ from scapy.all import *
 
 from threading import Thread
 from datetime import datetime
-from tabulate import tabulate
 from operator import itemgetter
 from colorama import Fore, Back, Style
 
