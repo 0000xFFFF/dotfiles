@@ -68,16 +68,17 @@ mutedtimestamps_len = len(mutedtimestamps)
 subvideos = []
 
 def subvideos_append(s,e):
-    o = "p" + str(len(subvideos)+1) + file_ext
+    o = "p" + str(len(subvideos)+1) + ".mp4"
     d = 0
     if e and s:
         d = round(float(e) - float(s), 5)
-        if d < 1:
-            d2add = 1 - d
-            e = str(round(float(e) + d2add, 5))
-            d = round(float(e) - float(s), 5)
+        #if d < 1:
+        #    d2add = 1 - d
+        #    e = str(round(float(e) + d2add, 5))
+        #    d = round(float(e) - float(s), 5)
+    es = str(e)
     ds = str(d)
-    subvideos.append([s,e,ds,o])
+    subvideos.append([s,es,ds,o])
 
 
 if mutedtimestamps_len >= 1: # add beggining
@@ -134,7 +135,7 @@ for i in subvideos:
     if start: startcmd = " -ss " + start
     if end: endcmd = " -to " + end
 
-    s = "ffmpeg -hide_banner -v quiet -i \"" + file_path + "\"" + startcmd + endcmd + " -c copy " + outfile
+    s = "ffmpeg -hide_banner -v quiet -i \"" + file_path + "\"" + startcmd + endcmd + " " + outfile
     print(f"{subvideos_counter}/{subvideos_len} ({subvideos_counter/subvideos_len*100:.2f}%) {s} --> {dur} --> ...", end='')
     x = os.system(s)
     print("\b\b\b", end="")
