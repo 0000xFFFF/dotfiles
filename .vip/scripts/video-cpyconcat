@@ -13,5 +13,5 @@ for i in sys.argv[1:]:
 
 file_out.close()
 
-os.system("ffmpeg -safe 0 -f concat -i list.txt concat.mp4")
+os.system("ffmpeg -safe 0 -f concat -i list.txt -c copy cpyconcat.mp4")
 os.remove("list.txt")
