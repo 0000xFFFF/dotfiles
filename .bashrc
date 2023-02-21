@@ -142,6 +142,8 @@ alias \
 	4chan-dl="wget -nd -r -l 1 -H -D is2.4chan.org -A png,gif,jpg,jpeg,webm" \
 	yt="youtube-dl -i --add-metadata -o '%(title)s.%(ext)s'" \
 	yta="youtube-dl -i --extract-audio --audio-format mp3 -f bestaudio/best -o '%(title)s.%(ext)s'" \
+	yt2="yt-dlp -i --add-metadata -o '%(title)s.%(ext)s'" \
+	yta2="yt-dlp -i --extract-audio --audio-format mp3 -f bestaudio/best -o '%(title)s.%(ext)s'" \
 	corona="curl https://corona-stats.online" \
 	coronars="curl https://corona-stats.online/serbia" \
 	dldotfiles="git clone 'https://www.github.com/0000xFFFF/dotfiles'"
