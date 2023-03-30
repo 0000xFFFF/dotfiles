@@ -25,7 +25,6 @@ dolphin
 efibootmgr
 elinks
 exa
-f3
 fdupes
 ffmpeg
 ffmpegthumbnailer
@@ -85,7 +84,6 @@ oxygen
 p7zip
 papirus-icon-theme
 pavucontrol
-peazip-qt-bin
 perl-image-exiftool
 plasma
 plocate
@@ -96,7 +94,6 @@ python-colorama
 python-future
 python-importlib_resources
 python-netifaces
-python-nmap
 python-numpy
 python-paramiko
 python-pycryptodome
@@ -108,13 +105,11 @@ python-virtualenv
 python-wcwidth
 qbittorrent
 ranger
-rar
 redshift
 rofi
 rpm-tools
 scapy
 sddm-kcm
-setuptools
 signal-desktop
 sudo
 termshark
