@@ -1,1 +1,0 @@
-ln -sfr ~/.vip/fonts ~/.local/share/fonts
