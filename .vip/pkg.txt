@@ -8,7 +8,6 @@ arp-scan
 atool
 audacious
 audacity
-base
 base-devel
 bashtop
 binutils
