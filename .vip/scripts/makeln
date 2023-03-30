@@ -4,6 +4,7 @@
 [ ! -e "$HOME/.local/share/fonts" ] && ln -sfr "$HOME/.vip/fonts" "$HOME/.local/share/fonts"
 
 # scripts
+[ ! -e "$HOME/.local/share/fonts" ] && "$HOME/.vip/scripts_ln/"
 ln -sfr "$HOME/.vip/tools/beep/beep"                              "$HOME/.vip/scripts_ln/beep"
 ln -sfr "$HOME/.vip/tools/beep-keyboard/beep-keyboard"            "$HOME/.vip/scripts_ln/beep-keyboard"
 ln -sfr "$HOME/.vip/pyenv/p3tools/IPGeoLocation/ipgeolocation.py" "$HOME/.vip/scripts_ln/ipgeolocation"
