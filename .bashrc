@@ -13,65 +13,36 @@ export PS1="\[$(tput bold)\]\[$(tput setaf 3)\][\[$([ "$EUID" -eq 0 ] && tput se
 bind "set completion-ignore-case on"
 
 # ===[ alias ] ===
-# shortcut
+# main
 alias \
 	e="exit" \
-	q="exit" \
-	quit="exit" \
+	q="e" \
+	quit="e" \
 	l="clear" \
 	b="cd .." \
-	cls="clear" \
+	cls="l" \
 	s="sudo" \
-	uwu="s" \
-	owo="s" \
-	pwease="s" \
-	please="s" \
-	fuck='s $(history -p \!\!)' \
-	pls="s" \
-	plz="s" \
 	psa="ps aux" \
 	psf="pgrep -af" \
 	ka="killall" \
 	g="grep -i" \
 	f="find . | g -i" \
-	vol="pamixer --get-volume" \
 	cp="cp -iv" \
 	mv="mv -iv" \
 	rm="rm -vI" \
 	gid="pgrep -x" \
 	kp="pkill -9 -f" \
 	his="history" \
-	clip="xclip -selection clipboard" \
 	v="nvim" \
 	vim="v" \
 	lsf="ls -p | g -v /" \
 	r="ranger" \
-	ungz="tar -zxvf" \
 	sc="shellcheck" \
 	ns="netstat -antp" \
 	utc="date +%s" \
-	dust="du -h | sort -h" \
-	dust2="du -h -d 1 | sort -h" \
-	nf="neofetch" \
 	cursor_show="printf '\033[?25h'" \
 	cursor_hide="printf '\033[?25l'" \
 	clear2="printf '\033[0;0H'" \
-
-# site
-alias \
-	site="sudo systemctl status httpd" \
-	siteup="sudo systemctl start httpd" \
-	siterst="sudo systemctl restart httpd" \
-	sitedown="sudo systemctl stop httpd" \
-	sitelog="tail -f /var/log/httpd/*" \
-	sitelogmain="tail -f /var/log/httpd/access_log" \
-	sitelogclear="sudo rm -rfi /var/log/httpd/access_log /var/log/httpd/error_log /var/log/httpd/ssl_request_log" \
-	upall="pm2 start all ; systemctl start httpd ; systemctl status httpd" \
-	downall="pm2 stop all ; systemctl stop httpd ; systemctl status httpd" \
-	statall="pm2 status ; systemctl status httpd" \
-
-# look
-alias \
 	ls="exa --color=auto --group-directories-first" \
 	la="ls -la" \
 	laa="ls -abghHliS" \
@@ -88,15 +59,40 @@ alias \
 	tree="tree -C" \
 	diff="diff --color=auto" \
 	cat="cat -v" \
+
+
+# handy
+alias \
+	fuck='s $(history -p \!\!)' \
+	vol="pamixer --get-volume" \
+	clip="xclip -selection clipboard" \
+	nf="neofetch" \
+	dust="du -h | sort -h" \
+	dust2="du -h -d 1 | sort -h" \
+	ungz="tar -zxvf" \
 	ccat="highlight --out-format=ansi" \
 	ffmpeg="ffmpeg -hide_banner" \
 	ffprobe="ffprobe -hide_banner" \
 	ffplay="ffplay -hide_banner" \
+	systemctl="s systemctl" \
+
+# site
+alias \
+	site="s systemctl status httpd" \
+	siteup="s systemctl start httpd" \
+	siterst="s systemctl restart httpd" \
+	sitedown="s systemctl stop httpd" \
+	sitelog="tail -f /var/log/httpd/*" \
+	sitelogmain="tail -f /var/log/httpd/access_log" \
+	sitelogclear="s rm -rfi /var/log/httpd/access_log /var/log/httpd/error_log /var/log/httpd/ssl_request_log" \
+	upall="pm2 start all ; systemctl start httpd ; systemctl status httpd" \
+	downall="pm2 stop all ; systemctl stop httpd ; systemctl status httpd" \
+	statall="pm2 status ; systemctl status httpd" \
 
 # hax
 alias \
-	rpf='su -c /home/user/.vip/tools/radeon-profile/radeon-profile/target/radeon-profile' \
-	nd="sudo netdiscover" \
+	rpf="s radeon-profile" \
+	nd="s netdiscover" \
 	tshark-http="tshark -Y 'http.request.method == GET' -i" \
 	tshark-icmp="tshark -Y 'icmp' -i" \
 	tcpdump-icmp="tcpdump -vv icmp -i" \
@@ -153,7 +149,7 @@ alias \
 	bin="cd \"$HOME/.vip/scripts\"" \
 	vip="cd \"$HOME/.vip/\"" \
 	wlst="cd \"$HOME/.vip/lists/wordlists\"" \
-	cap="cd /media/HDD/Root/dump/cap" \
+	cap="cd /media/SSD/root/dump/cap" \
 	dx="cd \"$HOME/Desktop\"" \
 	cddx="cd \"$HOME/Desktop\"" \
 	cddl="cd \"$HOME/Downloads\"" \
@@ -161,8 +157,8 @@ alias \
 	cddoc="cd \"$HOME/Documents\"" \
 	cdmus="cd \"$HOME/Music\"" \
 	cdvid="cd \"$HOME/Videos\"" \
-	mus="cd /media/HDD/Stuff/media/mp3/Music" \
-	cdbg="cd /media/HDD/Stuff/media/img/bg/" \
+	mus="cd /media/SSD/media/music" \
+	cdbg="cd /media/SSD/media/bg" \
 	p2="source \"$HOME/.vip/pyenv/p2env/bin/activate\"" \
 	p3="source \"$HOME/.vip/pyenv/p3env/bin/activate\"" \
 	pt="which python ; python --version ; which pip ; pip --version" \
