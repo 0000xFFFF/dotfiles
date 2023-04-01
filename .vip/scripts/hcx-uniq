@@ -14,7 +14,7 @@ hashes_file_file.close()
 hashes_list = []
 for hashes_file_line in hashes_file_lines:
     hashLine = hashes_file_line.replace("\n", "")
-    p = subprocess.Popen(['hcxpmktool', '-i', hashLine, '-p', ''], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    p = subprocess.Popen(['hcxpmktool', '-l', hashLine, '-p', ''], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     pmk = ""
     for outL in p.stdout.read().decode().split("\n"):
         if outL.startswith("PMK...............: "):

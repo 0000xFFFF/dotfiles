@@ -35,6 +35,7 @@ flatpak-kcm
 gcc
 gedit
 git
+gnu-netcat
 grub
 hashcat
 hcxdumptool
@@ -118,12 +119,14 @@ tor
 torsocks
 transmission-cli
 ueberzug
+unzip
 vi
 vim
 vlc
 vulscan
 w3m
 wget
+wine
 wireshark-cli
 wireshark-qt
 wl-clipboard
