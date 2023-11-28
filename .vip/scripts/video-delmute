@@ -10,9 +10,11 @@ import time
 # get args
 if len(sys.argv) < 2:
 	print("ABOUT: remove silent parts from video")
-	print("USAGE: " + sys.argv[0] + " <video>")
+	print("USAGE: " + sys.argv[0] + " <video> <auto(optional)>")
 	print("REQUIREMENTS: ffmpeg")
 	print("\n\n")
+	print(" if second arg is 'auto' skip input and do default stuff")
+	print()
 	print("* if the script produces a video that has")
 	print("* desynced video/audio... to fix the issue")
 	print("* 1. try increasing the silence duration...")
@@ -29,9 +31,16 @@ totaldur_muted   = 0
 totaldur_sounded = 0
 failed2conv = 0
 
-db        = input("dB (default: -30): ")
-duration  = input("silence duration (in sec, default/min = 1): ")
-docopystr = input("-c copy ? (fast/glitchy :/) (Y/n): ")
+isAuto = len(sys.argv) >= 3 and sys.argv[2] == "auto"
+
+db = ""
+duration = ""
+docopystr = ""
+
+if not isAuto:
+	db        = input("dB (default: -30): ")
+	duration  = input("silence duration (in sec, default/min = 1): ")
+	docopystr = input("-c copy ? (fast/glitchy :/) (Y/n): ")
 
 mindur = True # enable min duration len
 mindur_len = 1 # in s
@@ -125,11 +134,14 @@ print(f"altered: {altered}")
 print(f"total silence duration: {convTime(totaldur_muted)} ({totaldur_muted:.2f}s)")
 print(f"total sounded duration: {convTime(totaldur_sounded)} ({totaldur_sounded:.2f}s)")
 print()
-try:
-	input("Hit enter to: start making cuts")
-except KeyboardInterrupt:
-	print("\n")
-	exit()
+
+if not isAuto:
+	try:
+		input("Hit enter to: start making cuts")
+	except KeyboardInterrupt:
+		print("\n")
+		exit()
+
 print()
 
 file_out = open("list.txt", "w")
@@ -171,8 +183,9 @@ run_concat = "ffmpeg -hide_banner -loglevel error -f concat -i list.txt " + addc
 print(run_concat)
 concat_rc = os.system(run_concat)
 
-print("Hit enter to: cleanup (del p* list.txt)")
-input()
+if not isAuto:
+	print("Hit enter to: cleanup (del p* list.txt)")
+	input()
 
 # cleanup
 for i in subvideos:
