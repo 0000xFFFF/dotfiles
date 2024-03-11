@@ -55,6 +55,7 @@ alias \
 	pacr="p -Rns" \
 	pacq="p -Qs" \
 	pacu="p -Syuu" \
+	pacc="p -Scc" \
 	updatedb="s updatedb" \
 	tree="tree -C" \
 	diff="diff --color=auto" \
@@ -91,7 +92,7 @@ alias \
 
 # hax
 alias \
-	rpf="s radeon-profile" \
+	rpf="s /home/user/.vip/tools/radeon-profile/radeon-profile/target/radeon-profile" \
 	nd="s netdiscover" \
 	tshark-http="tshark -Y 'http.request.method == GET' -i" \
 	tshark-icmp="tshark -Y 'icmp' -i" \
