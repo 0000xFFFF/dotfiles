@@ -1,2 +1,3 @@
 #!/bin/bash
-printf "%s\n" "$(ifconfig | grep "inet" | grep -v "127.0.0.1" | grep -v "inet6" | awk '{print $2}' | tr "\n" " ")"
+ips=$(ip -o -4 addr show | awk '{print $4}' | cut -d/ -f1 | grep -v "127.0.0.1" | paste -sd' ' -)
+echo $ips

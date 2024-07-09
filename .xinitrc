@@ -1,7 +1,8 @@
 xrdb ~/.Xresources
-exec startplasma-x11
+export XDG_CURRENT_DESKTOP=KDE
+#exec startplasma-x11
 #exec dwm
-#exec i3
+exec i3
 #exec startxfce4
 #exec cinnamon-session
 #exec startlxde
