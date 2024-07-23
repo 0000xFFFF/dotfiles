@@ -282,7 +282,7 @@ def action_toggle_probes():
         show_probes = False
 
 def channel_get(): return os.popen(f"iw '{interface}' info | grep channel | awk -P '{{print $2}}'").read().replace("\n", "")
-def channel_set(i): os.system(f"sudo iw dev '{interface}' set channel {i}")
+def channel_set(i): os.popen(f"sudo iw dev '{interface}' set channel {i}")
 def action_hopch():
     global channels
     global ch
