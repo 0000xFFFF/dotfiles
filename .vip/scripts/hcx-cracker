@@ -5,11 +5,11 @@
 
 # after running this script
 # run:
-# > chmod +x gen.sh run.sh
 # > ./gen.sh && ./run.sh
 
 # make sure to change longlists below (use rockyou or something you want)
 
+import os
 import sys
 import codecs
 import re
@@ -104,15 +104,17 @@ def essid2wordlst(essid):
             "MIWIFI_",
             "CGA",
             "TP-LINK_",
+            "TP-Link_",
             "MikroTik-",
             "SBB-",
             "TS-",
             "CXNK",
             "ALHN-",
             "HG630",
-            "TP-Link_",
             "Telenor_Internet_",
             "AndroidAP",
+            "OrionTelekom_",
+            "Telenor-Internet-",
         ]
 
         for i in blacklist:
@@ -131,9 +133,15 @@ def essid2wordlst(essid):
     def add2(word):
         add(word)
         numlessword = ""
+        firstdigit = False
         for c in word:
             if not c.isdigit():
                 numlessword += c
+            else:
+                # when digit found add that word to list
+                firstdigit = True
+                if firstdigit:
+                    add(numlessword)
         add(numlessword)
 
     def addlst(words):
@@ -202,14 +210,18 @@ for hashes_file_line in hashes_file_lines:
 items = sorted(items, key=itemgetter(6))
 items = sorted(items, key=itemgetter(7))
 
-print("\n+--> gen.sh")
+file_gen = "gen.sh"
+file_run = "run.sh"
+
+print(f"\n+--> {file_gen}")
 
 files = []
 num = 0
 zerostr = len(str(len(items)))
 
+
 if len(items) != 0:
-    with open("gen.sh", 'w') as f_gen:
+    with open(file_gen, 'w') as f_gen:
         f_gen.write(shheader)
         items_l = len(items)
         for i in items:
@@ -228,8 +240,8 @@ if len(items) != 0:
             files.append([file_1, file_2, i])
 
 
-print("\n+--> run.sh")
-with open("run.sh", 'w') as f3:
+print(f"\n+--> {file_run}")
+with open(file_run, 'w') as f3:
     f3.write(shheader)
     print("|", shheader, end="")
     for i in files:
@@ -247,6 +259,9 @@ with open("run.sh", 'w') as f3:
         f3.write(line)
         print("|", line, end="")
 
+# set +x permission
+os.chmod(file_gen, 0o755)
+os.chmod(file_run, 0o755)
 
 print()
 print(" -- total:",num)
