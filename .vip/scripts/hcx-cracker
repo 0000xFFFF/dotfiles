@@ -251,6 +251,7 @@ with open(file_run, 'w') as f3:
     longlists = [
         ["essid_uniq", "essid_uniq.txt"],
         ["holylst", "/home/user/.vip/lists/wordlists/holylst.txt"],
+        ["holymoly_rmholylst", "/home/user/.vip/lists/wordlists/holymoly_rmholylst.txt"],
         ["wiXXXX", "/home/user/.vip/lists/wordlists/hcx-genlst-wiXXXX_names.txt"],
         ["num8", "/home/user/.vip/lists/wordlists/num8_shuf.txt"],
     ]
