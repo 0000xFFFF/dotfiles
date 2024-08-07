@@ -199,7 +199,7 @@ def action_start():
     bpf = os.path.join(os.path.dirname(os.path.realpath(__file__)), "hcx-menu-rpi-filter.bpf")
     print(f"bpf: {bpf}")
     print("starting...")
-    start_detached_command('sudo', 'hcxdumptool', '-i', interface, "--rds=1", f"--bpf={bpf}")
+    start_detached_command('sudo', 'hcxdumptool', '-i', interface, f"--bpf={bpf}")
     print("started.")
 
 def action_stop():
