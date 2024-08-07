@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+
+# generate wordlist from word
+
+import sys
+
+# num variations
+def print_wi(word,  i): print(word + i)
+def print_iw(word,  i): print(i + word)
+
+def genlst(word, callback):
+    for i in range(0, 10000):
+        callback(word, str(i).rjust(4, '0'))
+
+# print usage
+if len(sys.argv) <= 1:
+    print("USAGE: " + sys.argv[0] + " <words.txt>")
+    exit()
+
+file_path = sys.argv[1]
+with open(file_path, 'r') as file1:
+    lines1 = [line.strip() for line in file1]
+
+for i in lines1:
+    genlst(i, print_wi)
+    genlst(i, print_iw)
+
+

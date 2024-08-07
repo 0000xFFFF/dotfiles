@@ -38,6 +38,34 @@ dump_dir = "/home/pi/dump"
 os.chdir(dump_dir)
 hash_file = "preview.txt"
 
+
+# menus
+current_menu = 0
+
+
+# menu #1
+menu_items = [
+    [ 1, "info"],
+    [ 2, "start hcxdumptool"],
+    [ 3, "stop hcxdumptool"],
+    [ 4, "extract pcapng(s)"],
+    [ 5, "print names"],
+    [ 6, "reboot"],
+    [ 7, "poweroff"],
+]
+menu_opt = 1
+
+OPT_MIN = 1
+OPT_MAX = len(menu_items)
+
+# menu #2
+submenu_items = []
+submenu_items_li = 0
+submenu_selected = 0
+submenu_goback = 6
+submenu_goforw = 6
+submenu_skip = 10
+
 #
 # root
 #
@@ -67,6 +95,45 @@ def get_adapters():
     for intface, addr_list in addresses.items():
         ifs.append(intface)
     return ifs
+
+def saferm(file_path):
+    try:
+        os.remove(file_path)
+        print(f"{file_path} has been deleted successfully")
+    except FileNotFoundError:
+        print(f"{file_path} does not exist")
+    except PermissionError:
+        print(f"Permission denied: {file_path}")
+    except Exception as e:
+        print(f"Error: {e}")
+
+def hex2str(string):
+    try:
+        hex_bytes = bytes.fromhex(string)
+        utf8_string = hex_bytes.decode('utf-8')
+        return utf8_string
+    except Exception as e: return "HEX ERROR"
+
+def isRunning():
+    return "hcxdumptool" in (p.name() for p in psutil.process_iter())
+
+def noAdapter():
+    ifs = get_adapters()
+    for i in ifs:
+        if i == interface:
+            return False
+    return True
+
+def start_detached_command(command, *args):
+    full_command = [command] + list(args)
+    with open(os.devnull, 'wb') as devnull:
+        subprocess.Popen(
+            full_command,
+            stdout=devnull,  # Redirect standard output to devnull
+            stderr=devnull,  # Redirect standard error to devnull
+            preexec_fn=os.setsid,
+            close_fds=True
+        )
 
 #
 # term draw controls
@@ -120,28 +187,8 @@ def signal_handler():
 #
 # actions
 #
-def isRunning():
-    return "hcxdumptool" in (p.name() for p in psutil.process_iter())
 
-def noAdapter():
-    ifs = get_adapters()
-    for i in ifs:
-        if i == interface:
-            return False
-    return True
-
-def start_detached_command(command, *args):
-    full_command = [command] + list(args)
-    with open(os.devnull, 'wb') as devnull:
-        subprocess.Popen(
-            full_command,
-            stdout=devnull,  # Redirect standard output to devnull
-            stderr=devnull,  # Redirect standard error to devnull
-            preexec_fn=os.setsid,
-            close_fds=True
-        )
-
-def start():
+def action_start():
     if isRunning():
         print("can't start, already running")
         return
@@ -155,11 +202,19 @@ def start():
     start_detached_command('sudo', 'hcxdumptool', '-i', interface, "--rds=1", f"--bpf={bpf}")
     print("started.")
 
-
-def stop():
+def action_stop():
     print("$?:", subprocess.call(['sudo', 'pkill', '-INT', 'hcxdumptool']))
 
-def info():
+def action_names():
+    term_clear()
+    submenu()
+
+def action_clear():
+    term_clear()
+    menu()
+
+def action_info():
+    term_clear()
     print("devices:")
     print(get_adapters())
     count = 0
@@ -175,26 +230,21 @@ def info():
     isRunning = "hcxdumptool" in (p.name() for p in psutil.process_iter())
     print(f"running: {isRunning}")
 
+def action_extract():
+    term_clear()
+    saferm(hash_file)
+    subprocess.run(f"hcxpcapngtool *.pcapng -o {hash_file}", shell=True)
+    subprocess.call(["hcxhashtool", "-i", hash_file])
 
-def hex2str(string):
-    try:
-        hex_bytes = bytes.fromhex(string)
-        utf8_string = hex_bytes.decode('utf-8')
-        return utf8_string
-    except Exception as e: return "HEX ERROR"
+def action_reboot():
+    subprocess.call(["sudo", "reboot"])
 
+def action_poweroff():
+    subprocess.call(["sudo", "poweroff"])
 
-
-
-
-submenu_running = True
-submenu_items = []
-submenu_items_li = 0
-submenu_selected = 0
-submenu_goback = 6
-submenu_goforw = 6
-submenu_skip = 10
-
+#
+# submenu
+#
 def submenu_draw():
     global submenu_items
     global submenu_items_li
@@ -229,24 +279,47 @@ def submenu_up():
     global submenu_selected
     submenu_selected -= 1
     if submenu_selected < 0: submenu_selected = 0
+    submenu_draw()
+
 def submenu_down():
     global submenu_selected
     global submenu_items_li
     submenu_selected += 1
     if submenu_selected > submenu_items_li: submenu_selected = submenu_items_li
-def submenu_click():
+    submenu_draw()
+
+def submenu_press():
     global submenu_items
     global submenu_selected
     global submenu_items_li
     if submenu_items_li != -1:
         term_clear()
         print("\n".join(submenu_items[submenu_selected]))
-def submenu_skip_up():
+
+def submenu_left():
+    global submenu_selected
+    submenu_selected = 0
+    submenu_draw()
+
+def submenu_right():
+    global submenu_selected
+    global submenu_items_li
+    submenu_selected = submenu_items_li
+    submenu_draw()
+
+def submenu_key1():
+    global current_menu
+    current_menu = 0
+
+def submenu_key2():
     global submenu_skip
     for i in range(submenu_skip): submenu_up()
-def submenu_skip_down():
+    submenu_draw()
+
+def submenu_key3():
     global submenu_skip
     for i in range(submenu_skip): submenu_down()
+    submenu_draw()
 
 def submenu_load():
     global submenu_items
@@ -273,115 +346,18 @@ def submenu_load():
 
     submenu_items = essids
     submenu_items_li = len(essids) - 1
-    #submenu_selected = submenu_items_li
-
+    submenu_selected = submenu_items_li
 
 def submenu():
-    global submenu_running
-    global submenu_selected
-    global submenu_items_li
-    global submenu_skip
     term_clear()
     submenu_load()
-    submenu_running = True
-
-    sleept = 0.1
-    while submenu_running:
-        submenu_draw()
-
-        while submenu_running:
-            time.sleep(sleept)
-            if   not GPIO.input(KEY_UP_PIN):    submenu_up() ; break
-            elif not GPIO.input(KEY_DOWN_PIN):  submenu_down() ; break
-            elif not GPIO.input(KEY_LEFT_PIN):  submenu_selected = 0 ; break
-            elif not GPIO.input(KEY_RIGHT_PIN): submenu_selected = submenu_items_li ; break
-            elif not GPIO.input(KEY_PRESS_PIN): submenu_click()
-            elif not GPIO.input(KEY1_PIN):      submenu_running = False ; break
-            elif not GPIO.input(KEY2_PIN):      submenu_skip_up() ; break
-            elif not GPIO.input(KEY3_PIN):      submenu_skip_down() ; break
-
-
-def names():
-    submenu()
-
-def saferm(file_path):
-    try:
-        os.remove(file_path)
-        print(f"{file_path} has been deleted successfully")
-    except FileNotFoundError:
-        print(f"{file_path} does not exist")
-    except PermissionError:
-        print(f"Permission denied: {file_path}")
-    except Exception as e:
-        print(f"Error: {e}")
-
-
-def info2():
-    saferm(hash_file)
-    subprocess.run(f"hcxpcapngtool *.pcapng -o {hash_file}", shell=True)
-    names()
-    subprocess.call(["hcxhashtool", "-i", hash_file])
-
-def action_start():
-    start()
-
-def action_stop():
-    stop()
-
-def action_names():
-    term_clear()
-    names()
-
-def action_clear():
-    term_clear()
-    menu()
-
-def action_info():
-    term_clear()
-    info()
-
-def action_info2():
-    term_clear()
-    info2()
-
-def action_poweroff_old():
-    start_time = time.time()
-    print("hold for 3 seconds...")
-
-    while GPIO.input(KEY_PRESS_PIN) == GPIO.LOW:
-        time.sleep(0.01)
-
-    hold_time = time.time() - start_time
-    if hold_time > 3:
-        print("sudo poweroff")
-        subprocess.call(["sudo", "poweroff"])
-
-
-def action_reboot():
-    subprocess.call(["sudo", "reboot"])
-
-
-def action_poweroff():
-    subprocess.call(["sudo", "poweroff"])
+    submenu_draw()
+    global current_menu
+    current_menu = 1
 
 #
 # drawing UI
 #
-
-menu_items = [
-    [ 1, "info"],
-    [ 2, "start hcxdumptool"],
-    [ 3, "stop hcxdumptool"],
-    [ 4, "extract pcapng(s)"],
-    [ 5, "print names"],
-    [ 6, "reboot"],
-    [ 7, "poweroff"],
-]
-menu_opt = 1
-
-OPT_MIN = 1
-OPT_MAX = len(menu_items)
-
 def menu(red=False):
 
     term_cursor_reset()
@@ -401,56 +377,116 @@ def menu(red=False):
         if menu_opt == i[0]: term_show(f">{num}. {cmd}" , f"{Style.NORMAL}{back}{Fore.BLACK}")
         else:                term_show(f" {num}. {cmd}")
 
-def menu_up(channel):
+def menu_up():
     global menu_opt
     global OPT_MIN
     menu_opt -= 1
     if menu_opt < OPT_MIN: menu_opt = OPT_MIN
     menu()
 
-def menu_down(channel):
+def menu_down():
     global menu_opt
     global OPT_MAX
     menu_opt += 1
     if menu_opt > OPT_MAX: menu_opt = OPT_MAX
     menu()
 
-def menu_select(channel):
+def menu_draw():
+    term_clear()
+    menu()
+
+def menu_left():
+    menu_draw()
+
+def menu_right():
+    menu_draw()
+
+def menu_press():
     menu(True)
     global menu_opt
     if   menu_opt ==  1: action_info()
     elif menu_opt ==  2: action_start()
     elif menu_opt ==  3: action_stop()
-    elif menu_opt ==  4: action_info2()
+    elif menu_opt ==  4: action_extract()
     elif menu_opt ==  5: action_names()
     elif menu_opt ==  6: action_reboot()
     elif menu_opt ==  7: action_poweroff()
 
-def menu_clear(channel):
-    term_clear()
-    menu()
-
-def menu_opt1(channel):
+def menu_key1():
     global menu_opt
     menu_opt = 1
-    menu_select(channel)
+    menu_press()
 
-def menu_opt2(channel):
+def menu_key2():
     global menu_opt
     menu_opt = 2
-    menu_select(channel)
+    menu_press()
 
-def menu_opt3(channel):
+def menu_key3():
     global menu_opt
     menu_opt = 3
-    menu_select(channel)
-
-# show menu
-menu()
+    menu_press()
 
 #
 # handling input
 #
+
+def callback_up(channel):
+    global current_menu
+    if current_menu == 0:
+        menu_up()
+    elif current_menu == 1:
+        submenu_up()
+
+def callback_down(channel):
+    global current_menu
+    if current_menu == 0:
+        menu_down()
+    elif current_menu == 1:
+        submenu_down()
+
+def callback_left(channel):
+    global current_menu
+    if current_menu == 0:
+        menu_left()
+    elif current_menu == 1:
+        submenu_left()
+
+def callback_right(channel):
+    global current_menu
+    if current_menu == 0:
+        menu_right()
+    elif current_menu == 1:
+        submenu_right()
+
+def callback_press(channel):
+    global current_menu
+    if current_menu == 0:
+        menu_press()
+    elif current_menu == 1:
+        submenu_press()
+
+def callback_key1(channel):
+    global current_menu
+    if current_menu == 0:
+        menu_key1()
+    elif current_menu == 1:
+        submenu_key1()
+
+def callback_key2(channel):
+    global current_menu
+    if current_menu == 0:
+        memu_key2()
+    elif current_menu == 1:
+        submenu_key2()
+
+def callback_key3(channel):
+    global current_menu
+    if current_menu == 0:
+        menu_key3()
+    elif current_menu == 1:
+        submenu_key3()
+
 try:
     # setup board
     GPIO.setmode(GPIO.BCM)
@@ -464,13 +500,14 @@ try:
     GPIO.setup(KEY_PRESS_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
     bt = 100
-    GPIO.add_event_detect(KEY_UP_PIN, GPIO.RISING, callback=menu_up, bouncetime=bt)
-    GPIO.add_event_detect(KEY_DOWN_PIN, GPIO.RISING, callback=menu_down, bouncetime=bt)
-    GPIO.add_event_detect(KEY_PRESS_PIN, GPIO.RISING, callback=menu_select, bouncetime=bt)
-    GPIO.add_event_detect(KEY_LEFT_PIN, GPIO.RISING, callback=menu_clear, bouncetime=bt)
-    GPIO.add_event_detect(KEY1_PIN, GPIO.RISING, callback=menu_opt1, bouncetime=bt)
-    GPIO.add_event_detect(KEY2_PIN, GPIO.RISING, callback=menu_opt2, bouncetime=bt)
-    GPIO.add_event_detect(KEY3_PIN, GPIO.RISING, callback=menu_opt3, bouncetime=bt)
+    GPIO.add_event_detect(KEY_UP_PIN, GPIO.RISING, callback=callback_up, bouncetime=bt)
+    GPIO.add_event_detect(KEY_DOWN_PIN, GPIO.RISING, callback=callback_down, bouncetime=bt)
+    GPIO.add_event_detect(KEY_PRESS_PIN, GPIO.RISING, callback=callback_press, bouncetime=bt)
+    GPIO.add_event_detect(KEY_LEFT_PIN, GPIO.RISING, callback=callback_left, bouncetime=bt)
+    GPIO.add_event_detect(KEY_RIGHT_PIN, GPIO.RISING, callback=callback_right, bouncetime=bt)
+    GPIO.add_event_detect(KEY1_PIN, GPIO.RISING, callback=callback_key1, bouncetime=bt)
+    GPIO.add_event_detect(KEY2_PIN, GPIO.RISING, callback=callback_key2, bouncetime=bt)
+    GPIO.add_event_detect(KEY3_PIN, GPIO.RISING, callback=callback_key3, bouncetime=bt)
 except:
     print("can't get board")
     exit()
