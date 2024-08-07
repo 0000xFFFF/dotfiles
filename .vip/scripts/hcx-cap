@@ -30,3 +30,5 @@ MAINDB="/media/SSD/root/dump/cap/all/all.txt"
 if [ -f "$MAINDB" ]; then
         hcx-rmhashes left.txt "$MAINDB" > new.txt
 fi
+
+hcx-wifi-genpasslst apuniq.txt > passlst.txt
