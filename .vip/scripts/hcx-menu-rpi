@@ -476,7 +476,7 @@ def callback_key1(channel):
 def callback_key2(channel):
     global current_menu
     if current_menu == 0:
-        memu_key2()
+        menu_key2()
     elif current_menu == 1:
         submenu_key2()
 
