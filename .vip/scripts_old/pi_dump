@@ -1,0 +1,2 @@
+#!/bin/bash
+tail /home/pi/Dump/*.log 2>/dev/null | cat -v

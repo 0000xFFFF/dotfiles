@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+tmpbg='/tmp/lockscreen.png'
+scrot -zo "$tmpbg"
+convert "$tmpbg" -paint 3 "$tmpbg"
+i3lock -i "$tmpbg"

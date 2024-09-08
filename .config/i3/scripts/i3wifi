@@ -1,0 +1,8 @@
+#!/bin/bash
+
+case $BLOCK_BUTTON in
+	1) notify-send -i "/usr/share/icons/gnome/48x48/status/connect_established.png" -a "WIFI" -t 5000 "$(echo -e "IP(s): $(hostname_I)\nGATEWAYS: $(gateways)")"  ;;
+esac
+
+ips=$(ip -o -4 addr show | awk '{print $4}' | cut -d/ -f1 | grep -v "127.0.0.1" | paste -sd' ' -)
+echo $ips

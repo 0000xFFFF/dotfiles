@@ -1,0 +1,12 @@
+#!/bin/bash
+
+SEND_IP="$1"
+SEND_PORT="$2"
+SEND_FILE="$3"
+
+while [ -z "$SEND_IP" ];   do read -r -p 'IP: '   SEND_IP   ; done
+while [ -z "$SEND_PORT" ]; do read -r -p 'PORT: ' SEND_PORT ; done
+while [ -z "$SEND_FILE" ]; do read -r -p 'FILE: ' SEND_FILE ; done
+
+nc -vv -w 3 "$SEND_IP" "$SEND_PORT" < "$SEND_FILE"
+echo ERRORLEVEL: $?

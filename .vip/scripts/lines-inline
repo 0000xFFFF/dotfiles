@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+
+# go throguh each line of file
+# and find matching substring lines from antoher file
+# print out matching lines
+
+import sys
+
+def main():
+    if len(sys.argv) != 3:
+        print(f"USAGE: {sys.argv[0]} <file1> <file2>")
+        exit(1)
+
+    file1_path = sys.argv[1]
+    file2_path = sys.argv[2]
+
+    with open(file1_path, 'r', errors='ignore') as file1:
+        lines1 = [line.strip() for line in file1]
+
+    with open(file2_path, 'r', errors='ignore') as file2:
+        lines2 = [line.strip() for line in file2]
+
+    for line1 in lines1:
+        if any(line2 in line1 for line2 in lines2):
+            print(line1)
+
+if __name__ == "__main__":
+    main()
+

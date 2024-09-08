@@ -1,0 +1,8 @@
+#!/bin/bash
+
+case $BLOCK_BUTTON in
+	1) notify-send -i "/usr/share/icons/gnome/48x48/apps/gnome-monitor.png" -t 2000 -a "Memory Usage:"  "$(ps axch -o cmd:20,%mem --sort=-%mem | sed 25q)" ;;
+	3) cd ~ && urxvt -e htop </dev/null &>/dev/null & ;;
+esac
+
+free -h | awk '/^Mem:/ {print $3 "/" $2}'

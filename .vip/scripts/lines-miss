@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+
+import sys
+
+def main():
+    if len(sys.argv) != 3:
+        print("ABOUT: Find missing lines in file")
+        print(f"USAGE: {sys.argv[0]} <file> <missFile>")
+        exit(1)
+
+    file_path = sys.argv[1]
+    miss_file_path = sys.argv[2]
+
+    # Read the files and strip newlines
+    with open(file_path, 'r', errors='ignore') as file1:
+        lines1 = {line.strip() for line in file1}
+
+    with open(miss_file_path, 'r', errors='ignore') as file2:
+        lines2 = {line.strip() for line in file2}
+
+    # Find and print lines in file1 that are not in file2
+    missing_lines = lines1 - lines2
+    for line in missing_lines:
+        print(line)
+
+if __name__ == "__main__":
+    main()
+

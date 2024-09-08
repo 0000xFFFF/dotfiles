@@ -1,0 +1,2 @@
+#!/bin/bash
+hcx-rmhashes "$1" /media/HDD/Root/dump/cap/all/all.txt > reallynew.txt

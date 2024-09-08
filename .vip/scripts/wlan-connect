@@ -1,0 +1,6 @@
+#!/bin/bash
+ESSID="$1"
+PASSWORD="$2"
+while [ -z "$ESSID"    ]; do read -r -p 'ESSID: '    ESSID    ; done
+while [ -z "$PASSWORD" ]; do read -r -p 'PASSWORD: ' PASSWORD ; done
+nmcli dev wifi connect "$ESSID" password "$PASSWORD"

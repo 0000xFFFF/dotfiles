@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# fonts
+[ ! -e "$HOME/.local/share/fonts" ] && ln -sfr "$HOME/.vip/fonts" "$HOME/.local/share/fonts"
+
+# scripts
+[ ! -e "$HOME/.vip/scripts_ln" ] && mkdir "$HOME/.vip/scripts_ln/"
+ln -sfr "$HOME/.vip/tools/beep/beep"                              "$HOME/.vip/scripts_ln/beep"
+ln -sfr "$HOME/.vip/tools/beep-keyboard/beep-keyboard"            "$HOME/.vip/scripts_ln/beep-keyboard"
+ln -sfr "$HOME/.vip/pyenv/p3tools/IPGeoLocation/ipgeolocation.py" "$HOME/.vip/scripts_ln/ipgeolocation"
+ln -sfr "$HOME/.vip/tools/slowloris/slowloris"                    "$HOME/.vip/scripts_ln/slowloris"
+ln -sfr "$HOME/.vip/tools/xkblayout-state/xkblayout-state"        "$HOME/.vip/scripts_ln/xkblayout-state"
+ln -sfr "$HOME/.vip/tools/dahvore/dahvore"                        "$HOME/.vip/scripts_ln/dahvore"
+ln -sfr "$HOME/.vip/tools/wlan-deauth/wlan-deauth.py"             "$HOME/.vip/scripts_ln/wlan-deauth"
+ln -sfr "$HOME/.vip/tools/cry/cry"                                "$HOME/.vip/scripts_ln/cry"
+ln -sfr "$HOME/.vip/lists/wlst/commonfirst_run.sh"                "$HOME/.vip/scripts_ln/commonfirst_run"

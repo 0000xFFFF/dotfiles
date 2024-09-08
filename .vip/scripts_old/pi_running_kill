@@ -1,0 +1,7 @@
+#!/bin/bash
+pkill "airmon-ng"
+pkill "hcx-wifi-rpi"
+pkill "hcxdumptool"
+pkill "pi_dump"
+pkill "pi_log"
+pkill "tail"

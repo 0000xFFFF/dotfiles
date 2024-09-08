@@ -1,0 +1,352 @@
+#!/bin/bash
+beep 660 100
+sleep 0.150
+beep 660 100
+sleep 0.300
+beep 660 100
+sleep 0.300
+beep 510 100
+sleep 0.100
+beep 660 100
+sleep 0.300
+beep 770 100
+sleep 0.550
+beep 380 100
+sleep 0.575
+
+beep 510 100
+sleep 0.450
+beep 380 100
+sleep 0.400
+beep 320 100
+sleep 0.500
+beep 440 100
+sleep 0.300
+beep 480 80
+sleep 0.330
+beep 450 100
+sleep 0.150
+beep 430 100
+sleep 0.300
+beep 380 100
+sleep 0.200
+beep 660 80
+sleep 0.200
+beep 760 50
+sleep 0.150
+beep 860 100
+sleep 0.300
+beep 700 80
+sleep 0.150
+beep 760 50
+sleep 0.350
+beep 660 80
+sleep 0.300
+beep 520 80
+sleep 0.150
+beep 580 80
+sleep 0.150
+beep 480 80
+sleep 0.500
+
+beep 510 100
+sleep 0.450
+beep 380 100
+sleep 0.400
+beep 320 100
+sleep 0.500
+beep 440 100
+sleep 0.300
+beep 480 80
+sleep 0.330
+beep 450 100
+sleep 0.150
+beep 430 100
+sleep 0.300
+beep 380 100
+sleep 0.200
+beep 660 80
+sleep 0.200
+beep 760 50
+sleep 0.150
+beep 860 100
+sleep 0.300
+beep 700 80
+sleep 0.150
+beep 760 50
+sleep 0.350
+beep 660 80
+sleep 0.300
+beep 520 80
+sleep 0.150
+beep 580 80
+sleep 0.150
+beep 480 80
+sleep 0.500
+
+beep 500 100
+sleep 0.300
+
+beep 760 100
+sleep 0.100
+beep 720 100
+sleep 0.150
+beep 680 100
+sleep 0.150
+beep 620 150
+sleep 0.300
+
+beep 650 150
+sleep 0.300
+beep 380 100
+sleep 0.150
+beep 430 100
+sleep 0.150
+
+beep 500 100
+sleep 0.300
+beep 430 100
+sleep 0.150
+beep 500 100
+sleep 0.100
+beep 570 100
+sleep 0.220
+
+beep 500 100
+sleep 0.300
+
+beep 760 100
+sleep 0.100
+beep 720 100
+sleep 0.150
+beep 680 100
+sleep 0.150
+beep 620 150
+sleep 0.300
+
+beep 650 200
+sleep 0.300
+
+beep 1020 80
+sleep 0.300
+beep 1020 80
+sleep 0.150
+beep 1020 80
+sleep 0.300
+
+beep 380 100
+sleep 0.300
+beep 500 100
+sleep 0.300
+
+beep 760 100
+sleep 0.100
+beep 720 100
+sleep 0.150
+beep 680 100
+sleep 0.150
+beep 620 150
+sleep 0.300
+
+beep 650 150
+sleep 0.300
+beep 380 100
+sleep 0.150
+beep 430 100
+sleep 0.150
+
+beep 500 100
+sleep 0.300
+beep 430 100
+sleep 0.150
+beep 500 100
+sleep 0.100
+beep 570 100
+sleep 0.420
+
+beep 585 100
+sleep 0.450
+
+beep 550 100
+sleep 0.420
+
+beep 500 100
+sleep 0.360
+
+beep 380 100
+sleep 0.300
+beep 500 100
+sleep 0.300
+beep 500 100
+sleep 0.150
+beep 500 100
+sleep 0.300
+
+beep 500 100
+sleep 0.300
+
+beep 760 100
+sleep 0.100
+beep 720 100
+sleep 0.150
+beep 680 100
+sleep 0.150
+beep 620 150
+sleep 0.300
+
+beep 650 150
+sleep 0.300
+beep 380 100
+sleep 0.150
+beep 430 100
+sleep 0.150
+
+beep 500 100
+sleep 0.300
+beep 430 100
+sleep 0.150
+beep 500 100
+sleep 0.100
+beep 570 100
+sleep 0.220
+
+beep 500 100
+sleep 0.300
+
+beep 760 100
+sleep 0.100
+beep 720 100
+sleep 0.150
+beep 680 100
+sleep 0.150
+beep 620 150
+sleep 0.300
+
+beep 650 200
+sleep 0.300
+
+beep 1020 80
+sleep 0.300
+beep 1020 80
+sleep 0.150
+beep 1020 80
+sleep 0.300
+
+beep 380 100
+sleep 0.300
+beep 500 100
+sleep 0.300
+
+beep 760 100
+sleep 0.100
+beep 720 100
+sleep 0.150
+beep 680 100
+sleep 0.150
+beep 620 150
+sleep 0.300
+
+beep 650 150
+sleep 0.300
+beep 380 100
+sleep 0.150
+beep 430 100
+sleep 0.150
+
+beep 500 100
+sleep 0.300
+beep 430 100
+sleep 0.150
+beep 500 100
+sleep 0.100
+beep 570 100
+sleep 0.420
+
+beep 585 100
+sleep 0.450
+
+beep 550 100
+sleep 0.420
+
+beep 500 100
+sleep 0.360
+
+beep 380 100
+sleep 0.300
+beep 500 100
+sleep 0.300
+beep 500 100
+sleep 0.150
+beep 500 100
+sleep 0.300
+
+beep 500 60
+sleep 0.150
+beep 500 80
+sleep 0.300
+beep 500 60
+sleep 0.350
+beep 500 80
+sleep 0.150
+beep 580 80
+sleep 0.350
+beep 660 80
+sleep 0.150
+beep 500 80
+sleep 0.300
+beep 430 80
+sleep 0.150
+beep 380 80
+sleep 0.600
+
+beep 500 60
+sleep 0.150
+beep 500 80
+sleep 0.300
+beep 500 60
+sleep 0.350
+beep 500 80
+sleep 0.150
+beep 580 80
+sleep 0.150
+beep 660 80
+sleep 0.550
+
+beep 870 80
+sleep 0.325
+beep 760 80
+sleep 0.600
+
+beep 500 60
+sleep 0.150
+beep 500 80
+sleep 0.300
+beep 500 60
+sleep 0.350
+beep 500 80
+sleep 0.150
+beep 580 80
+sleep 0.350
+beep 660 80
+sleep 0.150
+beep 500 80
+sleep 0.300
+beep 430 80
+sleep 0.150
+beep 380 80
+sleep 0.600
+
+beep 660 100
+sleep 0.150
+beep 660 100
+sleep 0.300
+beep 660 100
+sleep 0.300
+beep 510 100
+sleep 0.100
+beep 660 100
+sleep 0.300
+beep 770 100
+sleep 0.550
+beep 380 100
+sleep 0.575

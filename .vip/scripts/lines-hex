@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+
+def hex2str(string):
+    try:
+        hex_bytes = bytes.fromhex(string)
+        utf8_string = hex_bytes.decode('utf-8')
+        return utf8_string
+    except Exception as e: return "HEX ERROR"
+
+if len(sys.argv) < 2:
+    print("ABOUT: decodes all $HEX[****] lines")
+    print("USAGE: " + sys.argv[0] + " <file>")
+    exit()
+
+f = open(sys.argv[1], 'r')
+file_lines = f.readlines()
+f.close()
+
+items = []
+
+longest_hex = 0
+for file_line in file_lines:
+    line = file_line.replace("\n", "")
+    if "$HEX" in line:
+        hex = line.replace("$HEX[", "").replace("]", "")
+        l_hex = len(hex)
+        if l_hex > longest_hex: longest_hex = l_hex
+        items.append([hex, hex2str(hex)])
+
+
+fr = "{:<" + str(longest_hex) + "} {}"
+for item in items:
+    print(fr.format(item[0], item[1]))
+
+

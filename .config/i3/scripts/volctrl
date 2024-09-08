@@ -1,0 +1,27 @@
+#!/bin/bash
+
+get_volume(){
+	echo -ne "> $(pamixer --get-volume-human)   \r"
+}
+
+get_volume
+
+while read -r -sn1 key # 1 char
+do
+	read -r -sn1 -t 0.0001 k1
+	read -r -sn1 -t 0.0001 k2
+	read -r -sn1 -t 0.0001 k3
+
+	key+=${k1}${k2}${k3}
+
+	case "$key" in
+		$'\e[A'|$'\e0A')  # up arrow
+			volup
+			get_volume ;;
+		$'\e[B'|$'\e0B') # down arrow
+			voldown
+			get_volume ;;
+		q) exit ;;
+	esac
+
+done

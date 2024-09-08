@@ -1,0 +1,11 @@
+#!/bin/bash
+
+case $BLOCK_BUTTON in
+  1) ~/.config/i3/scripts/i3keyboard_switch ;;
+esac
+
+keyb="$(xkblayout-state print "%n%v")"
+if   [ "$keyb" == "English" ];      then echo -e " <b><u>US</u></b>,RS,RSL"
+elif [ "$keyb" == "Serbian" ];      then echo -e " US,<b><u>RS</u></b>,RSL"
+elif [ "$keyb" == "Serbianlatin" ]; then echo -e " US,RS,<b><u>RSL</u></b>"
+fi

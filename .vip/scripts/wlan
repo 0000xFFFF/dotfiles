@@ -1,0 +1,16 @@
+#!/bin/bash
+
+if [ "$1" == "mon" ]; then
+    ifconfig | grep "$(wlanDevice mon)"
+    sudo airmon-ng start "$(wlanDevice)"
+    ifconfig
+    exit
+fi
+
+if [ "$1" == "fix" ]; then
+    sudo airmon-ng stop "$(wlanDevice mon)"
+    ifconfig
+    exit
+fi
+
+ifconfig

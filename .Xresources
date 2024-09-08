@@ -1,0 +1,67 @@
+! font
+URxvt.font:           xft:InconsolataGo NF:size=13,                   xft:Symbola:size=13
+URxvt.boldFont:       xft:InconsolataGo NF:style=Bold:size=13,        xft:Symbola:style=Bold:size=13
+URxvt.italicFont:     xft:InconsolataGo NF:style=Italic:size=13,      xft:Symbola:style=Italic:size=13
+URxvt.boldItalicFont: xft:InconsolataGo NF:style=Bold Italic:size=13, xft:Symbola:style=Bold Italic:size=13
+URxvt.letterSpace: -1
+
+! resize font
+URxvt.perl-ext-common: default,matcher,resize-font,url-select,keyboard-select
+URxvt.resize-font.smaller:  C-j
+URxvt.resize-font.bigger:   C-k
+URxvt.keysym.M-u: perl:url-select:select_next
+URxvt.url-select.launcher: /usr/bin/xdg-open
+URxvt.matcher.button: 1
+URxvt.url-select.underline: true
+
+! scrolling
+URxvt*scrollTtyOutput: false
+URxvt*scrollTtyKeypress: true
+URxvt*scrollBar_right: true
+URxvt*scrollColor: #8086e8
+!URxvt*borderColor: #ff0000
+URxvt*troughColor: #000000
+
+! disable scrollbar
+URxvt.scrollBar: true
+
+! background color
+URxvt*background: black
+URxvt*foreground: gray
+
+! transparent background
+urxvt*depth: 32
+urxvt*background: rgba:0000/0000/0200/D6D8
+
+! black
+*.color0: #263640
+*.color8: #4a697d
+
+! red
+*.color1: #d12f2c
+*.color9: #fa3935
+
+! green
+*.color2: #819400
+*.color10: #a4bd00
+
+! yellow
+*.color3: #b08500
+*.color11: #d9a400
+
+! blue
+*.color4: #2587cc
+*.color12: #2ca2f5
+
+! magenta
+*.color5: #696ebf
+*.color13: #8086e8
+
+! cyan
+*.color6: #289c93
+*.color14: #33c5ba
+
+! white
+*.color7: #d5d5d5
+*.color15: #ffffff
+

@@ -1,0 +1,21 @@
+#!/bin/bash
+count="0"
+output=""
+while read -r line ; do
+    ((count++))
+    psk="$(sudo grep "psk=" "$line")"
+    numb="\e[33m$count.\e[0m"
+    name="\e[92m${line#"/etc/NetworkManager/system-connections/"}\e[0m"
+    if [ -z "$psk" ]; then
+        pass="\e[2m\e[31mN/A\e[0m"
+    else
+        pass="\e[91m${psk#"psk="}\e[0m"
+    fi
+    output+="$numb~$name~$pass \n"
+done <<< "$(sudo find /etc/NetworkManager/system-connections -maxdepth 1 -type f)"
+
+echo -e "$output" | column -t -s '~'
+
+# smaller version
+#sudo grep -r "psk=" /etc/NetworkManager/system-connections/ --color=auto
+

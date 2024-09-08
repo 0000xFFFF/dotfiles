@@ -1,0 +1,43 @@
+#!/bin/bash
+
+function utc() {
+	#echo "$(date +"%Y-%m-%d %T:%N (%s)")"
+	echo "$(date +"%Y-%m-%d %T")"
+}
+
+FILES="$@"
+[ -z "$FILES" ] && FILES="/home/pi/Dump/*.log"
+
+getoutput() {
+	OUTPUT_CAT="$(cat -v $FILES 2>/dev/null)"
+	COUNTER_B="$(echo "$OUTPUT_CAT" | grep '\[BEACON\]' | wc -l)"
+	COUNTER_HB="$(echo "$OUTPUT_CAT" | grep '\[HIDDEN BEACON\]' | wc -l)"
+	COUNTER_PR="$(echo "$OUTPUT_CAT" | grep '\[PROBERESPONSE\]' | wc -l)"
+	COUNTER_RPR="$(echo "$OUTPUT_CAT" | grep '\[ROGUE PROBERESPONSE\]' | wc -l)"
+	COUNTER_AU="$(echo "$OUTPUT_CAT" | grep '\[AUTHENTICATION\]' | wc -l)"
+	COUNTER_AS="$(echo "$OUTPUT_CAT" | grep '\[ASSOCIATION\]' | wc -l)"
+	COUNTER_RAS="$(echo "$OUTPUT_CAT" | grep '\[REASSOCIATION\]' | wc -l)"
+	COUNTER_PK="$(echo "$OUTPUT_CAT" | grep '\[PMKID:' | wc -l)"
+	COUNTER_PKR="$(echo "$OUTPUT_CAT" | grep '\[PMKIDROGUE:' | wc -l)"
+	COUNTER_PKPKR=$(($COUNTER_PK + $COUNTER_PKR))
+	COUNTER_E="$(echo "$OUTPUT_CAT" | grep '\[EAPOL:' | wc -l)"
+	COUNTER_H=$(($COUNTER_PKPKR + $COUNTER_E))
+	TIMENOW=$(utc)
+
+	echo -e "\e[95mDATE TIME\e[0m: \e[95m$TIMENOW\e[0m"
+	echo -e ""
+	echo -e "$FILES"
+	echo -e "\e[92mBEACON\e[0m.............: \e[92m$COUNTER_B\e[0m"
+	echo -e "\e[32mHIDDEN BEACON\e[0m......: \e[32m$COUNTER_HB\e[0m"
+	echo -e "\e[93mPROBERESPONSE\e[0m......: \e[93m$COUNTER_PR\e[0m"
+	echo -e "\e[33mROGUE PROBERESPONSE\e[0m: \e[33m$COUNTER_RPR\e[0m"
+	echo -e "\e[96mAUTHENTICATION\e[0m.....: \e[96m$COUNTER_AU\e[0m"
+	echo -e "\e[36mASSOCIATION\e[0m........: \e[36m$COUNTER_AS\e[0m"
+	echo -e "\e[1;36mREASSOCIATION\e[0m......: \e[1;36m$COUNTER_RAS\e[0m"
+	echo -e "\e[31mPMKID\e[0m..............: \e[31m$COUNTER_PK\e[0m"
+	echo -e "\e[91mPMKIDROGUE\e[0m.........: \e[91m$COUNTER_PKR\e[0m"
+	echo -e "\e[1;31mEAPOL\e[0m..............: \e[1;31m$COUNTER_E\e[0m"
+	echo -e "\e[1;97mHASHES\e[0m.............: \e[1;97m$COUNTER_H\e[0m"
+}
+
+getoutput

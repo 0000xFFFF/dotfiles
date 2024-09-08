@@ -1,0 +1,194 @@
+#!/usr/bin/env python3
+import sys
+import os
+import subprocess
+import time
+
+# cmd e.g.
+# > ffmpeg -hide_banner -vn -i file.mp4 -af "silencedetect=n=-30dB:d=5" -f null -
+
+# get args
+if len(sys.argv) < 2:
+    print("ABOUT: remove silent parts from video")
+    print("USAGE: " + sys.argv[0] + " <video> <auto(optional)>")
+    print("REQUIREMENTS: ffmpeg")
+    print("\n\n")
+    print(" if second arg is 'auto' skip input and do default stuff")
+    print()
+    print("* if the script produces a video that has")
+    print("* desynced video/audio... to fix the issue")
+    print("* 1. try increasing the silence duration...")
+    print("* 2. dont do '-c copy'")
+    exit()
+
+file_path = sys.argv[1]
+file_split = os.path.splitext(file_path)
+file_name = file_split[0]
+file_ext  = file_split[1]
+
+altered = 0
+totaldur_muted   = 0
+totaldur_sounded = 0
+failed2conv = 0
+
+isAuto = len(sys.argv) >= 3 and sys.argv[2] == "auto"
+
+db = ""
+duration = ""
+docopystr = ""
+
+if not isAuto:
+    db        = input("dB (default: -30): ")
+    duration  = input("silence duration (in sec, default/min = 1): ")
+    docopystr = input("-c copy ? (fast/glitchy :/) (Y/n): ")
+
+mindur = True # enable min duration len
+mindur_len = 1 # in s
+docopy = True
+addcopystring = "-c copy"
+if docopystr.lower() == "n":
+    docopy = False
+    addcopystring = ""
+
+
+if not db: db = "-30"
+if not duration or float(duration) < 1: duration = "1"
+print(f"db: {db}, duration: {duration}, copy: {docopy}")
+
+ffmpeg_sd = subprocess.Popen(['ffmpeg', '-hide_banner', '-vn', '-i', file_path, '-af', 'silencedetect=n=' + db + 'dB:d=' + duration, '-f', 'null', '-'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+g_start = ""
+g_end = ""
+g_dur = ""
+mutedtimestamps = []
+for line_ in ffmpeg_sd.stdout.read().decode().split("\n"):
+    line = line_.replace("\r", "")
+    if not line: continue
+    if not "silencedetect" in line: continue
+    if "silence_start: " in line:
+        g_start = line.split("silence_start: ")[1]
+        continue
+    if "silence_end: " in line:
+        endNdur = line.split("silence_end: ")[1]
+        g_end = endNdur.split(" | ")[0]
+        g_dur = endNdur.split("silence_duration: ")[1]
+        mutedtimestamps.append([g_start,g_end,g_dur])
+        continue
+
+#'''
+print("===[ MUTED TIMESTAMPS (START, END, DURATION) ]===")
+counter = 0
+for i in mutedtimestamps:
+    counter += 1
+    totaldur_muted += float(i[2])
+    print(counter,i[0],i[1],i[2])
+#'''
+
+mutedtimestamps_len = len(mutedtimestamps)
+subvideos = []
+
+def subvideos_append(s,e):
+    global altered
+    o = "p" + str(len(subvideos)+1) + ".mts"
+    d = 0
+    if s and e:
+        d = round(float(e) - float(s), 5)
+        if mindur and d < 1:
+            altered += 1
+            d2add = mindur_len - d
+            e = str(round(float(e) + d2add, 5))
+            d = round(float(e) - float(s), 5)
+
+    subvideos.append([s,e,str(d),o])
+
+
+if mutedtimestamps_len >= 1: # add beggining
+    start = "0"
+    end = mutedtimestamps[0][0]
+    if start != end: subvideos_append(start,end)
+for i in range(mutedtimestamps_len):
+    s = mutedtimestamps[i][1]
+    ii = i + 1
+    e = ""
+    if ii < mutedtimestamps_len:
+        e = mutedtimestamps[ii][0]
+    if s != e:
+        subvideos_append(s,e)
+
+print("===[ SOUNDED TIMESTAMPS (FILETOWRITE, START, END, DURATION) ]===")
+counter = 0
+subvideos_len = len(subvideos)
+for i in subvideos:
+    counter += 1
+    totaldur_sounded += float(i[2])
+    print(counter,i[3],i[0],i[1],i[2])
+
+def convTime(sec):
+    ty_res = time.gmtime(sec)
+    res = time.strftime("%H:%M:%S",ty_res)
+    return res
+
+print(f"muted: {mutedtimestamps_len}")
+print(f"sound: {subvideos_len}")
+print(f"altered: {altered}")
+print(f"total silence duration: {convTime(totaldur_muted)} ({totaldur_muted:.2f}s)")
+print(f"total sounded duration: {convTime(totaldur_sounded)} ({totaldur_sounded:.2f}s)")
+print()
+
+if not isAuto:
+    try:
+        input("Hit enter to: start making cuts")
+    except KeyboardInterrupt:
+        print("\n")
+        exit()
+
+print()
+
+file_out = open("list.txt", "w")
+
+print("===[ MAKING CUTS ]===")
+subvideos_counter = 0
+subvideos_len = len(subvideos)
+for i in subvideos:
+    start = i[0]
+    end = i[1]
+    dur = i[2]
+    outfile = i[3]
+    subvideos_counter += 1
+
+    startcmd = ""
+    endcmd = ""
+    if start: startcmd = " -ss " + start
+    if end: endcmd = " -to " + end
+
+    s = "ffmpeg -hide_banner -v quiet -i \"" + file_path + "\"" + startcmd + endcmd + " " + addcopystring + " " + outfile
+    print(f"{subvideos_counter}/{subvideos_len} ({subvideos_counter/subvideos_len*100:.2f}%) {s} --> {dur} --> ...", end='')
+    x = os.system(s)
+    print("\b\b\b", end="")
+    if x == 0:
+        print("SUCCESS")
+        file_out.write("file " + outfile + "\n")
+    else:
+        failed2conv += 1
+        print("FAILED")
+
+
+file_out.close()
+
+print(f"files failed to convert: {failed2conv}")
+
+# combine videos
+print("===[ CONCAT ]===")
+run_concat = "ffmpeg -hide_banner -loglevel error -f concat -i list.txt " + addcopystring + " \"" + file_name + "_cut" + file_ext + "\""
+print(run_concat)
+concat_rc = os.system(run_concat)
+
+if not isAuto:
+    print("Hit enter to: cleanup (del p* list.txt)")
+    input()
+
+# cleanup
+for i in subvideos:
+    os.remove(i[3])
+os.remove("list.txt")
+

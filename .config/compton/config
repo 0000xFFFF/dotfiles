@@ -1,0 +1,14 @@
+# Opacity
+#inactive-opacity = 0.95;
+#active-opacity = 0.95;
+#frame-opacity = 1;
+#inactive-opacity-override = false;
+
+#opacity-rule = [
+#  "80:class_g = 'URxvt' && !focused",
+#  "80:class_g = 'kitty' && !focused",
+#  "80:class_g = 'discord' && !focused",
+#  "80:class_g = 'firefox' && !focused",
+#  "80:class_g = 'Org.gnome.Nautilus' && !focused"
+#];
+

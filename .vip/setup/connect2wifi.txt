@@ -1,0 +1,11 @@
+# connect to wifi
+sudo iwlist wlp3s0 scan | grep ESSID
+wpa_passphrase your-ESSID your-passphrase | sudo tee /etc/wpa_supplicant.conf
+sudo wpa_supplicant -c /etc/wpa_supplicant.conf -i wlp3s0 -B    # -B run in bg
+iwconfig
+
+
+
+# rename wlp??????? to wlan0
+iw dev wlan0 del
+iw phy phy0 interface add wlan0 type managed

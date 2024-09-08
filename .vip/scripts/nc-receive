@@ -1,0 +1,13 @@
+#!/bin/bash
+
+RECV_PORT="$1"
+RECV_FILE="$2"
+
+echo "> IP: $(hostname_I)"
+
+while [ -z "$RECV_PORT" ]; do read -r -p 'PORT: ' RECV_PORT ; done
+while [ -z "$RECV_FILE" ]; do read -r -p 'FILE: ' RECV_FILE ; done
+
+# shellcheck disable=SC2024
+sudo nc -vv -l -p "$RECV_PORT" > "$RECV_FILE"
+echo ERRORLEVEL: $?

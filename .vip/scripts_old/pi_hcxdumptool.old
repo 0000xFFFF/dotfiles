@@ -1,0 +1,45 @@
+#!/bin/bash
+
+DEVICENAME="rt2800usb"
+
+function utc() {
+	echo "$(date +"%Y-%m-%d %T:%N (%s)") --"
+}
+
+FILENAME="$1"
+if [ -z "$FILENAME" ]; then
+	echo "$(utc)[!] no pcapng filename specified"
+	exit 1
+fi
+
+# check if device is already in monitor mode
+DEVICEMON="$(sudo airmon-ng | grep "$DEVICENAME" | awk '{print $2}' | grep mon)"
+if [ -z "$DEVICEMON" ]; then
+	DEVICE="$(sudo airmon-ng | grep "$DEVICENAME" | awk '{print $2}')"
+	if [ -z "$DEVICE" ]; then
+		echo "$(utc)[!] no device found: $DEVICENAME"
+		echo "$(utc)[.] retrying to get device..."
+		while [ -z "$DEVICE" ]; do
+			DEVICE="$(sudo airmon-ng | grep "$DEVICENAME" | awk '{print $2}')"
+			sleep 5
+		done
+	fi
+	echo "$(utc)[.] interface: $DEVICE"
+	echo "$(utc)[>] airmon-ng : starting monitor mode..."
+	sudo airmon-ng start "$DEVICE"
+	echo "$(utc)[>] airmon-ng -> $1"
+	DEVICEMON="$(sudo airmon-ng | grep "$DEVICENAME" | awk '{print $2}' | grep mon)"
+else
+	echo "$(utc)[.] device already in monitor mode: $DEVICEMON"
+fi
+
+if [ -z "$DEVICEMON" ]; then
+	echo "$(utc)[?] airmon-ng failed?"
+	exit 1
+fi
+echo "$(utc)[.] interface (monitor mode): $DEVICEMON"
+
+echo "$(utc)[>] hcxdumptool : starting capture...]"
+sudo hcxdumptool --filtermode=1 --filterlist_ap=/home/pi/.filterlist_ap --filterlist_client=/home/pi/.filterlist_client -i "$DEVICEMON" -o "/home/pi/Dump/$FILENAME.pcapng" --enable_status=31
+echo "$(utc)[>] hcxdumptool -> $?"
+

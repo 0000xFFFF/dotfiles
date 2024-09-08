@@ -1,0 +1,82 @@
+# https://www.waveshare.com/wiki/1.3inch_LCD_HAT
+
+# == Enable SPI interface
+
+sudo raspi-config
+# Choose Interfacing Options -> SPI -> Yes  to enable SPI interface
+
+sudo reboot
+
+# == BCM2835
+
+#Open the Raspberry Pi terminal and run the following command
+wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.71.tar.gz
+tar zxvf bcm2835-1.71.tar.gz 
+cd bcm2835-1.71/
+sudo ./configure && sudo make && sudo make check && sudo make install
+# For more, you can refer to the official website at: http://www.airspayce.com/mikem/bcm2835/
+
+# == WiringPi
+
+#Open the Raspberry Pi terminal and run the following command
+cd
+sudo apt-get install wiringpi
+#For Raspberry Pi systems after May 2019 (earlier than that can be executed without), an upgrade may be required:
+wget https://project-downloads.drogon.net/wiringpi-latest.deb
+sudo dpkg -i wiringpi-latest.deb
+gpio -v
+# Run gpio -v and version 2.52 will appear, if it doesn't it means there was an installation error
+
+# Bullseye branch system using the following command:
+git clone https://github.com/WiringPi/WiringPi
+cd WiringPi
+. /build
+gpio -v
+# Run gpio -v and version 2.70 will appear, if it doesn't it means there was an installation error
+
+# == lgpio
+
+#Open the Raspberry Pi terminal and run the following command
+wget https://github.com/joan2937/lg/archive/master.zip
+unzip master.zip
+cd lg-master
+sudo make install
+#Raspberry Pi 5 
+sudo apt install python3-rpi-lgpio
+#For more details, you can refer to https://github.com/gpiozero/lg
+
+
+# == Python
+
+sudo apt-get update
+sudo apt-get install python3-pip
+sudo apt-get install python3-pil
+sudo apt-get install python3-numpy
+sudo pip3 install spidev
+
+
+# == Compile and Run
+cd ~
+sudo apt-get install cmake -y
+sudo apt-get install p7zip-full -y
+wget https://files.waveshare.com/upload/f/f9/Waveshare_fbcp.7z
+7z x Waveshare_fbcp.7z -o./waveshare_fbcp
+cd waveshare_fbcp
+mkdir build
+cd build
+
+# If you are using 1.44inch_LCD_HAT: 
+cmake -DSPI_BUS_CLOCK_DIVISOR=20 -DWAVESHARE_1INCH44_LCD_HAT=ON -DBACKLIGHT_CONTROL=ON -DSTATISTICS=0 ..
+
+# If you are using 1.3inch_LCD_HAT: 
+cmake -DSPI_BUS_CLOCK_DIVISOR=20 -DWAVESHARE_1INCH3_LCD_HAT=ON -DBACKLIGHT_CONTROL=ON -DSTATISTICS=0 ..
+
+# then
+make -j
+sudo ./fbcp
+
+# == Auto-start when Power on
+sudo cp ~/waveshare_fbcp/build/fbcp /usr/local/bin/fbcp
+sudo nano /etc/rc.local
+
+

@@ -1,0 +1,130 @@
+#!/bin/bash
+
+#VARIABLES
+INPUT="$1"
+INPUT2="$2"
+LOCALHOST=$(hostname_I)
+GATEWAYS=$(gateways)
+
+QUIT() {
+    echo
+    echo
+    echo
+    exit
+}
+
+MENU() {
+    echo
+    echo -e "\e[92m> Your IP(s)......: \e[91m$LOCALHOST\e[0m"
+    echo -e "\e[92m> Your Gateway(s).: \e[91m$GATEWAYS\e[0m"
+    echo
+    echo -e "\e[0mSelect:\e[0m"
+    echo -e "  \e[33m[\e[91m1\e[33m]\e[0m PING (FAST)\e[0m"
+    echo -e "  \e[33m[\e[91m2\e[33m]\e[0m NMAP\e[0m"
+    echo -e "  \e[33m[\e[91m3\e[33m]\e[0m NMAP - BLOCKS\e[0m"
+    echo -e "  \e[33m[\e[91m4\e[33m]\e[0m NMAP - TABLE\e[0m"
+    read -n1 -r -p  '  >' INPUT
+    if [ -z "$INPUT" ]; then
+        echo
+        echo -e "\e[91mNo option chosen... \e[0m"
+        QUIT
+    fi
+    echo
+}
+
+PING() {
+    GATEWAY="$1"
+    GATEWAY_CUTTED=$(echo "$GATEWAY" | cut -d. -f4 --complement)
+    for i in {1..254} ; do (ping "$GATEWAY_CUTTED"."$i" -c 1 -w 3 >/dev/null && echo "$GATEWAY_CUTTED.$i" &) ;done
+    sleep 3 #this depends on the -w arg of the ping
+}
+
+NMAP() {
+    GATEWAY="$1"
+    nmap -sP "$GATEWAY"/24
+}
+
+NMAP_BLOCKS() {
+    GATEWAY="$1"
+    CLIENT_NUM="0"
+    while read -r line ; do
+        IP=$(  echo "$line" | awk -F "Nmap scan report for " '{printf $2}')
+        TIME=$(echo "$line" | awk -F "Host is "              '{printf $2}')
+        MAC=$( echo "$line" | awk -F "MAC Address: "         '{printf $2}')
+        if echo "$IP" | grep "." >/dev/null 2>/dev/null; then
+            ((CLIENT_NUM++))
+            echo
+            echo -e    " \e[0mINDEX: \e[33m$CLIENT_NUM\e[0m"
+            echo -e -n "    \e[0mIP: \e[91m$IP\e[0m"
+            if echo "$LOCALHOST" | grep -sw "$IP" >/dev/null 2>/dev/null ; then
+                echo -e "\e[91m (You)\e[0m"
+            else
+                echo -e ""
+            fi
+        fi
+        if echo "$TIME" | grep "latency" >/dev/null 2>/dev/null ; then echo -e "  \e[0mTIME: \e[36m$TIME\e[0m" ; fi
+        if echo "$MAC"  | grep ":"       >/dev/null 2>/dev/null ; then echo -e "   \e[0mMAC: \e[92m$MAC\e[0m"  ; fi
+    done <<< "$(nmap -sP "$GATEWAY"/24)"
+}
+
+NMAP_TABLE() {
+    GATEWAY="$1"
+    CLIENT_NUM="0"
+    output=""
+    while read -r line ; do
+        IP=$(  echo "$line" | awk -F "Nmap scan report for " '{printf $2}')
+        TIME=$(echo "$line" | awk -F "Host is "              '{printf $2}')
+        MAC=$( echo "$line" | awk -F "MAC Address: "         '{printf $2}')
+        if echo "$IP" | grep "." >/dev/null 2>/dev/null; then
+            ((CLIENT_NUM++))
+            output+="\n"
+            output+="\e[93m$CLIENT_NUM\e[0m"
+            output+="~"
+            if echo "$LOCALHOST" | grep -sw "$IP" >/dev/null 2>/dev/null; then
+                output+="\e[91m$IP (You)\e[0m"
+            else
+                output+="\e[91m$IP\e[0m"
+            fi
+        fi
+        if echo "$TIME" | grep "latency" >/dev/null 2>/dev/null; then output+="~\e[36m$TIME\e[0m" ; fi
+        if echo "$MAC"  | grep ":"       >/dev/null 2>/dev/null; then otuput+="~\e[92m$MAC\e[0m"  ; fi
+    done <<< "$(nmap -sP "$GATEWAY"/24)"
+    echo -e "$output" | column -t -s '~'
+}
+
+OPTIONS() {
+    OPTION=""
+    [ "$INPUT" == "1" ] && OPTION="PING"
+    [ "$INPUT" == "2" ] && OPTION="NMAP"
+    [ "$INPUT" == "3" ] && OPTION="NMAP_BLOCKS"
+    [ "$INPUT" == "4" ] && OPTION="NMAP_TABLE"
+    if [ -n "$OPTION" ]; then
+        if [ -n "$INPUT2" ]; then
+            #print gateway
+            echo
+            echo -e "\e[33mScanning gateway [\e[91m$INPUT2\e[33m]...\e[0m"
+            echo
+            $OPTION "$INPUT2"
+        else
+            #ip loop
+            while read -r GATEWAY ; do
+                #print gateway
+                echo
+                echo -e "\e[33mScanning gateway [\e[91m$GATEWAY\e[33m]...\e[0m"
+                echo
+                $OPTION "$GATEWAY"
+            done <<< "$(/sbin/ip route | awk '/default/ { print $3 }' | uniq)"
+        fi
+        QUIT
+    fi
+    echo
+    echo -e "\e[91m  ERROR: The chosen option does not exist \e[0m"
+    QUIT
+}
+
+if [ -z "$INPUT" ]; then
+    MENU
+    OPTIONS
+else
+    OPTIONS
+fi

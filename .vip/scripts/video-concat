@@ -1,0 +1,19 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+
+# get args
+if len(sys.argv) < 2:
+    print("USAGE: " + sys.argv[0] + " <video1> <video2> <vid3> <...>")
+    exit()
+
+file_out = open("list.txt", "w")
+
+for i in sys.argv[1:]:
+    file_out.write("file '" + i + "'\n")
+
+file_out.close()
+
+os.system("ffmpeg -safe 0 -f concat -i list.txt concat.mp4")
+os.remove("list.txt")

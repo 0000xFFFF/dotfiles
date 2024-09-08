@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+
+if len(sys.argv) < 2:
+    print("ABOUT: read file, treat every line as a MAC address, find the vendor for all the addresses")
+    print("USAGE: " + sys.argv[0] + " <macListFile> <ouipath(optional)>")
+    exit()
+
+ouifile_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "mac2ven.lst")
+if len(sys.argv) >= 3:
+    ouifile_path = sys.argv[2]
+
+file_path = sys.argv[1]
+file = open(file_path, 'r')
+file_lines = file.readlines()
+file.close()
+
+ouifile = open(ouifile_path, 'r')
+ouifile_lines = ouifile.readlines()
+ouifile.close()
+
+mac2ven_cache = [] # speeds up things
+def mac2ven(mac):
+    mac2check = mac.replace(":", "").replace("-", "").upper()[0:6]
+    for i in mac2ven_cache:
+        if mac2check == i[0]:
+            return i[1]
+    for y_ in ouifile_lines:
+        y = y_.replace("\n", "")
+        split = y.split("\t")
+        split_l = len(split)
+        oui_mac = ""
+        oui_ven = ""
+        if split_l >= 1: oui_mac = split[0]
+        if split_l >= 2: oui_ven = split[1]
+        if mac2check == oui_mac:
+            mac2ven_cache.append([oui_mac, oui_ven])
+            return oui_ven
+    return ""
+
+for x_ in file_lines:
+    x = x_.replace("\n", "")
+    print(x, mac2ven(x))
+

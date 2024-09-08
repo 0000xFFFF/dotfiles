@@ -1,0 +1,8 @@
+#!/bin/bash
+
+WLANDEVICE="$1"
+FILENAME="$(date +"%s")_$RANDOM"
+
+# shellcheck disable=SC2024
+sudo /home/pi/.vip/scripts/pi_hcxdumptool "$WLANDEVICE" "$FILENAME" >> "/home/pi/Dump/$FILENAME.log" 2>&1
+

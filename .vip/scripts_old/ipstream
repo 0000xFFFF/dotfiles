@@ -1,0 +1,69 @@
+#!/bin/bash
+
+LOCALHOST=$(hostname_I)
+GATEWAYS=$(gateways)
+INPUT="$1"
+IP_FILE="/tmp/ipstream.log"
+echo "" > "$IP_FILE"
+
+if [ -z "$INPUT" ]; then
+    echo raw, geo, ...
+    exit
+fi
+
+test_ip() {
+    local ip="$1"
+
+    #ip must not be    empty
+    [ -z "$ip" ] && return 1
+
+    #ip must not be ours
+    echo "$LOCALHOST" | grep -sw "$ip" >/dev/null 2>/dev/null && return 1
+    echo "$GATEWAYS"  | grep -sw "$ip" >/dev/null 2>/dev/null && return 1
+
+    #test if it's valid
+    if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+        OIFS=$IFS
+        IFS='.'
+        ip="($ip)"
+        IFS=$OIFS
+        [[ ${ip[0]} -le 255 && ${ip[1]} -le 255 \
+            && ${ip[2]} -le 255 && ${ip[3]} -le 255 ]]
+        return $?
+    fi
+    return 1
+}
+
+output_ip() {
+    local ip="$1"
+
+    if [ "$INPUT" == "raw" ]; then
+        echo "$ip"
+    fi
+
+    if [ "$INPUT" == "geo" ]; then
+        echo -e "$ip: $(geoiplookup 8.8.8.8 | sed "s/GeoIP Country Edition: //g;s/GeoIP City Edition, Rev 1: //g;s/GeoIP ASNum Edition: //g" | tr "\n" " ")"
+    fi
+}
+
+
+use_ip() {
+    local ip="$1"
+
+    #cat "$IP_FILE"    | grep "$ip" >/dev/null 2>/dev/null && return
+    #echo "$ip" >> "$IP_FILE"
+
+    output_ip "$ip"
+}
+
+
+
+tshark 2>/dev/null | while read -r line ; do
+
+    # <IP1> → <IP2>
+    IP1="$(echo "$line" | awk '{print $3}')"
+    IP2="$(echo "$line" | awk '{print $5}')"
+
+    if test_ip "$IP1"; then use_ip "$IP1"; fi
+    if test_ip "$IP2"; then use_ip "$IP2"; fi
+done

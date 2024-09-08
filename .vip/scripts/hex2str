@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+import sys
+
+if len(sys.argv) == 1:
+    print("USAGE: " + sys.argv[0] + " hex")
+    exit()
+
+def hex2str_old(string):
+    import codecs
+    try:
+        binary_str = codecs.decode(string, "hex")
+        return str(binary_str, 'utf-8')
+    except Exception as e:
+        return "HEX ERROR"
+
+def hex2str(string):
+    try:
+        hex_bytes = bytes.fromhex(string)
+        utf8_string = hex_bytes.decode('utf-8')
+        return utf8_string
+    except Exception as e: return "HEX ERROR"
+
+print(hex2str(sys.argv[1]))

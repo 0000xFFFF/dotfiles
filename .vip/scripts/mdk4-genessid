@@ -1,0 +1,8 @@
+#!/bin/bash
+NAME="$1"
+COUNT="$2"
+while [ -z "$NAME"  ]; do read -r -p "NAME..: " NAME  ; done
+while [ -z "$COUNT" ]; do read -r -p "COUNT.: " COUNT ; done
+for (( c = 1; c <= COUNT; c++ )) ; do
+    echo -e "$NAME-$RANDOM"
+done

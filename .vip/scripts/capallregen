@@ -1,0 +1,20 @@
+#!/bin/bash
+
+cd /media/SSD/root/dump/cap
+
+echo "copy ..."
+while read -r line ; do
+        cp "$line" "all/."
+done <<< "$(find "dump" -name "*cap*")"
+echo "copy done"
+
+echo "hcx-cap ..."
+cd all
+hcx-cap
+echo "hcx-cap done"
+
+echo "rm *.cap *.pcapng ..."
+rm -v *.cap *.pcapng
+echo "rm done"
+
+

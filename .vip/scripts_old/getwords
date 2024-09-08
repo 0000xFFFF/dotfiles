@@ -1,0 +1,4 @@
+#!/bin/bash
+wget "$1" -O test.txt
+grep -E -o "\w+" test.txt | sort -u > sorted.txt
+cat total.txt sorted.txt | sort -u > total.txt

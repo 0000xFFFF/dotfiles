@@ -1,0 +1,4 @@
+#!/bin/bash
+VALUE="$1"
+[ -z "$VALUE" ] && VALUE="1"
+pamixer --allow-boost -d "$VALUE"

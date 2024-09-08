@@ -1,0 +1,47 @@
+[colors.bright]
+black = "#4a697d"
+blue = "#2ca2f5"
+cyan = "#33c5ba"
+green = "#a4bd00"
+magenta = "#8086e8"
+red = "#fa3935"
+white = "#ffffff"
+yellow = "#d9a400"
+
+[colors.normal]
+black = "#263640"
+blue = "#2587cc"
+cyan = "#289c93"
+green = "#819400"
+magenta = "#696ebf"
+red = "#d12f2c"
+white = "#d5d5d5"
+yellow = "#b08500"
+
+[colors.primary]
+background = "#000000"
+foreground = "#eaeaea"
+
+[colors.selection]
+background = "#404040"
+text = "#eaeaea"
+
+[env]
+TERM = "alacritty"
+
+[font]
+size = 15
+
+[font.normal]
+family = "RecMonoCasual Nerd Font Mono"
+#family = "RecMonoCasual Nerd Font Mono"
+#family = "InconsolataGo Nerd Font Mono"
+
+style = "Regular"
+
+[window]
+opacity = 0.85
+
+[window.padding]
+x = 6
+y = 6

@@ -1,0 +1,14 @@
+#!/bin/bash
+bgdir_vib="/home/user/Pictures/Wallpapers/Day/vibrant"
+bgdir_day="/home/user/Pictures/Wallpapers/Day"
+bgdir_night="/home/user/Pictures/Wallpapers/Night"
+bgdir_dark="/home/user/Pictures/Wallpapers/Dark"
+hour="$(date +"%H")"
+
+if   [ $hour -ge 20 ]; then feh --recursive --randomize --bg-fill "$bgdir_dark"
+elif [ $hour -ge 16 ]; then feh --recursive --randomize --bg-fill "$bgdir_night"
+elif [ $hour -ge 15 ]; then feh --recursive --randomize --bg-fill "$bgdir_day"
+else                        feh --recursive --randomize --bg-fill "$bgdir_vib"
+fi
+
+

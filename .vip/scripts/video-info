@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+import os, sys, subprocess
+from tabulate import tabulate
+
+if len(sys.argv) < 2:
+    print("USAGE: " + sys.argv[0] + " <videos>")
+    exit()
+
+g_video = ""
+g_duration = ""
+g_bitrate = ""
+g_encoder = ""
+data = []
+for i in sys.argv[1:]:
+    proc = subprocess.Popen(['ffprobe', '-hide_banner', i], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    for line in proc.stdout.read().decode().split("\n"):
+        if "Input" in line and "from" in line:
+            g_video = line.split("from ")[1]
+        if "encoder         :" in line:
+            g_encoder = line.split("encoder         :")[1]
+        if "bitrate:" in line:
+            g_bitrate = line.split("bitrate: ")[1]
+        if "Duration:" in line:
+            g_duration = line.split("Duration: ")[1].split(",")[0]
+            data.append([g_video, g_duration, g_bitrate, g_encoder])
+
+
+print(tabulate(data, headers=["name", "duration", "bitrate", "encoder"]))
+

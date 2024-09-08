@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+
+# strip lines contained in another file
+
+import sys
+
+if len(sys.argv) <= 2:
+    print("ABOUT: strip lines in file")
+    print("USAGE: " + sys.argv[0] + " <file> <linesToStrip>")
+    exit()
+
+with open(sys.argv[1], 'r', errors='ignore') as file1:
+    lines1 = [line.strip() for line in file1.readlines()]
+
+with open(sys.argv[2], 'r', errors='ignore') as file2:
+    lines2 = [line.strip() for line in file2.readlines()]
+
+stripped_lines = [line for line in lines1 if line not in lines2]
+
+for i in stripped_lines:
+    print(i)

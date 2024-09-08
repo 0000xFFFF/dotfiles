@@ -1,0 +1,3 @@
+#!/bin/bash
+ips=$(ip -o -4 addr show | awk '{print $4}' | cut -d/ -f1 | grep -v "127.0.0.1" | paste -sd' ' -)
+echo $ips

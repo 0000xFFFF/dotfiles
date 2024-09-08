@@ -1,0 +1,56 @@
+###############
+### PROBLEM ###
+###############
+
+$ glxinfo | grep "OpenGL version"
+OpenGL version string: 3.0 Mesa 19.1.2
+
+$ pacman -Qs libgl
+local/libglvnd 1.1.1-1
+    The GL Vendor-Neutral Dispatch library
+local/mesa 19.1.2-1
+    An open-source implementation of the OpenGL specification
+
+$ pacman -Qs mesa
+local/glu 9.0.0-5
+    Mesa OpenGL Utility library
+local/libva-mesa-driver 19.1.2-1
+    VA-API implementation for gallium
+local/mesa 19.1.2-1
+    An open-source implementation of the OpenGL specification
+local/mesa-demos 8.4.0-1
+    Mesa demos and tools incl. glxinfo + glxgears
+local/mesa-vdpau 19.1.2-1
+    Mesa VDPAU drivers
+local/vulkan-intel 19.1.2-1
+    Intel's Vulkan mesa driver
+
+$ glxinfo | grep "version"
+server glx version string: 1.4
+client glx version string: 1.4
+GLX version: 1.4
+    Max core profile version: 4.5
+    Max compat profile version: 3.0
+    Max GLES1 profile version: 1.1
+    Max GLES[23] profile version: 3.2
+OpenGL core profile version string: 4.5 (Core Profile) Mesa 19.1.2
+OpenGL core profile shading language version string: 4.50
+OpenGL version string: 3.0 Mesa 19.1.2
+OpenGL shading language version string: 1.30
+OpenGL ES profile version string: OpenGL ES 3.2 Mesa 19.1.2
+OpenGL ES profile shading language version string: OpenGL ES GLSL ES 3.20
+    GL_EXT_shader_implicit_conversions, GL_EXT_shader_integer_mix, 
+
+###########
+### FIX ###
+###########
+
+sudo -i
+echo "MESA_GL_VERSION_OVERRIDE=4.5" >> /etc/environment 
+echo "MESA_GLSL_VERSION_OVERRIDE=450" >> /etc/environment 
+
+
+#############
+### FIX 2 ###
+#############
+"LIBGL_ALWAYS_SOFTWARE=1" <your command here>

@@ -1,0 +1,2 @@
+#!/bin/bash
+tr -s '[[:punct:][:space:]]' '\n' < "$1"

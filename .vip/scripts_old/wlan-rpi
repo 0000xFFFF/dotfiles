@@ -1,0 +1,228 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import time
+import subprocess
+import signal
+import atexit
+import RPi.GPIO as GPIO
+from colorama import Fore, Back, Style
+from threading import Thread, Lock
+from datetime import datetime
+
+RST_PIN       = 25
+CS_PIN        = 8
+DC_PIN        = 24
+RST           = 27
+DC            = 25
+BL            = 24
+bus           = 0
+device        = 0
+KEY_UP_PIN    = 6
+KEY_DOWN_PIN  = 19
+KEY_LEFT_PIN  = 5
+KEY_RIGHT_PIN = 26
+KEY_PRESS_PIN = 13
+KEY1_PIN      = 21
+KEY2_PIN      = 20
+KEY3_PIN      = 16
+
+def gpio_setup():
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(KEY_UP_PIN,    GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_DOWN_PIN,  GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_LEFT_PIN,  GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_RIGHT_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY_PRESS_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY1_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY2_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(KEY3_PIN,      GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+# glbl stuff
+running = True
+running_menu = False
+menu_opt = 1
+proc = 0
+path_device = "/tmp/wlan-rpi_device"
+selected_device = ""
+
+menu_items = []
+OPT_MIN = 1
+OPT_MAX = len(menu_items)
+
+def checkRoot(): return os.geteuid() == 0
+
+term_show_count = 0
+g_tc = os.get_terminal_size().columns
+g_tl = os.get_terminal_size().lines
+def term_show_count_reset():
+    global term_show_count
+    term_show_count = 0
+def term_clear():
+    os.system("clear")
+    term_show_count_reset()
+def term_cursor_reset():
+    print("\033[0;0H", end='')
+    term_show_count_reset()
+def term_cursor_hide():
+    print("\033[?25l")
+def term_cursor_show():
+    print("\033[?25h")
+def term_blank():
+    term_cursor_hide()
+    term_clear()
+def term_show_print(printStr, color = ""):
+    global term_show_count
+    tl = os.get_terminal_size().lines
+    if term_show_count >= (tl-1): return
+    print(f"{color}{printStr}{Style.RESET_ALL}")
+    term_show_count += 1
+def term_show(s, color = ""):
+    global g_tc
+    global g_tl
+    strings = s.split("\n")
+    tc = os.get_terminal_size().columns
+    tl = os.get_terminal_size().lines
+    if g_tc != tc or g_tl != tl:
+        g_tc = tc
+        g_tl = tl
+        term_clear()
+    for i in strings:
+        il = len(i)
+        if il > tc: term_show_print(i[:tc], color)
+        else:       term_show_print(i + str(" " * int(int(tc)-int(il))), color)
+
+@atexit.register
+def signal_handler():
+    term_cursor_show()
+
+def action_opt_up():
+    global menu_opt
+    global OPT_MIN
+    menu_opt -= 1
+    if menu_opt < OPT_MIN: menu_opt = OPT_MIN
+def action_opt_down():
+    global menu_opt
+    global OPT_MAX
+    menu_opt += 1
+    if menu_opt > OPT_MAX: menu_opt = OPT_MAX
+def action_quit():
+    global running
+    print("\n\nQuitting...")
+    running = False
+
+def action_select():
+    global selected_device
+    global path_device
+    selected_device = menu_items[menu_opt-1][1][1]
+
+    f = open(path_device, "w")
+    f.write(selected_device)
+    f.close()
+def action_load():
+    global selected_device
+    global path_device
+    try:
+        with open(path_device) as f:
+            selected_device = f.readline().rstrip()
+    except:
+        pass
+def action_updateItems():
+
+    term_blank()
+
+    global menu_items
+    global OPT_MIN
+    global OPT_MAX
+    menu_items = []
+
+    proc = subprocess.Popen(['sudo', 'airmon-ng'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    for line in proc.stdout.read().decode().split("\n"):
+        if not line: continue
+        clms = line.split()
+        if clms[0] == "PHY" and clms[1] == "Interface" and clms[2] == "Driver" and clms[3] == "Chipset": continue
+        menu_items.append([len(menu_items)+1, clms])
+    
+    OPT_MIN = 1
+    OPT_MAX = len(menu_items)
+
+def action_monitor(enable):
+    term_blank()
+    action = "start"
+    if not enable: action = "stop"
+    cmd = ['sudo', 'airmon-ng', action, selected_device]
+    print(' '.join(cmd))
+    proc = subprocess.Popen(cmd)
+    print(f"started PID: {proc.pid}")
+    os.waitpid(proc.pid, 0)
+    print(f"died: {proc.pid}")
+
+def menu(keyPress):
+
+    global running_menu
+    if running_menu: return
+    running_menu = True
+
+    term_cursor_reset()
+
+    global menu_opt
+    global menu_items
+    global selected_device
+
+    if   keyPress == 1: action_opt_up()
+    elif keyPress == 2: action_opt_down()
+    elif keyPress == 3: term_blank()
+    elif keyPress == 4: action_updateItems()
+    elif keyPress == 5: action_select()
+
+    # draw
+    term_show(f"{str(datetime.now())}", f"{Style.BRIGHT}{Fore.GREEN}")
+    for i in menu_items:
+        num = str(i[0]).rjust(2, " ")
+        lst = " ".join(i[1])
+        if i[1][1] == selected_device:
+            if menu_opt == i[0]: term_show(f">{num}. {lst}" , f"{Style.NORMAL}{Back.WHITE}{Fore.RED}")
+            else:                term_show(f" {num}. {lst}" , f"{Fore.RED}")
+        else:
+            if menu_opt == i[0]: term_show(f">{num}. {lst}" , f"{Style.NORMAL}{Back.WHITE}{Fore.BLACK}")
+            else:                term_show(f" {num}. {lst}")
+
+    
+    if   keyPress == 6: action_quit()
+    elif keyPress == 7: action_monitor(True)
+    elif keyPress == 8: action_monitor(False)
+
+    running_menu = False
+
+if __name__ == "__main__":
+
+    if not checkRoot():
+        print("use root.")
+        exit()
+
+    gpio_setup()
+
+    term_blank()
+    action_load()
+    action_updateItems()
+    menu(0)
+
+    try:
+        while running:
+            if   not GPIO.input(KEY_UP_PIN):    menu(1)
+            elif not GPIO.input(KEY_DOWN_PIN):  menu(2)
+            elif not GPIO.input(KEY_LEFT_PIN):  menu(3)
+            elif not GPIO.input(KEY_RIGHT_PIN): menu(4)
+            elif not GPIO.input(KEY_PRESS_PIN): menu(5)
+            elif not GPIO.input(KEY1_PIN):      menu(6)
+            elif not GPIO.input(KEY2_PIN):      menu(7)
+            elif not GPIO.input(KEY3_PIN):      menu(8)
+            time.sleep(0.2)
+    except KeyboardInterrupt:
+        action_quit()
+    except Exception as e:
+        if hasattr(e, 'message'): print(e.message)
+        else: print(e)
+        action_quit()
+

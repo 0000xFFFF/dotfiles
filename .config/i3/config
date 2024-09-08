@@ -1,0 +1,310 @@
+# mod
+set $mod Mod4
+set $alt Mod1
+
+# colors
+set $text-color          #ffffff
+set $bg-color            #4B0000
+set $inactive-text-color #808080
+set $inactive-bg-color   #200000
+set $bg-color-statusbar  #200000
+set $urgent-bg-color     #ff0000
+
+# window colors
+#                       border              background         text                 indicator
+client.focused          $bg-color           $bg-color          $text-color          #800000
+client.unfocused        $inactive-bg-color  $inactive-bg-color $inactive-text-color #000000
+client.focused_inactive $inactive-bg-color  $inactive-bg-color $inactive-text-color #000000
+client.urgent           $urgent-bg-color    $urgent-bg-color   $text-color          #ff0000
+
+# look
+font pango: Inconsolata 12
+floating_modifier $mod
+#hide_edge_borders both
+#for_window [class="^.*"] border pixel 1
+#for_window [class="^.*"] floating enable
+for_window [class="Pavucontrol"] floating enable
+#default_border pixel 1
+#default_floating_border pixel 1
+gaps inner 15
+gaps outer 15
+
+# kill focused window
+bindsym $mod+q kill
+bindsym $alt+q kill
+bindsym $mod+Shift+q kill
+bindsym $alt+Shift+q kill
+
+# MMB over kills the window
+bindsym --release button2 kill
+bindsym --whole-window $mod+button2 kill
+bindsym button9 floating toggle
+bindsym button8 floating toggle
+
+# fn keys
+bindsym XF86ScreenSaver exec ~/.config/i3/scripts/i3lock_custom
+bindsym $mod+x          exec ~/.config/i3/scripts/i3lock_custom
+bindsym $alt+x          exec ~/.config/i3/scripts/i3lock_pixel
+bindsym $mod+Shift+x    exec ~/.config/i3/scripts/i3lock_blur
+bindsym $alt+Shift+x    exec ~/.config/i3/scripts/i3lock_vibrant
+bindsym XF86Battery     exec gnome-power-statistics
+#bindsym XF86Display
+#bindsym XF86TouchpadToggle
+
+# fn keys that work on their own
+#bindsym XF86MonBrightnessUp   exec --no-startup-id  xbacklight -inc 10
+#bindsym XF86MonBrightnessDown exec --no-startup-id  xbacklight -dec 10
+#XF86Sleep
+
+#bindsym $mod+Return     exec i3-sensible-terminal
+bindsym $mod+Return         exec alacritty
+bindsym $mod+Control+Return exec urxvt
+bindsym $alt+Return         exec alacritty
+bindsym $alt+Control+Return exec urxvt
+bindsym $mod+b              exec dolphin
+bindsym $alt+b              exec dolphin
+bindsym $mod+r              exec urxvt -e ranger
+bindsym $mod+Control+r      exec alacritty -e ranger
+bindsym $alt+r              exec urxvt -e ranger
+bindsym $alt+Control+r      exec alactityy -e ranger
+bindsym Print               exec flameshot gui
+
+bindsym $mod+e layout stacking
+bindsym $alt+e layout stacking
+bindsym $mod+w layout tabbed
+bindsym $alt+w layout tabbed
+
+bindsym $mod+Shift+e     exec ~/.config/i3/scripts/i3exit
+bindsym $alt+Shift+e     exec ~/.config/i3/scripts/i3exit
+bindsym $mod+space       focus mode_toggle
+bindsym $alt+space       focus mode_toggle
+bindsym $mod+Shift+space floating toggle
+bindsym $alt+Shift+space floating toggle
+
+# RMB toggles floating
+#bindsym button3 floating toggle
+#bindsym $mod+button3 floating toggle
+
+bindsym $mod+h       focus left
+bindsym $mod+Shift+h move left 30
+bindsym $mod+j       focus down
+bindsym $mod+Shift+j move down 30
+bindsym $mod+k       focus up
+bindsym $mod+Shift+k move up 30
+bindsym $mod+l       focus right
+bindsym $mod+Shift+l move right 30
+
+bindsym $alt+h       focus left
+bindsym $alt+Shift+h move left 30
+bindsym $alt+j       focus down
+bindsym $alt+Shift+j move down 30
+bindsym $alt+k       focus up
+bindsym $alt+Shift+k move up 30
+bindsym $alt+l       focus right
+bindsym $alt+Shift+l move right 30
+
+bindsym $mod+Left  focus left
+bindsym $mod+Down  focus down
+bindsym $mod+Up    focus up
+bindsym $mod+Right focus right
+
+bindsym $alt+Left  focus left
+bindsym $alt+Down  focus down
+bindsym $alt+Up    focus up
+bindsym $alt+Right focus right
+
+bindsym $mod+Shift+Left  move left 30
+bindsym $mod+Shift+Down  move down 30
+bindsym $mod+Shift+Up    move up 30
+bindsym $mod+Shift+Right move right 30
+
+bindsym $alt+Shift+Left  move left 30
+bindsym $alt+Shift+Down  move down 30
+bindsym $alt+Shift+Up    move up 30
+bindsym $alt+Shift+Right move right 30
+
+bindsym $mod+s       gaps inner current plus 5
+bindsym $mod+Shift+s gaps inner current minus 5
+bindsym $mod+z       gaps outer current plus 5
+bindsym $mod+Shift+z gaps outer current minus 5
+
+bindsym $alt+s       gaps inner current plus 5
+bindsym $alt+Shift+s gaps inner current minus 5
+bindsym $alt+z       gaps outer current plus 5
+bindsym $alt+Shift+z gaps outer current minus 5
+
+bindsym $mod+t       split toggle
+bindsym $alt+t       split toggle
+
+bindsym $mod+g       gaps inner all set 0;  gaps outer all set 0
+bindsym $mod+Shift+g gaps inner all set 15; gaps outer all set 15
+
+bindsym $alt+g       gaps inner all set 0;  gaps outer all set 0
+bindsym $alt+Shift+g gaps inner all set 15; gaps outer all set 15
+
+bindsym $mod+d       exec rofi_custom
+bindsym $mod+Shift+d exec rofi_unicode
+bindsym $mod+Tab     exec rofi_alttab
+
+bindsym $alt+d       exec rofi_custom
+bindsym $alt+Shift+d exec rofi_unicode
+bindsym $alt+Tab     exec rofi_alttab
+
+bindsym $mod+Shift+y resize shrink width 10 px or 10 ppt
+bindsym $mod+Shift+u resize shrink height 10 px or 10 ppt
+bindsym $mod+Shift+i resize grow height 10 px or 10 ppt
+bindsym $mod+Shift+o resize grow width 10 px or 10 ppt
+
+bindsym $alt+Shift+y resize shrink width 10 px or 10 ppt
+bindsym $alt+Shift+u resize shrink height 10 px or 10 ppt
+bindsym $alt+Shift+i resize grow height 10 px or 10 ppt
+bindsym $alt+Shift+o resize grow width 10 px or 10 ppt
+
+bindsym $mod+Ctrl+Left  resize shrink width 10 px or 10 ppt
+bindsym $mod+Ctrl+Up    resize shrink height 10 px or 10 ppt
+bindsym $mod+Ctrl+Down  resize grow height 10 px or 10 ppt
+bindsym $mod+Ctrl+Right resize grow width 10 px or 10 ppt
+
+bindsym $alt+Ctrl+Left  resize shrink width 10 px or 10 ppt
+bindsym $alt+Ctrl+Up    resize shrink height 10 px or 10 ppt
+bindsym $alt+Ctrl+Down  resize grow height 10 px or 10 ppt
+bindsym $alt+Ctrl+Right resize grow width 10 px or 10 ppt
+
+bindsym $mod+f fullscreen toggle
+bindsym $alt+f fullscreen toggle
+bindsym $mod+Shift+f exec firefox
+bindsym $alt+Shift+f exec firefox
+
+# switch to workspace
+bindsym $mod+1 workspace 1
+bindsym $mod+2 workspace 2
+bindsym $mod+3 workspace 3
+bindsym $mod+4 workspace 4
+bindsym $mod+5 workspace 5
+bindsym $mod+6 workspace 6
+bindsym $mod+7 workspace 7
+bindsym $mod+8 workspace 8
+bindsym $mod+9 workspace 9
+bindsym $mod+0 workspace 10
+
+bindsym $alt+1 workspace 1
+bindsym $alt+2 workspace 2
+bindsym $alt+3 workspace 3
+bindsym $alt+4 workspace 4
+bindsym $alt+5 workspace 5
+bindsym $alt+6 workspace 6
+bindsym $alt+7 workspace 7
+bindsym $alt+8 workspace 8
+bindsym $alt+9 workspace 9
+bindsym $alt+0 workspace 10
+
+# move focused container to workspace
+bindsym $mod+Shift+1 move container to workspace 1
+bindsym $mod+Shift+2 move container to workspace 2
+bindsym $mod+Shift+3 move container to workspace 3
+bindsym $mod+Shift+4 move container to workspace 4
+bindsym $mod+Shift+5 move container to workspace 5
+bindsym $mod+Shift+6 move container to workspace 6
+bindsym $mod+Shift+7 move container to workspace 7
+bindsym $mod+Shift+8 move container to workspace 8
+bindsym $mod+Shift+9 move container to workspace 9
+bindsym $mod+Shift+0 move container to workspace 10
+
+bindsym $alt+Shift+1 move container to workspace 1
+bindsym $alt+Shift+2 move container to workspace 2
+bindsym $alt+Shift+3 move container to workspace 3
+bindsym $alt+Shift+4 move container to workspace 4
+bindsym $alt+Shift+5 move container to workspace 5
+bindsym $alt+Shift+6 move container to workspace 6
+bindsym $alt+Shift+7 move container to workspace 7
+bindsym $alt+Shift+8 move container to workspace 8
+bindsym $alt+Shift+9 move container to workspace 9
+bindsym $alt+Shift+0 move container to workspace 10
+
+# reload, restart, exit
+bindsym $mod+Shift+c reload
+bindsym $alt+Shift+c reload
+bindsym $mod+Shift+r restart
+bindsym $alt+Shift+r restart
+
+# i3blocks
+bar {
+	mode dock
+	tray_output primary
+	font pango: Inconsolata 12
+	#position top
+	status_command i3blocks -c ~/.config/i3/i3blocks.conf
+	colors {
+		background $bg-color-statusbar
+		separator #ffffff
+		#                  border               background         text
+		focused_workspace  $text-color          $inactive-bg-color $text-color
+		inactive_workspace $inactive-text-color $inactive-bg-color $inactive-text-color
+		urgent_workspace   $urgent-bg-color     $urgent-bg-color   $text-color
+	}
+}
+
+# Media player key bindings
+bindsym XF86AudioPlay  exec --no-startup-id mocp -p; exec --no-startup-id notify-send "$(mocp -Q "%file" | sed "s/.*\///")" -a "MOCP: PLAY"
+bindsym XF86AudioPause exec --no-startup-id mocp -P; exec --no-startup-id notify-send "$(mocp -Q "%file" | sed "s/.*\///")" -a "MOCP: PAUSE"
+bindsym XF86AudioStop  exec --no-startup-id mocp -s; exec --no-startup-id notify-send "$(mocp -Q "%file" | sed "s/.*\///")" -a "MOCP: STOP"
+bindsym XF86AudioNext  exec --no-startup-id mocp -f; exec --no-startup-id notify-send "$(mocp -Q "%file" | sed "s/.*\///")" -a "MOCP: NEXT"
+bindsym XF86AudioPrev  exec --no-startup-id mocp -r; exec --no-startup-id notify-send "$(mocp -Q "%file" | sed "s/.*\///")" -a "MOCP: PREVIOUS"
+
+# volume ctrl
+bindsym XF86AudioRaiseVolume exec --no-startup-id pamixer -i 5;            exec --no-startup-id pkill -RTMIN+10 i3blocks
+bindsym XF86AudioLowerVolume exec --no-startup-id pamixer -i 5;            exec --no-startup-id pkill -RTMIN+10 i3blocks
+bindsym XF86AudioMute        exec --no-startup-id pamixer -t;              exec --no-startup-id pkill -RTMIN+10 i3blocks
+bindsym XF86AudioMicMute     exec --no-startup-id pamixer --source 2 -t; exec --no-startup-id pkill -RTMIN+11 i3blocks
+bindsym $mod+Shift+m         exec --no-startup-id pamixer --source 2 -t; exec --no-startup-id pkill -RTMIN+11 i3blocks
+
+bindsym $mod+period                exec --no-startup-id pamixer -i 5;               exec --no-startup-id pkill -RTMIN+10 i3blocks
+bindsym $mod+Control+period        exec --no-startup-id pamixer -i 1;               exec --no-startup-id pkill -RTMIN+10 i3blocks
+bindsym $mod+Shift+period          exec --no-startup-id pamixer -i 5 --allow-boost; exec --no-startup-id pkill -RTMIN+10 i3blocks
+bindsym $mod+Control+Shift+period  exec --no-startup-id pamixer -i 1 --allow-boost; exec --no-startup-id pkill -RTMIN+10 i3blocks
+bindsym $mod+comma                 exec --no-startup-id pamixer -d 5;               exec --no-startup-id pkill -RTMIN+10 i3blocks
+bindsym $mod+Control+comma         exec --no-startup-id pamixer -d 1;               exec --no-startup-id pkill -RTMIN+10 i3blocks
+bindsym $mod+Shift+comma           exec --no-startup-id pamixer -d 5 --allow-boost; exec --no-startup-id pkill -RTMIN+10 i3blocks
+bindsym $mod+Control+Shift+comma   exec --no-startup-id pamixer -d 1 --allow-boost; exec --no-startup-id pkill -RTMIN+10 i3blocks
+bindsym $mod+m                     exec --no-startup-id pamixer -t;                 exec --no-startup-id pkill -RTMIN+10 i3blocks
+
+bindsym $alt+period                exec --no-startup-id pamixer -i 5;               exec --no-startup-id pkill -RTMIN+10 i3blocks
+bindsym $alt+Control+period        exec --no-startup-id pamixer -i 1;               exec --no-startup-id pkill -RTMIN+10 i3blocks
+bindsym $alt+Shift+period          exec --no-startup-id pamixer -i 5 --allow-boost; exec --no-startup-id pkill -RTMIN+10 i3blocks
+bindsym $alt+Control+Shift+period  exec --no-startup-id pamixer -i 1 --allow-boost; exec --no-startup-id pkill -RTMIN+10 i3blocks
+bindsym $alt+comma                 exec --no-startup-id pamixer -d 5;               exec --no-startup-id pkill -RTMIN+10 i3blocks
+bindsym $alt+Control+comma         exec --no-startup-id pamixer -d 1;               exec --no-startup-id pkill -RTMIN+10 i3blocks
+bindsym $alt+Shift+comma           exec --no-startup-id pamixer -d 5 --allow-boost; exec --no-startup-id pkill -RTMIN+10 i3blocks
+bindsym $alt+Control+Shift+comma   exec --no-startup-id pamixer -d 1 --allow-boost; exec --no-startup-id pkill -RTMIN+10 i3blocks
+bindsym $alt+m                     exec --no-startup-id pamixer -t;                 exec --no-startup-id pkill -RTMIN+10 i3blocks
+
+# set keyboard layouts
+#exec_always --no-startup-id setxkbmap -model pc105 -layout us,rs,rs -variant ",,latin" -option ""
+exec_always --no-startup-id setxkbmap -model pc105 -layout us,rs,rs -variant ",,latin" -option grp:alt_shift_toggle
+
+# NOTES:
+#sudo vim /etc/locale.gen
+#sudo locale-gen
+#ls /usr/share/X11/xkb/symbols
+
+# keyboard control
+bindsym $mod+a exec --no-startup-id ~/.config/i3/scripts/i3keyboard_switch; exec --no-startup-id pkill -RTMIN+12 i3blocks
+bindsym $alt+a exec --no-startup-id ~/.config/i3/scripts/i3keyboard_switch; exec --no-startup-id pkill -RTMIN+12 i3blocks
+bindsym $alt+$shift exec --no-startup-id ~/.config/i3/scripts/i3keyboard_switch; exec --no-startup-id pkill -RTMIN+12 i3blocks
+
+# monitor setup
+exec_always --no-startup-id ~/.config/i3/scripts/i3monitors
+
+# startup
+exec --no-startup-id picom --config /dev/null            # x comp manager
+exec --no-startup-id nm-applet                           # enable wifi manager
+exec --no-startup-id dunst -conf ~/.config/dunst/dunstrc # start notification daemon
+#exec --no-startup-id lxpolkit                            # ask for priv
+#exec --no-startup-id imwheel -kill                       # fix mouse scrolling
+exec --no-startup-id redshift-gtk                        # start brightness control
+
+# wallpaper
+bindsym $mod+n exec --no-startup-id ~/.config/i3/scripts/i3bg
+bindsym $alt+n exec --no-startup-id ~/.config/i3/scripts/i3bg
+
+exec --no-startup-id ~/.config/i3/scripts/i3bg

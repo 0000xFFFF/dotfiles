@@ -1,0 +1,7 @@
+#!/bin/bash
+MSG="$1"
+WEBHOOK_URL="$2"
+while [ -z "$MSG"         ]; do read -r -p "MSG: " MSG         ; done
+while [ -z "$WEBHOOK_URL" ]; do read -r -p "URL: " WEBHOOK_URL ; done
+curl -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST --data "{\"content\": \"$MSG\"}" "$WEBHOOK_URL"
+

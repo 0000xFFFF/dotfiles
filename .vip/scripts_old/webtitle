@@ -1,0 +1,2 @@
+#!/bin/bash
+curl -s "$1" | awk -vRS="</title>" '/<title>/{gsub(/.*<title>|\n+/,"");print;exit}' | recode html..ascii

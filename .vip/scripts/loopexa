@@ -1,0 +1,13 @@
+#!/bin/bash
+
+SLEEPTIME="$1"
+[ -z "$SLEEPTIME" ] && SLEEPTIME="0.3"
+
+clear
+
+while true
+do
+    echo -e "\033[0;0H"
+    exa -lah
+    sleep "$SLEEPTIME"
+done

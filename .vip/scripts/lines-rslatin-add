@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+
+import sys
+import re
+
+if len(sys.argv) <= 1:
+    print("ABOUT: if string contains [čćšžðđ] then add a string without those chars")
+    print("USAGE: " + sys.argv[0] + " <fileWithStrings>")
+    exit()
+
+file_path = sys.argv[1]
+with open(file_path, 'r', errors='ignore') as file:
+    lines = [line.strip() for line in file]
+
+def rslatin_check(s):
+    return bool(re.search(r'[čćšžđČĆŠŽÐ]', s))
+
+def rslatin_replace(s):
+    translations = str.maketrans("čćšžđČĆŠŽÐ", "ccszdCCSZD")
+    return s.translate(translations)
+
+for l in lines:
+    if rslatin_check(l):
+        print(l)
+        print(rslatin_replace(l))
+    else:
+        print(l)
+

@@ -1,0 +1,65 @@
+############################
+# ARCH LINUX INSTALL GUIDE #
+############################
+ping google.com
+lsblk
+cfdisk /dev/sdx
+
+# legacy BIOS:
+/dev/sda1 -- 8 gb Linux Swap
+/dev/sda2 -- Linux fs, set bootable
+
+# UEFI:
+/dev/sda1 -- 1 gb EFI System type
+/dev/sda2 -- 8 GB Linux Swap
+/dev/sda3 -- rest Linux fs
+
+mkfs.fat -F32 /dev/sda1                            # format EFI System partition
+mkswap /dev/sda2                                   # make swap
+swapon /dev/sda2                                   # swap on swap
+mkfs.ext4 /dev/sdx2                                # format fs
+mount /dev/sda3 /mnt                               # mount fs
+vim /etc/pacman.d/mirrorlist                       # use the mirrors that are closer to you
+pacstrap /mnt base linux linux-firmware
+genfstab -U /mnt >> /mnt/etc/fstab
+arch-chroot /mnt
+ln -sf /usr/share/zoneinfo/REGION/CITY /etc/localtime
+hwclock --systohc
+pacman -S sudo vi vim
+vim /etc/locale.gen                                # uncomment en_US UTF-8 UTF-8 and other...
+LANG=en_US.UTF-8                                   >> /etc/locale.conf
+locale-gen
+myhostname                                         >> /etc/hostname
+127.0.0.1    localhost"                            >> /etc/hosts
+::1          localhost"                            >> /etc/hosts
+127.0.1.1    myhostname.localdomain    myhostname" >> /etc/hosts
+
+pacman -S grub os-prober efibootmgr ntfs-3g
+
+# legacy BIOS:
+grub-install --recheck /dev/sdx (for BIOS systems)
+
+# UEFI
+mkdir /mnt/boot
+mount /dev/sda1 /mnt/boot
+grub-install --target=x86_64-efi --efi-directory=/mnt/boot --bootloader-id=grub       # UEFI
+
+grub-mkconfig -o /boot/grub/grub.cfg
+passwd
+useradd -m user
+passwd user
+groups user
+visudo
+# uncomment the '%wheel ALL=(ALL) ALL' line
+usermod -aG wheel,audio,optical,storage,video user
+groups user
+pacman -S dhcpcd networkmanager
+systemctl enable dhcpcd
+systemctl enable NetworkManager
+timedatectl set-ntp true
+exit
+reboot
+# unplug the usb while it's booting
+# log in as user
+# install xorg and desktop env
+# install gfx drivers

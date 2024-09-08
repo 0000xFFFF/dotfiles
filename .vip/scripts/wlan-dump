@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+
+# bash version:
+'''
+#!/bin/bash
+INTERFACE="$1"
+COMMAND="sudo iwlist scan"
+[ -n "$INTERFACE" ] && COMMAND="sudo iwlist $INTERFACE scan" 
+$COMMAND 2>/dev/null | while read -r line ; do
+    DEVICE=""
+    if echo "$line" | grep "Scan completed" 2>/dev/null >/dev/null; then DEVICE="$(echo "$line" | cut -d ' ' -f 1)"; fi
+    MAC=$(       echo "$line" | awk -F "Address: "       '{printf $2}')
+    CHANNEL=$(   echo "$line" | awk -F "Channel:"        '{printf $2}')
+    ENCRYPTION=$(echo "$line" | awk -F "Encryption key:" '{printf $2}')
+    ESSID=$(     echo "$line" | awk -F "ESSID:"          '{printf $2}')
+    [ -n "$DEVICE"     ] && echo  -e "\n\e[91m$DEVICE:\e[0m"
+    [ -n "$MAC"        ] && echo -ne "\e[92m$MAC\e[0m"
+    [ -n "$CHANNEL"    ] && echo -ne "\e[93m$CHANNEL\e[0m"
+    [ -n "$ENCRYPTION" ] && echo -ne "\e[94m$ENCRYPTION\e[0m"
+    [ -n "$ESSID"      ] && echo -ne "\e[95m$ESSID\e[0m\n"
+done
+
+printf "\n\n"
+'''
+
+import subprocess
+from colorama import Fore, Back, Style
+
+
+delim = "  "
+
+clr_reset = Style.RESET_ALL
+clr_wlan  = Style.BRIGHT + Fore.RED
+clr_bssid = Style.NORMAL + Fore.GREEN
+clr_ch    = Style.BRIGHT + Fore.YELLOW
+clr_fq    = Style.NORMAL + Fore.YELLOW
+clr_q     = Style.NORMAL + Fore.CYAN
+clr_enc   = Style.BRIGHT + Fore.BLUE
+clr_essid = Style.BRIGHT + Fore.MAGENTA
+
+header = [
+    clr_bssid + "BSSID"         + clr_reset,
+    clr_ch    + "CH"            + clr_reset,
+    clr_fq    + "FQ"            + clr_reset,
+    clr_q     + "Quality & PWR" + clr_reset,
+    clr_enc   + "ENC"           + clr_reset,
+    clr_essid + "ESSID"         + clr_reset
+]
+
+for i in header:
+    print(i, end=" | ")
+
+print("\n\n")
+
+for i in subprocess.run(['sudo', 'iwlist', 'scan'], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL).stdout.decode().split("\n"):
+    if "Scan completed" in i:
+        print("\n" + clr_wlan  + i.split()[0] + ":" + clr_reset)
+        continue
+    if "Address:" in i:
+        print(" " + clr_bssid + i.split("Address: ", 1)[1] + clr_reset, end=delim)
+        continue
+    if "Channel:" in i:
+        print(clr_ch + i.split("Channel:", 1)[1] + clr_reset, end=delim)
+        continue
+    if "Frequency:" in i:
+        print(clr_fq + i.split("Frequency:", 1)[1].split(" (Channel", 1)[0] + clr_reset, end=delim)
+        continue
+    if "Quality=" in i:
+        print(clr_q + i.split("Quality=", 1)[1].replace(" Signal level=", "")[:-2] + clr_reset, end=delim)
+        continue
+    if "Encryption key:" in i:
+        print(clr_enc + i.split("Encryption key:", 1)[1] + clr_reset, end=delim)
+        continue
+    if "ESSID:" in i:
+        print(clr_essid + i.split("ESSID:", 1)[1] + clr_reset)
+        continue

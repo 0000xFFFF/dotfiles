@@ -1,0 +1,6 @@
+#!/bin/bash
+number="$(xkblayout-state print %c)"
+if   [ "$number" == "0" ]; then xkblayout-state set 1
+elif [ "$number" == "1" ]; then xkblayout-state set 2
+elif [ "$number" == "2" ]; then xkblayout-state set 0
+fi
