@@ -75,8 +75,6 @@ alias \
         vol="pamixer --get-volume" \
         clip="xclip -selection clipboard" \
         nf="fastfetch" \
-        dust="du -h | sort -h" \
-        dust2="du -h -d 1 | sort -h" \
         ungz="tar -zxvf" \
         ccat="highlight --out-format=ansi" \
         ffmpeg="ffmpeg -hide_banner" \
