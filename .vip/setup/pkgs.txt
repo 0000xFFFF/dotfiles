@@ -44,6 +44,7 @@ docker
 dolphin
 dosfstools
 drkonqi
+duf
 dunst
 efibootmgr
 elinks
@@ -70,6 +71,7 @@ gpsbabel
 gqrx
 gqrx-debug
 grub
+gthumb
 gtk-chtheme
 gummi
 hashcat
@@ -151,6 +153,8 @@ mitmproxy
 mixxx
 mosint
 mosint-debug
+mpc
+mpd
 mpv
 mtools
 nano
@@ -168,6 +172,7 @@ nodejs
 nomacs
 nomacs-debug
 notepadqq
+noto-fonts-cjk
 noto-fonts-emoji
 npm
 ntfs-3g
@@ -203,6 +208,7 @@ pamixer
 papirus-icon-theme
 partitionmanager
 pavucontrol
+peek
 perl-image-exiftool
 picom
 plasma-activities
@@ -233,6 +239,7 @@ pulsemixer
 putty
 python-chardet
 python-debugpy
+python-django
 python-getkey
 python-importlib_resources
 python-matplotlib
@@ -251,6 +258,7 @@ python-statsmodels
 python-sympy
 python-tabulate
 python-tensorflow
+python-tqdm
 python-virtualenv
 qbittorrent
 qdirstat
@@ -278,6 +286,7 @@ routersploit
 rpi-imager
 rpm-tools
 rtl-sdr
+rustup
 rx_tools
 scapy
 scrot
@@ -286,6 +295,7 @@ signal-desktop
 sn0int
 speedtest-cli
 spyder
+sqlitebrowser
 strace
 sudo
 systemsettings
@@ -355,6 +365,7 @@ ttf-ubuntu-nerd
 ttf-victor-mono-nerd
 ttf-zed-mono-nerd
 ueberzug
+ufw
 vi
 vim
 vulkan-amdgpu-pro
