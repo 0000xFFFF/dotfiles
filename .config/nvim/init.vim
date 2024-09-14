@@ -1,23 +1,24 @@
 " plugins
 call plug#begin()
 
-Plug 'tpope/vim-sensible'
-Plug 'tpope/vim-surround' " Surrounding ysw)
-Plug 'preservim/nerdtree' " NerdTree
-Plug 'ryanoasis/vim-devicons' " Developer Icons
-Plug 'Xuyuanp/nerdtree-git-plugin'
-Plug 'tpope/vim-commentary' " For Commenting gcc & gc
-Plug 'airblade/vim-gitgutter' " which line has been changed
-Plug 'vim-airline/vim-airline' " Status bar
-Plug 'lifepillar/pgsql.vim' " PSQL Pluging needs :SQLSetType pgsql.vim
-Plug 'ap/vim-css-color' " CSS Color Preview
+Plug 'tpope/vim-sensible'                                 " auto load, type search, ...
+Plug 'tpope/vim-surround'                                 " Surrounding ysw)
+Plug 'preservim/nerdtree'                                 " NerdTree
+Plug 'ryanoasis/vim-devicons'                             " Developer Icons
+Plug 'Xuyuanp/nerdtree-git-plugin'                        " ...
+Plug 'tpope/vim-commentary'                               " For Commenting gcc & gc
+Plug 'airblade/vim-gitgutter'                             " which line has been changed
+Plug 'vim-airline/vim-airline'                            " Status bar
+Plug 'lifepillar/pgsql.vim'                               " PSQL Pluging needs :SQLSetType pgsql.vim
+Plug 'ap/vim-css-color'                                   " CSS Color Preview
 Plug 'RRethy/vim-hexokinase', { 'do': 'make hexokinase' } " hex colors
-Plug 'rafi/awesome-vim-colorschemes' " Retro Scheme
-Plug 'neoclide/coc.nvim'  " Auto Completion
-Plug 'tc50cal/vim-terminal' " Vim Terminal
-Plug 'preservim/tagbar' " Tagbar for code navigation
-Plug 'terryma/vim-multiple-cursors' " CTRL + N for multiple cursors
+Plug 'rafi/awesome-vim-colorschemes'                      " more color schemes
+Plug 'neoclide/coc.nvim'                                  " Auto Completion
+Plug 'tc50cal/vim-terminal'                               " Vim Terminal
+Plug 'preservim/tagbar'                                   " Tagbar for code navigation
+Plug 'mg979/vim-visual-multi'                             " CTRL + N for multiple cursors
 Plug 'christoomey/vim-tmux-navigator'
+Plug 'williamboman/mason.nvim'
 
 Plug 'nvim-treesitter/nvim-treesitter'
 Plug 'nvim-lua/plenary.nvim'
@@ -66,7 +67,6 @@ source ~/.config/nvim/coc.vim
 " let g:airline_symbols.readonly = ''
 " let g:airline_symbols.linenr = ''
 "
-
 
 " telescope
 " Find files using Telescope command-line sugar.
