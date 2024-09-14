@@ -1,8 +1,8 @@
 ! font
-URxvt.font:           xft:InconsolataGo NF:size=13,                   xft:Symbola:size=13
-URxvt.boldFont:       xft:InconsolataGo NF:style=Bold:size=13,        xft:Symbola:style=Bold:size=13
-URxvt.italicFont:     xft:InconsolataGo NF:style=Italic:size=13,      xft:Symbola:style=Italic:size=13
-URxvt.boldItalicFont: xft:InconsolataGo NF:style=Bold Italic:size=13, xft:Symbola:style=Bold Italic:size=13
+URxvt.font:           xft:InconsolataGo Nerd Font:size=13,                   xft:Symbola:size=13
+URxvt.boldFont:       xft:InconsolataGo Nerd Font:style=Bold:size=13,        xft:Symbola:style=Bold:size=13
+URxvt.italicFont:     xft:InconsolataGo Nerd Font:style=Italic:size=13,      xft:Symbola:style=Italic:size=13
+URxvt.boldItalicFont: xft:InconsolataGo Nerd Font:style=Bold Italic:size=13, xft:Symbola:style=Bold Italic:size=13
 URxvt.letterSpace: -1
 
 ! resize font
