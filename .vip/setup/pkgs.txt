@@ -46,6 +46,7 @@ dosfstools
 drkonqi
 duf
 dunst
+dust
 efibootmgr
 elinks
 eza
@@ -67,6 +68,7 @@ ghidra
 git
 glances
 gnu-netcat
+go
 gpsbabel
 gqrx
 gqrx-debug
@@ -111,6 +113,7 @@ kinfocenter
 kmenuedit
 kolourpaint
 konsole
+kooha
 kpipewire
 krdp
 kscreen
@@ -128,6 +131,7 @@ kwrited
 layer-shell-qt
 lazygit
 leafpad
+lf
 lib32-amdgpu-pro-oglp
 lib32-vulkan-amdgpu-pro
 libcaca
@@ -233,6 +237,7 @@ plymouth-kcm
 pocl
 polkit-kde-agent
 powerdevil
+powertop
 print-manager
 pulseaudio-alsa
 pulsemixer
@@ -288,6 +293,7 @@ rpm-tools
 rtl-sdr
 rustup
 rx_tools
+rxvt-unicode
 scapy
 scrot
 sddm-kcm
@@ -302,6 +308,7 @@ systemsettings
 termshark
 testdisk
 texmaker
+tldr
 tmux
 tmuxp
 toilet
@@ -364,6 +371,7 @@ ttf-ubuntu-mono-nerd
 ttf-ubuntu-nerd
 ttf-victor-mono-nerd
 ttf-zed-mono-nerd
+typescript-language-server
 ueberzug
 ufw
 vi
