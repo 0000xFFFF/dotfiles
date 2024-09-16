@@ -33,7 +33,7 @@ lsp.setup_nvim_cmp({
     mapping = cmp_mappings
 })
 
-local virtual_text_enabled = false
+local virtual_text_enabled = true
 
 lsp.set_preferences({
     suggest_lsp_servers = true,
@@ -62,4 +62,4 @@ end)
 
 lsp.setup()
 
-vim.diagnostic.config({ virtual_text = true })
+vim.diagnostic.config({ virtual_text = false, underline = false })
