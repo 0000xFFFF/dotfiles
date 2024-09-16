@@ -56,6 +56,8 @@ lsp.on_attach(function(client, bufnr)
         vim.diagnostic.config({ virtual_text = virtual_text_enabled })
         virtual_text_enabled = not virtual_text_enabled
     end)
+    vim.keymap.set("n", "<leader>pde", function() vim.diagnostic.enable() end, opts)
+    vim.keymap.set("n", "<leader>pdd", function() vim.diagnostic.disable() end, opts)
 end)
 
 lsp.setup()
