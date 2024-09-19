@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+
+import os
+from collections import defaultdict
+from PIL import Image
+import argparse
+
+parser = argparse.ArgumentParser(description='count image dimensions')
+parser.add_argument('directory', type=str, help="path to the directory")
+args = parser.parse_args()
+
+if args.directory is None:
+    print("must specify dir")
+    exit(1)
+
+file_counts = defaultdict(int)
+image_exts = [".jpg", ".png"]
+longest_key = 3
+
+for root, dirs, files in os.walk(args.directory):
+    for file in files:
+        full_file_path = os.path.join(root, file)
+        file_ext = os.path.splitext(file)[1].lower()
+        key = file_ext
+
+        if file_ext in image_exts:
+            im = Image.open(full_file_path)
+            width, height = im.size
+            key = f"{file_ext}_{width}x{height}"
+
+            key_len = len(key)
+            if key_len > longest_key:
+                longest_key = key_len
+
+            file_counts[key] += 1
+
+
+sorted_d = sorted(file_counts.items(), key=lambda x: (x[1]), reverse=True)
+
+# Display the results
+for file_type, count in sorted_d:
+    print(f"{file_type.rjust(longest_key)}: {count}")

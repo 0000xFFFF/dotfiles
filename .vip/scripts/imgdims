@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+
+import os
+from PIL import Image
+import argparse
+from tabulate import tabulate
+
+parser = argparse.ArgumentParser(description='count image dimensions')
+parser.add_argument('directory', type=str, help="path to the directory")
+args = parser.parse_args()
+
+if args.directory is None:
+    print("must specify dir")
+    exit(1)
+
+image_exts = [".jpg", ".png"]
+
+items = []
+
+i = 0
+for root, dirs, files in os.walk(args.directory):
+    for file in files:
+        full_file_path = os.path.join(root, file)
+        file_ext = os.path.splitext(file)[1].lower()
+        key = file_ext
+
+        if file_ext in image_exts:
+            im = Image.open(full_file_path)
+            width, height = im.size
+            key = f"{file_ext}_{width}x{height}"
+
+            i += 1
+            items.append([width, height, full_file_path])
+
+
+items.sort(key=lambda x: (x[1], x[2]), reverse=True)
+
+print(tabulate(items, headers=["WIDTH", "HEIGHT", "PATH"]))

@@ -1,0 +1,87 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+from collections import defaultdict
+from operator import itemgetter
+from PIL import Image
+import shutil
+
+import argparse
+
+# Argument parsing
+parser = argparse.ArgumentParser(description='reorg files after running photorec')
+parser.add_argument('directory', type=str, help="path to the directory")
+parser.add_argument('-c', '--copy', action='store_true', help="copy files")
+parser.add_argument('-m', '--move', action='store_true', help="move files")
+args = parser.parse_args()
+
+cwd = os.getcwd()
+
+if args.directory is None:
+    print(f"must specify dir")
+    exit(1)
+
+def safe_mkdir(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+def safe_move(src, dest):
+    print(f"move: {src} -> {dest}")
+    try:
+        shutil.move(src, dest)
+    except:
+        print(f"move error: {src} -> {dest}")
+
+def safe_copy(src, dest):
+    print(f"copy: {src} -> {dest}")
+    try:
+        shutil.copy2(src, dest)
+    except:
+        print(f"copy error: {src} -> {dest}")
+
+def process_file(src, dest):
+    if args.copy: safe_copy(src, dest)
+    elif args.move: safe_move(src, dest)
+
+file_types_dir = os.path.join(cwd, "reorg")
+safe_mkdir(file_types_dir)
+
+file_counts = defaultdict(int)
+image_exts = [ ".jpg", ".png" ]
+longest_key = 3
+
+for root, dirs, files in os.walk(args.directory):
+    for file in files:
+        full_file_path = os.path.join(root, file)
+
+        file_ext = os.path.splitext(file)[1].lower()
+
+        key = file_ext
+
+        file_type_dir_name = file_ext.replace(".", "") + "_type"
+        file_type_dir = os.path.join(file_types_dir, file_type_dir_name)
+        safe_mkdir(file_type_dir)
+
+        if file_ext in image_exts:
+            im = Image.open(full_file_path)
+            width, height = im.size
+            key = f"{file_ext}_{width}x{height}"
+
+            wxh_dir = os.path.join(file_type_dir, f"{width}x{height}")
+            safe_mkdir(wxh_dir)
+            process_file(full_file_path, wxh_dir)
+        else:
+            process_file(full_file_path, file_type_dir)
+
+        l = len(key)
+        if l > longest_key: longest_key = l
+        file_counts[key] += 1
+
+
+sorted_d = sorted(file_counts.items(), key=lambda x: (x[1]), reverse=True)
+
+# Display the results
+for file_type, count in sorted_d:
+    print(f"{file_type.rjust(longest_key)}: {count}")
+

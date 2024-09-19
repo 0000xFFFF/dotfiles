@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+from collections import defaultdict
+from operator import itemgetter
+
+directory = os.getcwd()
+file_counts = defaultdict(int)
+
+file_ext_longest = 3
+
+# Walk through the directory
+for root, dirs, files in os.walk(directory):
+    for file in files:
+        # Split the file name and extract the extension
+        file_ext = os.path.splitext(file)[1].lower()
+        l = len(file_ext)
+        if l > file_ext_longest: file_ext_longest = l
+        file_counts[file_ext] += 1  # Increment the count for this extension
+
+
+sorted_d = sorted(file_counts.items(), key=itemgetter(1), reverse=True)
+
+# Display the results
+for file_type, count in sorted_d:
+    print(f"{file_type.rjust(file_ext_longest)}: {count}")
+
