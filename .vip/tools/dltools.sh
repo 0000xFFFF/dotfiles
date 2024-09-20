@@ -1,6 +1,7 @@
 #!/bin/bash
 git clone https://github.com/nimaipatel/brn
 git clone https://github.com/qarmin/czkawka
+git clone https://github.com/nil0x42/duplicut
 git clone https://github.com/AltraMayor/f3
 git clone https://github.com/gqrx-sdr/gqrx
 git clone https://github.com/maldevel/IPGeoLocation
