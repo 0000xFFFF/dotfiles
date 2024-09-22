@@ -33,6 +33,6 @@ for root, dirs, files in os.walk(args.directory):
             items.append([width, height, full_file_path])
 
 
-items.sort(key=lambda x: (x[1], x[2]), reverse=True)
+items.sort(key=lambda x: (x[0], x[1]), reverse=True)
 
 print(tabulate(items, headers=["WIDTH", "HEIGHT", "PATH"]))
