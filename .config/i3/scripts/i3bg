@@ -1,3 +1,2 @@
 #!/bin/bash
-feh --recursive --randomize --bg-fill "/media/SSD/media/bg"
-
+feh -r -z --bg-fill ~/Pictures/bg

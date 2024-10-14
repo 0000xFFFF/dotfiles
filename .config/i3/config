@@ -231,7 +231,7 @@ bindsym $alt+Shift+r restart
 bar {
 	mode dock
 	tray_output primary
-	font pango: Inconsolata 12
+	font pango: Inconsolata 10
 	#position top
 	status_command i3blocks -c ~/.config/i3/i3blocks.conf
 	colors {
@@ -293,10 +293,10 @@ bindsym $alt+a exec --no-startup-id ~/.config/i3/scripts/i3keyboard_switch; exec
 bindsym $alt+$shift exec --no-startup-id ~/.config/i3/scripts/i3keyboard_switch; exec --no-startup-id pkill -RTMIN+12 i3blocks
 
 # monitor setup
-exec_always --no-startup-id ~/.config/i3/scripts/i3monitors
+#exec_always --no-startup-id ~/.config/i3/scripts/i3monitors
 
 # startup
-exec --no-startup-id picom --config /dev/null            # x comp manager
+exec --no-startup-id picom                               # x comp manager
 exec --no-startup-id nm-applet                           # enable wifi manager
 exec --no-startup-id dunst -conf ~/.config/dunst/dunstrc # start notification daemon
 #exec --no-startup-id lxpolkit                            # ask for priv
