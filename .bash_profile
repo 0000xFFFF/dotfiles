@@ -26,9 +26,6 @@ export LESS_TERMCAP_ZV=$(tput rsubm)
 export LESS_TERMCAP_ZO=$(tput ssupm)
 export LESS_TERMCAP_ZW=$(tput rsupm)
 
-# urxvt settings
-xrdb -load ~/.Xresources
-
 # if [[ -z $DISPLAY ]] && [[ $(tty) = /dev/tty1 ]]; then
 #         startplasma-wayland
 # fi
