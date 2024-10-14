@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd /media/SSD/root/dump/cap
+cd /run/media/user/57020afc-0ec3-49d9-8968-3000c1a37462/dump/pcapng/
 
 echo "copy ..."
 while read -r line ; do

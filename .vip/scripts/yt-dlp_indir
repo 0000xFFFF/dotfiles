@@ -1,0 +1,7 @@
+#!/bin/bash
+DIR="$1"
+URL="$2"
+
+mkdir -p "$DIR"
+cd "$DIR"
+yt-dlp -i --add-metadata -o '%(title)s.%(ext)s' "$URL"
