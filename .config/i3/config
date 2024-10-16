@@ -21,7 +21,8 @@ client.urgent           $urgent-bg-color    $urgent-bg-color   $text-color      
 font pango: Inconsolata 12
 floating_modifier $mod
 #hide_edge_borders both
-#for_window [class="^.*"] border pixel 1
+# hide titlebar
+for_window [class="^.*"] border pixel 1
 #for_window [class="^.*"] floating enable
 for_window [class="Pavucontrol"] floating enable
 #default_border pixel 1
