@@ -68,6 +68,7 @@ alias \
         diff="diff --color=auto" \
         cat="bat" \
         t="tmux" \
+        lg="lazygit" \
 
 # handy
 alias \
@@ -145,7 +146,7 @@ alias \
 alias \
         wtr="curl wttr.in" \
         exip="echo -e \$(curl -s ifconfig.me)" \
-        4chan-dl="wget -nd -r -l 1 -H -D is2.4chan.org -A png,gif,jpg,jpeg,webm" \
+        4chan-dl-wget="wget -nd -r -l 1 -H -D is2.4chan.org -A png,gif,jpg,jpeg,webm" \
         yt_old="youtube-dl -i --add-metadata -o '%(title)s.%(ext)s'" \
         yta_old="youtube-dl -i --extract-audio --audio-format mp3 -f bestaudio/best -o '%(title)s.%(ext)s'" \
         yt="yt-dlp -i --add-metadata -o '%(title)s.%(ext)s'" \
@@ -160,7 +161,7 @@ alias \
         bin="cd \"$HOME/.vip/scripts\"" \
         vip="cd \"$HOME/.vip/\"" \
         wlst="cd \"$HOME/.vip/lists/wlst\"" \
-        cap="cd /media/SSD/root/dump/cap" \
+        cap="cd /run/media/user/57020afc-0ec3-49d9-8968-3000c1a37462/dump/pcapng/all" \
         dx="cd \"$HOME/Desktop\"" \
         cddx="cd \"$HOME/Desktop\"" \
         cddl="cd \"$HOME/Downloads\"" \
