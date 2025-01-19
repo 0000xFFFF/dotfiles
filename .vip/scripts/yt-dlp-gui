@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# Ensure dependencies are installed
+if ! command -v yt-dlp &> /dev/null; then
+    echo "yt-dlp is not installed. Please install it first."
+    exit 1
+fi
+
+if ! command -v zenity &> /dev/null; then
+    echo "Zenity is not installed. Please install it first."
+    exit 1
+fi
+
+# File to store the last used folder
+LAST_FOLDER_FILE="/tmp/yt_dlp_last_folder"
+
+# Load the last used folder if it exists
+if [ -f "$LAST_FOLDER_FILE" ]; then
+    LAST_FOLDER=$(cat "$LAST_FOLDER_FILE")
+else
+    LAST_FOLDER="$HOME"
+fi
+
+# Ask the user to select a folder
+FOLDER=$(zenity --file-selection --directory --title="Select a folder to save the video" --filename="$LAST_FOLDER/")
+
+# Check if the user canceled the folder selection
+if [ -z "$FOLDER" ]; then
+    zenity --error --text="No folder selected. Exiting."
+    exit 1
+fi
+
+# Save the selected folder for future use
+echo "$FOLDER" > "$LAST_FOLDER_FILE"
+
+# Ask the user to input the YouTube URL
+URL=$(zenity --entry --title="Enter YouTube URL" --text="Enter the URL of the video to download:")
+
+# Check if the user canceled the URL input
+if [ -z "$URL" ]; then
+    zenity --error --text="No URL entered. Exiting."
+    exit 1
+fi
+
+# Run yt-dlp to download the video
+yt-dlp -o "$FOLDER/%(title)s.%(ext)s" "$URL"
+
+# Notify the user of completion
+if [ $? -eq 0 ]; then
+    zenity --info --text="Download completed successfully!"
+else
+    zenity --error --text="An error occurred during the download."
+fi
+
