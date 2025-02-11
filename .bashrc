@@ -11,8 +11,13 @@ PS1='[\u@\h \W]\$ '
 export PS1="\[$(tput bold)\]\[$(tput setaf 3)\][\[$([ "$EUID" -eq 0 ] && tput setaf 1 || tput setaf 2)\]\u\[$(tput setaf 10)\]@\[$(tput setaf 4)\]\h \[$(tput setaf 5)\]\w\[$(tput setaf 3)\]]\[$(tput setaf 7)\]\\$ \[$(tput sgr0)\]"
 
 # PS1 COLOR WITH BRANCH NAME
-source /usr/share/git/completion/git-prompt.sh
-export PS1="\[$(tput bold)\]\[$(tput setaf 3)\][\[$([ "$EUID" -eq 0 ] && tput setaf 1 || tput setaf 2)\]\u@\[$(tput setaf 4)\]\h \[$(tput setaf 5)\]\w\[$(tput setaf 3)\]]\[$(tput sgr0)\]\[$(tput setaf 1)\]\$(__git_ps1 '-[%s]-')\[$(tput bold)\]\[$(tput setaf 7)\]\\$ \[$(tput sgr0)\]"
+
+GIT_PROMPT="/usr/local/git/completion/git-prompt.sh"
+if [ -f "$GIT_PROMPT" ]; then
+    source "$GIT_PROMPT"
+    export PS1="\[$(tput bold)\]\[$(tput setaf 3)\][\[$([ "$EUID" -eq 0 ] && tput setaf 1 || tput setaf 2)\]\u@\[$(tput setaf 4)\]\h \[$(tput setaf 5)\]\w\[$(tput setaf 3)\]]\[$(tput sgr0)\]\[$(tput setaf 1)\]\$(__git_ps1 '-[%s]-')\[$(tput bold)\]\[$(tput setaf 7)\]\\$ \[$(tput sgr0)\]"
+fi
+
 
 
 bind "set completion-ignore-case on"
