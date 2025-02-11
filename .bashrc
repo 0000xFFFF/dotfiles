@@ -68,6 +68,9 @@ alias \
         pacq="p -Qs" \
         pacu="p -Syuu" \
         pacc="p -Scc" \
+        xi="sudo xbps-install" \
+        xs="sudo xbps-query -Rs" \
+        xr="sudo xbps-remove -R" \
         updatedb="s updatedb" \
         tree="tree -C" \
         diff="diff --color=auto" \
