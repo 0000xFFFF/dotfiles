@@ -1,6 +1,6 @@
 #!/bin/bash
-NORMAL="wlp2s0f0u4"
-MONITOR="wlp2s0f0u4mon"
+NORMAL="wlp2s0f0u3"
+MONITOR="wlp2s0f0u3"
 if [ "$1" = "mon" ]; then
     echo -ne "$MONITOR"
 else
