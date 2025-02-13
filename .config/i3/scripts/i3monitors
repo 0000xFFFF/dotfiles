@@ -1,2 +1,2 @@
 #!/bin/bash
-bash /home/user/.screenlayout/layout.sh
+bash ~/.screenlayout/layout.sh
