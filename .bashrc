@@ -55,7 +55,7 @@ alias \
         cursor_show="printf '\033[?25h'" \
         cursor_hide="printf '\033[?25l'" \
         clear2="printf '\033[0;0H'" \
-        ls="eza --color=auto --icons --group-directories-first" \
+        ls="exa --color=auto --icons --group-directories-first" \
         la="ls -la" \
         laa="ls -abghHliS" \
         grep="grep --color=auto" \
