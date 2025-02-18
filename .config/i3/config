@@ -18,7 +18,7 @@ client.focused_inactive $inactive-bg-color  $inactive-bg-color $inactive-text-co
 client.urgent           $urgent-bg-color    $urgent-bg-color   $text-color          #ff0000
 
 # look
-font pango: Inconsolata 12
+font pango: Inconsolata Nerd Font 12
 floating_modifier $mod
 #hide_edge_borders both
 # hide titlebar
@@ -232,7 +232,7 @@ bindsym $alt+Shift+r restart
 bar {
 	mode dock
 	tray_output primary
-	font pango: Inconsolata 10
+	font pango: Inconsolata Nerd Font 10
 	#position top
 	status_command i3blocks -c ~/.config/i3/i3blocks.conf
 	colors {
