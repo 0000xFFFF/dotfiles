@@ -1,0 +1,3 @@
+vim "/etc/systemd/system/getty.target.wants/getty@tty1.service"
+
+ExecStart=-/sbin/agetty --autologin username --noclear %I $TERM
