@@ -30,6 +30,10 @@ for_window [class="Pavucontrol"] floating enable
 gaps inner 15
 gaps outer 15
 
+# no sleep
+exec_always xset s off
+exec_always xset -dpms
+
 # kill focused window
 bindsym $mod+q kill
 bindsym $alt+q kill
