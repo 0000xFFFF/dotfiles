@@ -1,2 +1,2 @@
 #!/bin/bash
-feh -r -z --bg-fill ~/Pictures/bg
+feh -r -z --bg-fill /media/SSD/media/bg
