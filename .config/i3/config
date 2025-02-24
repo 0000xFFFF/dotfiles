@@ -283,6 +283,9 @@ bindsym $alt+Shift+comma           exec --no-startup-id pamixer -d 5 --allow-boo
 bindsym $alt+Control+Shift+comma   exec --no-startup-id pamixer -d 1 --allow-boost; exec --no-startup-id pkill -RTMIN+10 i3blocks
 bindsym $alt+m                     exec --no-startup-id pamixer -t;                 exec --no-startup-id pkill -RTMIN+10 i3blocks
 
+# config i3 stuff
+exec_always --no-startup-id ~/.config/i3/scripts/i3monitors
+exec_always --no-startup-id ~/.config/i3/scripts/i3bg
 # set keyboard layouts
 #exec_always --no-startup-id setxkbmap -model pc105 -layout us,rs,rs -variant ",,latin" -option ""
 exec_always --no-startup-id setxkbmap -model pc105 -layout us,rs,rs -variant ",,latin" -option grp:alt_shift_toggle
@@ -297,8 +300,6 @@ bindsym $mod+a exec --no-startup-id ~/.config/i3/scripts/i3keyboard_switch; exec
 bindsym $alt+a exec --no-startup-id ~/.config/i3/scripts/i3keyboard_switch; exec --no-startup-id pkill -RTMIN+12 i3blocks
 bindsym $alt+$shift exec --no-startup-id ~/.config/i3/scripts/i3keyboard_switch; exec --no-startup-id pkill -RTMIN+12 i3blocks
 
-# monitor setup
-#exec_always --no-startup-id ~/.config/i3/scripts/i3monitors
 
 # startup
 exec --no-startup-id picom                               # x comp manager
@@ -312,4 +313,3 @@ exec --no-startup-id redshift-gtk                        # start brightness cont
 bindsym $mod+n exec --no-startup-id ~/.config/i3/scripts/i3bg
 bindsym $alt+n exec --no-startup-id ~/.config/i3/scripts/i3bg
 
-exec --no-startup-id ~/.config/i3/scripts/i3bg
