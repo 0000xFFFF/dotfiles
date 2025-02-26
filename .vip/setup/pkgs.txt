@@ -48,9 +48,7 @@ duf
 dunst
 dust
 efibootmgr
-electron32
 elinks
-exfatprogs
 eza
 fastfetch
 fd
@@ -69,13 +67,10 @@ geeqie
 ghidra
 git
 glances
-glew
-glfw
-glm
 gnu-netcat
-gnuradio
 go
 gpsbabel
+gqrx
 gqrx-debug
 grub
 gthumb
@@ -138,7 +133,6 @@ lazygit
 leafpad
 lf
 lib32-amdgpu-pro-oglp
-lib32-glm
 lib32-vulkan-amdgpu-pro
 libcaca
 libkscreen
@@ -257,7 +251,6 @@ python-matplotlib
 python-netifaces
 python-networkx
 python-nltk
-python-nmap
 python-paramiko
 python-pycryptodome
 python-pycurl
