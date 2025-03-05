@@ -1,28 +1,5 @@
 #!/usr/bin/env python3
 
-# bash version:
-'''
-#!/bin/bash
-INTERFACE="$1"
-COMMAND="sudo iwlist scan"
-[ -n "$INTERFACE" ] && COMMAND="sudo iwlist $INTERFACE scan" 
-$COMMAND 2>/dev/null | while read -r line ; do
-    DEVICE=""
-    if echo "$line" | grep "Scan completed" 2>/dev/null >/dev/null; then DEVICE="$(echo "$line" | cut -d ' ' -f 1)"; fi
-    MAC=$(       echo "$line" | awk -F "Address: "       '{printf $2}')
-    CHANNEL=$(   echo "$line" | awk -F "Channel:"        '{printf $2}')
-    ENCRYPTION=$(echo "$line" | awk -F "Encryption key:" '{printf $2}')
-    ESSID=$(     echo "$line" | awk -F "ESSID:"          '{printf $2}')
-    [ -n "$DEVICE"     ] && echo  -e "\n\e[91m$DEVICE:\e[0m"
-    [ -n "$MAC"        ] && echo -ne "\e[92m$MAC\e[0m"
-    [ -n "$CHANNEL"    ] && echo -ne "\e[93m$CHANNEL\e[0m"
-    [ -n "$ENCRYPTION" ] && echo -ne "\e[94m$ENCRYPTION\e[0m"
-    [ -n "$ESSID"      ] && echo -ne "\e[95m$ESSID\e[0m\n"
-done
-
-printf "\n\n"
-'''
-
 import subprocess
 from colorama import Fore, Back, Style
 
