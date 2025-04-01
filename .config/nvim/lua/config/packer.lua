@@ -25,6 +25,7 @@ return require('packer').startup(function(use)
     use('christoomey/vim-tmux-navigator')
     use('nvim-treesitter/nvim-treesitter', { run = ':TSUpdate' })
     use('nvim-treesitter/playground')
+    use('ggandor/leap.nvim')
 
     use {
         "ThePrimeagen/harpoon",
