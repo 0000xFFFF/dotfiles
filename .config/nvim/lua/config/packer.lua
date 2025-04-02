@@ -26,6 +26,7 @@ return require('packer').startup(function(use)
     use('nvim-treesitter/nvim-treesitter', { run = ':TSUpdate' })
     use('nvim-treesitter/playground')
     use('ggandor/leap.nvim')
+    use('jinh0/eyeliner.nvim')
 
     use {
         "ThePrimeagen/harpoon",
