@@ -27,6 +27,7 @@ return require('packer').startup(function(use)
     use('nvim-treesitter/playground')
     use('ggandor/leap.nvim')
     use('jinh0/eyeliner.nvim')
+    use('RRethy/vim-illuminate')
 
     use {
         "ThePrimeagen/harpoon",
