@@ -16,3 +16,10 @@ vim.opt.hlsearch = false
 vim.opt.incsearch = true
 vim.opt.termguicolors = true
 vim.g.mapleader = " "
+
+vim.opt.list = true
+vim.opt.listchars = {
+  tab = '→ ',
+  trail = '·',
+-- space = '.',
+}
