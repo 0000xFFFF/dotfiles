@@ -93,7 +93,7 @@ local on_attach = function(client, bufnr)
     keymap("n", "<leader>pdd", vim.diagnostic.disable, opts)
 end
 
-local servers = { "clangd", "pylsp", "lua_ls" }
+local servers = { "clangd", "pylsp", "lua_ls", "rust_analyzer" }
 
 for _, server in ipairs(servers) do
     local opts = {

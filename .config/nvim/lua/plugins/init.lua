@@ -90,8 +90,8 @@ return {
     },
 
     -- LSP and Autocompletion
-    { "williamboman/mason.nvim", config = true }, -- `config = true` will call require("mason").setup()
-    { "williamboman/mason-lspconfig.nvim" }, -- No immediate config needed if lsp.lua handles it
+    { "williamboman/mason.nvim",          config = true }, -- `config = true` will call require("mason").setup()
+    { "williamboman/mason-lspconfig.nvim" },      -- No immediate config needed if lsp.lua handles it
     {
         "neovim/nvim-lspconfig",
         dependencies = {
@@ -110,7 +110,7 @@ return {
     },
     {
         "hrsh7th/nvim-cmp",
-        config = function ()
+        config = function()
             -- The cmp.setup() is now inside config/lsp.lua.
             -- If config/lsp.lua is loaded by nvim-lspconfig's config,
             -- nvim-cmp might not be fully set up yet.
@@ -127,5 +127,51 @@ return {
         config = function()
             require("config.colors")
         end
+    },
+
+    ---@type LazySpec
+    {
+        "mikavilpas/yazi.nvim",
+        event = "VeryLazy",
+        dependencies = {
+            -- check the installation instructions at
+            -- https://github.com/folke/snacks.nvim
+            "folke/snacks.nvim"
+        },
+        keys = {
+            -- 👇 in this section, choose your own keymappings!
+            {
+                "<leader>-",
+                mode = { "n", "v" },
+                "<cmd>Yazi<cr>",
+                desc = "Open yazi at the current file",
+            },
+            {
+                -- Open in the current working directory
+                "<leader>cw",
+                "<cmd>Yazi cwd<cr>",
+                desc = "Open the file manager in nvim's working directory",
+            },
+            {
+                "<c-up>",
+                "<cmd>Yazi toggle<cr>",
+                desc = "Resume the last yazi session",
+            },
+        },
+        ---@type YaziConfig | {}
+        opts = {
+            -- if you want to open yazi instead of netrw, see below for more info
+            open_for_directories = false,
+            keymaps = {
+                show_help = "<f1>",
+            },
+        },
+        -- 👇 if you use `open_for_directories=true`, this is recommended
+        init = function()
+            -- More details: https://github.com/mikavilpas/yazi.nvim/issues/802
+            -- vim.g.loaded_netrw = 1
+            vim.g.loaded_netrwPlugin = 1
+        end,
     }
+
 }
