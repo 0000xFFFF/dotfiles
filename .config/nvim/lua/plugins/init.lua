@@ -43,6 +43,7 @@ return {
         build = "make hexokinase",
     },
 
+
     -- Terminal & Navigation
     { "tc50cal/vim-terminal" },
     { "christoomey/vim-tmux-navigator" },
@@ -173,5 +174,7 @@ return {
             vim.g.loaded_netrwPlugin = 1
         end,
     }
+
+
 
 }
