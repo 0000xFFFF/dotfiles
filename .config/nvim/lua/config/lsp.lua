@@ -2,22 +2,17 @@
 
 -- Mason setup for managing LSP servers
 require("mason").setup()
--- require("mason-lspconfig").setup({
---     ensure_installed = {
---         "lua_ls",
---         "clangd",
---         "arduino_language_server",
---         "bashls",
---         "cssls",
---         "html",
---         "lua_ls",
---         "pylsp",
---         "rust_analyzer",
---         "ts_ls",
---         "vimls"
---     },
---     automatic_installation = true,
--- })
+require("mason-lspconfig").setup({
+    ensure_installed = {
+        "html",
+        "cssls",
+        "pylsp",
+        "bashls",
+        "rust_analyzer",
+        "ts_ls"
+    },
+    automatic_installation = true,
+})
 
 -- Setup nvim-cmp
 local cmp = require("cmp")
@@ -93,7 +88,7 @@ local on_attach = function(client, bufnr)
     keymap("n", "<leader>pdd", vim.diagnostic.disable, opts)
 end
 
-local servers = { "clangd", "pylsp", "lua_ls", "rust_analyzer" }
+local servers = { "clangd", "pylsp", "lua_ls", "rust_analyzer", "html", "ts_ls" }
 
 for _, server in ipairs(servers) do
     local opts = {
