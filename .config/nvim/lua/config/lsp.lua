@@ -38,7 +38,7 @@ cmp.setup({
 
 -- LSP Config
 local lspconfig = require("lspconfig")
-local capabilities = require("cmp_nvim_lsp").default_capabilities()
+local def_capabilities = require("cmp_nvim_lsp").default_capabilities()
 
 -- Optional: toggle virtual text
 local virtual_text_enabled = false
@@ -74,17 +74,30 @@ local lsp_keymaps = function(client, bufnr)
 end
 
 require 'lspconfig'.clangd.setup {
-    capabilities = capabilities,
+    capabilities = def_capabilities,
     on_attach = lsp_keymaps,
     cmd = { "clangd", "--compile-commands-dir=build" },
     root_dir = require("lspconfig.util").root_pattern("compile_commands.json", ".git"),
 }
-require 'lspconfig'.gopls.setup {
-    capabilities = capabilities,
-    on_attach = lsp_keymaps,
-}
-require 'lspconfig'.pyright.setup {
-    capabilities = capabilities,
-    on_attach = lsp_keymaps,
-}
 
+
+local servers = { "pylsp", "lua_ls", "cssls", "rust_analyzer", "html", "ts_ls" }
+
+for _, server in ipairs(servers) do
+    local opts = {
+        on_attach = lsp_keymaps,
+        capabilities = def_capabilities,
+    }
+
+    if server == "lua_ls" then
+        opts.settings = {
+            Lua = {
+                diagnostics = {
+                    globals = { "vim" }
+                }
+            }
+        }
+    end
+
+    lspconfig[server].setup(opts)
+end
