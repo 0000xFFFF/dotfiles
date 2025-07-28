@@ -1,18 +1,5 @@
 -- config/lsp.lua
-
--- Mason setup for managing LSP servers
 require("mason").setup()
-require("mason-lspconfig").setup({
-    ensure_installed = {
-        "html",
-        "cssls",
-        "pylsp",
-        "bashls",
-        "rust_analyzer",
-        "ts_ls"
-    },
-    automatic_installation = true,
-})
 
 -- Setup nvim-cmp
 local cmp = require("cmp")
@@ -39,7 +26,6 @@ cmp.setup({
         ['<C-d>'] = cmp.mapping.scroll_docs(-4),
 
         ["<C-y>"] = cmp.mapping.confirm({ select = true }),
-        ["<C-Space>"] = cmp.mapping.complete(),
         -- Tab/S-Tab disabled
     },
     sources = {
@@ -59,52 +45,46 @@ local virtual_text_enabled = false
 vim.diagnostic.config({ virtual_text = virtual_text_enabled, underline = false })
 
 -- Global on_attach
-local on_attach = function(client, bufnr)
+local lsp_keymaps = function(client, bufnr)
     local opts = { buffer = bufnr, remap = true }
 
-    local keymap = vim.keymap.set
-    keymap("n", "gd", vim.lsp.buf.definition, opts)
-    keymap("n", "gD", vim.lsp.buf.declaration, opts)
-    keymap("n", "K", vim.lsp.buf.hover, opts)
-    keymap("n", "<leader>pws", vim.lsp.buf.workspace_symbol, opts)
-    keymap("n", "[d", vim.diagnostic.goto_next, opts)
-    keymap("n", "]d", vim.diagnostic.goto_prev, opts)
-    keymap("n", "<leader>pca", vim.lsp.buf.code_action, opts)
-    keymap({ "n", "x" }, "<F3>", function() vim.lsp.buf.format({ async = true }) end, opts)
-    keymap("n", "<leader>f", function() vim.lsp.buf.format({ async = true }) end, opts)
-    keymap("n", "<F4>", vim.lsp.buf.code_action, opts)
-    keymap("n", "<leader>pr", vim.lsp.buf.references, opts)
-    keymap("n", "<leader>r", vim.lsp.buf.rename, opts)
-    keymap("n", "<F2>", vim.lsp.buf.rename, opts)
-    keymap("i", "<C-h>", vim.lsp.buf.signature_help, opts)
-    keymap("n", "<leader>?", vim.diagnostic.open_float, opts)
+    vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+    vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
+    vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+    vim.keymap.set("n", "<leader>pws", vim.lsp.buf.workspace_symbol, opts)
+    vim.keymap.set("n", "[d", vim.diagnostic.goto_next, opts)
+    vim.keymap.set("n", "]d", vim.diagnostic.goto_prev, opts)
+    vim.keymap.set("n", "<leader>pca", vim.lsp.buf.code_action, opts)
+    vim.keymap.set({ "n", "x" }, "<F3>", function() vim.lsp.buf.format({ async = true }) end, opts)
+    vim.keymap.set("n", "<leader>f", function() vim.lsp.buf.format({ async = true }) end, opts)
+    vim.keymap.set("n", "<F4>", vim.lsp.buf.code_action, opts)
+    vim.keymap.set("n", "<leader>pr", vim.lsp.buf.references, opts)
+    vim.keymap.set("n", "<leader>r", vim.lsp.buf.rename, opts)
+    vim.keymap.set("n", "<F2>", vim.lsp.buf.rename, opts)
+    vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help, opts)
+    vim.keymap.set("n", "<leader>?", vim.diagnostic.open_float, opts)
 
-    keymap("n", "<leader>t", function()
+    vim.keymap.set("n", "<leader>t", function()
         virtual_text_enabled = not virtual_text_enabled
         vim.diagnostic.config({ virtual_text = virtual_text_enabled })
     end, opts)
 
-    keymap("n", "<leader>pde", vim.diagnostic.enable, opts)
-    keymap("n", "<leader>pdd", vim.diagnostic.disable, opts)
+    vim.keymap.set("n", "<leader>pde", vim.diagnostic.enable, opts)
+    vim.keymap.set("n", "<leader>pdd", vim.diagnostic.disable, opts)
 end
 
-local servers = { "clangd", "pylsp", "lua_ls", "rust_analyzer", "html", "ts_ls" }
+require 'lspconfig'.clangd.setup {
+    capabilities = capabilities,
+    on_attach = lsp_keymaps,
+    cmd = { "clangd", "--compile-commands-dir=build" },
+    root_dir = require("lspconfig.util").root_pattern("compile_commands.json", ".git"),
+}
+require 'lspconfig'.gopls.setup {
+    capabilities = capabilities,
+    on_attach = lsp_keymaps,
+}
+require 'lspconfig'.pyright.setup {
+    capabilities = capabilities,
+    on_attach = lsp_keymaps,
+}
 
-for _, server in ipairs(servers) do
-    local opts = {
-        on_attach = on_attach,
-        capabilities = capabilities,
-    }
-
-    if server == "lua_ls" then
-        opts.settings = {
-            Lua = {
-                diagnostics = {
-                    globals = { "vim" }
-                }
-            }
-        }
-    end
-
-    lspconfig[server].setup(opts)
-end
