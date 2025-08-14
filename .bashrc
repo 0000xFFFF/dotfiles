@@ -74,7 +74,6 @@ alias \
         updatedb="s updatedb" \
         tree="tree -C" \
         diff="diff --color=auto" \
-        cat="bat" \
         t="tmux" \
         lg="lazygit" \
 
