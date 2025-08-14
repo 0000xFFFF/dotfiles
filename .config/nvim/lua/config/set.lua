@@ -17,6 +17,7 @@ vim.opt.undofile = true
 vim.opt.hlsearch = false
 vim.opt.incsearch = true
 vim.opt.termguicolors = true
+vim.opt.dictionary = {"~/.config/nvim/dicts/english.sh", "~/.config/nvim/dicts/serbian.txt"}
 vim.g.mapleader = " "
 
 vim.opt.list = true
