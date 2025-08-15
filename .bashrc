@@ -49,6 +49,7 @@ alias \
         vim="v" \
         lsf="ls -p | g -v /" \
         r="ranger" \
+        rr="yazi" \
         sc="shellcheck" \
         ns="netstat -antp" \
         utc="date +%s" \
