@@ -1,0 +1,3 @@
+[[mgr.prepend_keymap]]
+on  = "<F2>"
+run = "rename --cursor=before_ext"
