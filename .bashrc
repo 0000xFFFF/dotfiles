@@ -204,10 +204,3 @@ alias cd="z"
 #   exec tmux
 # fi
 #
-
-if command -v tmux &> /dev/null; then
-    if [ -z "$TMUX" ]; then
-        tmux new -s "term-$(date +%s)"
-    fi
-fi
-
