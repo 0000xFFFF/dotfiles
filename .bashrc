@@ -207,7 +207,7 @@ alias cd="z"
 
 if command -v tmux &> /dev/null; then
     if [ -z "$TMUX" ]; then
-        tmux new -A -s main
+        tmux new -s "term-$(date +%s)"
     fi
 fi
 
