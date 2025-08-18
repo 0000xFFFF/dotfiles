@@ -160,6 +160,7 @@ alias \
         yta_old="youtube-dl -i --extract-audio --audio-format mp3 -f bestaudio/best -o '%(title)s.%(ext)s'" \
         yt="yt-dlp -i --add-metadata -o '%(title)s.%(ext)s'" \
         yta="yt-dlp -i --extract-audio --audio-format mp3 -f bestaudio/best -o '%(title)s.%(ext)s'" \
+        ytac="yt-dlp -i --extract-audio --audio-format mp3 -f bestaudio/best -o '%(uploader)s - %(title)s.%(ext)s'" \
         corona="curl https://corona-stats.online" \
         coronars="curl https://corona-stats.online/serbia" \
         dldotfiles="git clone 'https://www.github.com/0000xFFFF/dotfiles'" \
@@ -202,3 +203,11 @@ alias cd="z"
 #    [[ ! "$(tty)" =~ /dev/tty[0-9]+ ]]; then
 #   exec tmux
 # fi
+#
+
+if command -v tmux &> /dev/null; then
+    if [ -z "$TMUX" ]; then
+        tmux new -A -s main
+    fi
+fi
+
