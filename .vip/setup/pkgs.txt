@@ -94,6 +94,7 @@ glances
 glew
 glfw
 glm
+glow
 gmni
 gnome-disk-utility
 gnuradio
@@ -360,6 +361,7 @@ recode
 redshift
 redshift-qt-debug
 reflector
+retext
 robo3t-bin
 rocm-opencl-runtime
 rocm-smi-lib
