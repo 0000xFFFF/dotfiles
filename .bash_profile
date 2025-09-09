@@ -11,6 +11,12 @@ export BROWSER="firefox"
 export READER="okular"
 export FILE="dolphin"
 
+# bash history
+export HISTSIZE=1000000
+export HISTFILESIZE=1000000
+export HISTCONTROL=ignoreboth # ignore dupes
+
+
 # less, man colors
 export LESS_TERMCAP_mb=$(tput bold; tput setaf 2) # green
 export LESS_TERMCAP_md=$(tput bold; tput setaf 6) # cyan
@@ -26,7 +32,10 @@ export LESS_TERMCAP_ZV=$(tput rsubm)
 export LESS_TERMCAP_ZO=$(tput ssupm)
 export LESS_TERMCAP_ZW=$(tput rsupm)
 
-# if [[ -z $DISPLAY ]] && [[ $(tty) = /dev/tty1 ]]; then
-#         startplasma-wayland
-# fi
+# disable opencl for libreoffice
+export SAL_DISABLE_OPENCL=1
 
+if [[ -z $DISPLAY ]] && [[ $(tty) = /dev/tty1 ]]; then
+        #startplasma-wayland
+        startx
+fi
