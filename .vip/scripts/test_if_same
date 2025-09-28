@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 wc -c "$1" "$2"
 wc -l "$1" "$2"
 lines-miss "$1" "$2"

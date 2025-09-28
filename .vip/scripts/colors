@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 echo -e "+--------+---------+-------+-----------+------------+---------------+--------------------+---------------------------+"
 echo -e "| Color  | Regular | Bold  | Underline | Background | High Intensty | Bold High Intensty | High Intensty Backgrounds |"
 echo -e "+--------+---------+-------+-----------+------------+---------------+--------------------+---------------------------+"

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 MAC="$1"
 while [ -z "$MAC" ]; do read -r -p 'MAC: ' MAC ; done
 MAC="$(echo "$MAC" | tr -d ':')"

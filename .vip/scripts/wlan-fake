@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 WIFI_ESSID="$1"
 CHANNEL="$2"
 WIFI_BSSID="$3"

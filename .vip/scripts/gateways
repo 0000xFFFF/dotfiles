@@ -1,2 +1,2 @@
-#!/bin/bash
+#!/usr/bin/env bash
 printf "%s\n" "$(/sbin/ip route | awk '/default/ { print $3 }' | uniq | tr "\n" " ")"

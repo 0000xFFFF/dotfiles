@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 SLEEPTIME="$2"
 [ -z "$SLEEPTIME" ] && SLEEPTIME="0.3"

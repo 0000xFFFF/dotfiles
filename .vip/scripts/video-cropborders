@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 FILE_INPUT="$1"
 FILE_OUTPUT="$2"

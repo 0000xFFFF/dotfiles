@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 FILE="$HOME/.vip/lists/personal/stations_url"
 while read -r line ; do
     echo "$line - $(webtitle "$line")"

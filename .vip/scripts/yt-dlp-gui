@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Ensure dependencies are installed
 if ! command -v yt-dlp &> /dev/null; then

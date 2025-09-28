@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 ESSID="$1"
 PASSWORD="$2"
 while [ -z "$ESSID"    ]; do read -r -p 'ESSID: '    ESSID    ; done

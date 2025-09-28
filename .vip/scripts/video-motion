@@ -1,5 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
 FILE_INPUT="$1"
 FILE_OUTPUT="$2"
-ffmpeg -i "$FILE_INPUT" -vf "mpdecimate,setpts=N/FRAME_RATE/TB" -vsync vfr "$FILE_OUTPUT"
+ffmpeg -i "$FILE_INPUT" -vf mpdecimate -vsync vfr "$FILE_OUTPUT"
 

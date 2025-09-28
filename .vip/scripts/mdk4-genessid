@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 NAME="$1"
 COUNT="$2"
 while [ -z "$NAME"  ]; do read -r -p "NAME..: " NAME  ; done

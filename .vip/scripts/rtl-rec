@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 freq="$1"
 file="$2"
 while [ -z "$freq" ]; do read -r -p 'freq: ' freq ; done
