@@ -1,13 +1,13 @@
 #!/bin/bash
-ICON_MIC="🎤"
-ICON_MIC_MUTED="🙊"
+ICON_MIC=""
+ICON_MIC_MUTED=""
 
 case $BLOCK_BUTTON in
   1) pamixer --source 1 -t ;;
 esac
 
 
-if [ "$(pamixer --source 1 --get-mute)" == "true" ]; then
+if [ "$(pamixer --source 64 --get-mute)" == "true" ]; then
 	echo -e "$ICON_MIC_MUTED"
 else
 	echo -e "$ICON_MIC"

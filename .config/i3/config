@@ -18,7 +18,7 @@ client.focused_inactive $inactive-bg-color  $inactive-bg-color $inactive-text-co
 client.urgent           $urgent-bg-color    $urgent-bg-color   $text-color          #ff0000
 
 # look
-font pango: Inconsolata Nerd Font 12
+font pango: Inconsolata Nerd Font 15
 floating_modifier $mod
 #hide_edge_borders both
 # hide titlebar
@@ -177,8 +177,8 @@ bindsym $alt+Ctrl+Right resize grow width 10 px or 10 ppt
 
 bindsym $mod+f fullscreen toggle
 bindsym $alt+f fullscreen toggle
-bindsym $mod+Shift+f exec firefox
-bindsym $alt+Shift+f exec firefox
+bindsym $mod+Shift+f exec brave
+bindsym $alt+Shift+f exec brave
 
 # switch to workspace
 bindsym $mod+1 workspace 1
@@ -236,7 +236,7 @@ bindsym $alt+Shift+r restart
 bar {
 	mode dock
 	tray_output primary
-	font pango: Inconsolata Nerd Font 10
+	font pango: Inconsolata Nerd Font 15
 	#position top
 	status_command i3blocks -c ~/.config/i3/i3blocks.conf
 	colors {
@@ -300,14 +300,13 @@ bindsym $mod+a exec --no-startup-id ~/.config/i3/scripts/i3keyboard_switch; exec
 bindsym $alt+a exec --no-startup-id ~/.config/i3/scripts/i3keyboard_switch; exec --no-startup-id pkill -RTMIN+12 i3blocks
 bindsym $alt+$shift exec --no-startup-id ~/.config/i3/scripts/i3keyboard_switch; exec --no-startup-id pkill -RTMIN+12 i3blocks
 
-
 # startup
 exec --no-startup-id picom                               # x comp manager
 exec --no-startup-id nm-applet                           # enable wifi manager
 exec --no-startup-id dunst -conf ~/.config/dunst/dunstrc # start notification daemon
-#exec --no-startup-id lxpolkit                            # ask for priv
 #exec --no-startup-id imwheel -kill                       # fix mouse scrolling
 exec --no-startup-id redshift-gtk                        # start brightness control
+exec --no-startup-id blueman-applet                      # bluetooth manager
 
 # wallpaper
 bindsym $mod+n exec --no-startup-id ~/.config/i3/scripts/i3bg

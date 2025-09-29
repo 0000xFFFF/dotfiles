@@ -1,10 +1,10 @@
 #!/bin/bash
 
 ICON=""
-VOL1="🔈"
-VOL2="🔉"
-VOL3="🔊"
-VOLM="🔇"
+VOL1=""
+VOL2=""
+VOL3=""
+VOLM=""
 
 case $BLOCK_BUTTON in
   1) ~/.config/i3/scripts/voldo -t >/dev/null 2>/dev/null ;;   # mute

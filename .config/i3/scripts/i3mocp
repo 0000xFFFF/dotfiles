@@ -9,8 +9,15 @@ case $BLOCK_BUTTON in
 esac
 
 # exit if mocp isn't running
-if mocp -Q "%state" >/dev/null 2>/dev/null; then exit 1; fi
-[ "$(mocp -Q "%state")" == "STOP" ] && exit 1
+mocp -Q "%state" >/dev/null 2>/dev/null
+if [ $? = 2 ]; then
+    echo "OFF"
+    exit 1
+fi
+if [ "$(mocp -Q "%state")" == "STOP" ]; then
+    echo "STOPPED"
+    exit 1
+fi
 
 ICON=""
 ICON_PLAY=""
