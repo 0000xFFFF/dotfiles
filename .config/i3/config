@@ -305,7 +305,7 @@ exec --no-startup-id picom                               # x comp manager
 exec --no-startup-id nm-applet                           # enable wifi manager
 exec --no-startup-id dunst -conf ~/.config/dunst/dunstrc # start notification daemon
 #exec --no-startup-id imwheel -kill                       # fix mouse scrolling
-exec --no-startup-id redshift-gtk                        # start brightness control
+#exec --no-startup-id redshift-gtk                        # start brightness control
 exec --no-startup-id blueman-applet                      # bluetooth manager
 
 # wallpaper
