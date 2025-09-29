@@ -7,7 +7,7 @@ export PATH="$PATH":"$HOME/.vip/scripts":"$HOME/.vip/scripts_ln":"$HOME/.config/
 # default programs
 export EDITOR="nvim"
 export TERMINAL="alacritty"
-export BROWSER="firefox"
+export BROWSER="brave"
 export READER="okular"
 export FILE="dolphin"
 
@@ -34,8 +34,6 @@ export LESS_TERMCAP_ZW=$(tput rsupm)
 
 # disable opencl for libreoffice
 export SAL_DISABLE_OPENCL=1
-
-export QT_QPA_PLATFORMTHEME=qt6ct
 
 #if [[ -z $DISPLAY ]] && [[ $(tty) = /dev/tty1 ]]; then
 #        #startplasma-wayland
