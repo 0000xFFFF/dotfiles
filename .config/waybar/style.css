@@ -91,18 +91,13 @@ button:hover {
 #tray,
 #mode,
 #idle_inhibitor,
+#custom-kb_layout,
 #mpd {
   margin: 2px;
   padding-left: 4px;
   padding-right: 4px;
   background-color: rgba(0,0,0,0.3);
   color: #ffffff;
-}
-
-#keyboard-state {
-    padding: 0 10px;
-    font-weight: bold;
-    color: #ffffff;
 }
 
 /* If workspaces is the leftmost module, omit left margin */
