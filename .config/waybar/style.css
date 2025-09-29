@@ -99,6 +99,12 @@ button:hover {
   color: #ffffff;
 }
 
+#keyboard-state {
+    padding: 0 10px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
 /* If workspaces is the leftmost module, omit left margin */
 .modules-left > widget:first-child > #workspaces {
   margin-left: 0;

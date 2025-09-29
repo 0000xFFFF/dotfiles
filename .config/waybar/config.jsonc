@@ -2,15 +2,12 @@
     //"height": 24, // Waybar height (to be removed for auto height)
     "modules-left": ["hyprland/workspaces", "pulseaudio", "mpd"],
     "modules-center": ["hyprland/window"],
-    "modules-right": ["idle_inhibitor", "cpu", "memory", "temperature", "battery", "tray", "clock"],
-    "keyboard-state": {
-        "numlock": true,
-        "capslock": true,
-        "format": "{icon} {name}",
-        "format-icons": {
-            "locked": "",
-            "unlocked": ""
-        }
+    "modules-right": ["idle_inhibitor", "cpu", "memory", "temperature", "battery", "custom/kb_layout", "tray", "clock"],
+    "custom/kb_layout": {
+        "exec": "~/.config/waybar/scripts/kb_layout.sh",
+        "interval": 1,
+        "return-type": "plain",
+        "format": "{}"
     },
     "mpd": {
         "format": "  {title} - {artist} {stateIcon} [{elapsedTime:%M:%S}/{totalTime:%M:%S}] {consumeIcon}{randomIcon}{repeatIcon}{singleIcon}[{songPosition}/{queueLength}] [{volume}%]",
