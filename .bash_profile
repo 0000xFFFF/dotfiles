@@ -35,7 +35,9 @@ export LESS_TERMCAP_ZW=$(tput rsupm)
 # disable opencl for libreoffice
 export SAL_DISABLE_OPENCL=1
 
-if [[ -z $DISPLAY ]] && [[ $(tty) = /dev/tty1 ]]; then
-        #startplasma-wayland
-        startx
-fi
+export QT_QPA_PLATFORMTHEME=qt6ct
+
+#if [[ -z $DISPLAY ]] && [[ $(tty) = /dev/tty1 ]]; then
+#        #startplasma-wayland
+#        #startx
+#fi
