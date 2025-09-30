@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+grep -v "#" "$HOME/.vip/lists/tables/emoji" | rofi -theme sidebar -l 20 -font "Cantarell 18" -p "" -dmenu -i | awk '{print $1}' | tr -d '\n' | wl-copy
+text="$(wl-paste)"
+[ -z "$text" ] || notify-send -a "EMOJI TABLE" -t 2000 "clipboard: \"$text\""

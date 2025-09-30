@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+rofi -theme sidebar -modi run,drun -show drun -font "Cantarell 18" -show-icons

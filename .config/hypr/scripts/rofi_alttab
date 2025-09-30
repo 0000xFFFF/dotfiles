@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+rofi -theme sidebar -modi window,windowcd -show window -font "Cantarell 18" -show-icons
+

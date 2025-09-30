@@ -1,0 +1,52 @@
+#!/usr/bin/bash
+
+time=$(date +%Y-%m-%d_%H:%M:%S)
+dir="$HOME/Pictures"
+file="Screenshot_${time}.png"
+
+# notify
+notify_user () {
+	if [[ -e "$dir/$file" ]]; then
+		dunstify -u low --replace=699 -i /usr/share/icons/Papirus-Dark/symbolic/devices/camera-photo-symbolic.svg "Saved as ${dir}/${file}"
+	else
+		dunstify -u low --replace=699 -i /usr/share/icons/Papirus-Dark/symbolic/devices/camera-photo-symbolic.svg "Screenshot Deleted."
+	fi
+}
+
+# take shots
+shotnow () {
+	cd "${dir}" && grim "$file" && swayimg "${dir}"/"$file"
+  cat "${dir}"/"$file" | wl-copy
+	notify_user
+}
+
+shotarea () {
+  cd "${dir}" && grim -g "$(slurp)" "$file" && swayimg "${dir}"/"$file"
+  cat "${dir}"/"$file" | wl-copy
+  notify_user
+}
+
+shotwin () {
+	cd "${dir}" && grim -g "$(swaymsg -t get_tree | jq -r '.. | select(.focused?) | .rect | "\(.x),\(.y) \(.width)x\(.height)"')" "$file" && swayimg "${dir}"/"$file"
+  cat "${dir}"/"$file" | wl-copy
+	notify_user
+}
+
+if [[ ! -d "$dir" ]]; then
+	mkdir -p "$dir"
+fi
+
+val=$(printf "1.Screen\n2.Area\n3.Window" | rofi -theme sidebar -l 20 -font "Cantarell 18" -p "" -dmenu -i)
+
+case "$val" in
+  "1.Screen") sleep 0.2 && shotnow
+  ;;
+  "2.Area") sleep 0.2 && shotarea
+  ;;
+  "3.Window") sleep 0.2 && shotwin
+  ;;
+  *) echo default
+  ;;
+esac
+
+exit 0
