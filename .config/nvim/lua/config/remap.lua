@@ -37,3 +37,10 @@ vim.keymap.set("n", "<leader><leader>", function() vim.cmd("so") end)
 
 vim.keymap.set({"n", "v", "x"}, ":", ";")
 vim.keymap.set({"n", "v", "x"}, ";", ":")
+
+vim.keymap.set("n", "<leader>w", ":w<CR>")
+vim.keymap.set("n", "<leader>q", ":q<CR>")
+
+vim.keymap.set("n", "<leader>sh", "<cmd>split<CR>", { desc = "Split window horizontally" })
+vim.keymap.set("n", "<leader>sv", "<cmd>vsplit<CR>", { desc = "Split window vertically" })
+
