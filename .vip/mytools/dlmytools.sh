@@ -1,8 +1,10 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -x
 git clone https://github.com/0000xFFFF/3dview
 git clone https://github.com/0000xFFFF/4chan-dl
 git clone https://github.com/0000xFFFF/4chan-masonry
 git clone https://github.com/0000xFFFF/ai-image-desc
+git clone https://github.com/0000xFFFF/apple-bssid-geoloc
 git clone https://github.com/0000xFFFF/BAS-TIMER
 git clone https://github.com/0000xFFFF/bat
 git clone https://github.com/0000xFFFF/beatport-genre
