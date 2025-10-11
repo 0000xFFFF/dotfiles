@@ -1,0 +1,13 @@
+
+[audacious]
+shuffle=TRUE
+
+[pipewire]
+volume_left=75
+volume_right=75
+
+[qtui]
+column_widths=25,25,275,175,50,175,175,25,100,25,75,314,552,275,75,275,175,75
+player_height=789
+player_width=1121
+playlist_columns=playing path filename length
