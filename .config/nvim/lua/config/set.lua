@@ -24,7 +24,21 @@ vim.opt.list = true
 vim.opt.listchars = {
   tab = '→ ',
   trail = '·',
+  nbsp = '␣',
 -- space = '.',
 }
 
 vim.opt.clipboard:append("unnamedplus")
+
+vim.g.have_nerd_font = true
+
+vim.o.splitright = true
+vim.o.splitbelow = true
+
+vim.o.cursorline = true
+vim.o.scrolloff = 10
+vim.o.confirm = true
+
+vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+
+
