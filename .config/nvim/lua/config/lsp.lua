@@ -50,25 +50,30 @@ local lsp_keymaps = function(client, bufnr)
 
     vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
     vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
-    vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-    vim.keymap.set("n", "<leader>pws", vim.lsp.buf.workspace_symbol, opts)
     vim.keymap.set("n", "[d", vim.diagnostic.goto_next, opts)
     vim.keymap.set("n", "]d", vim.diagnostic.goto_prev, opts)
-    vim.keymap.set("n", "<leader>pca", vim.lsp.buf.code_action, opts)
-    vim.keymap.set({ "n", "x" }, "<F3>", function() vim.lsp.buf.format({ async = true }) end, opts)
-    vim.keymap.set("n", "<leader>f", function() vim.lsp.buf.format({ async = true }) end, opts)
-    vim.keymap.set("n", "<F4>", vim.lsp.buf.code_action, opts)
-    vim.keymap.set("n", "<leader>pr", vim.lsp.buf.references, opts)
-    vim.keymap.set("n", "<leader>r", vim.lsp.buf.rename, opts)
+
+    vim.keymap.set("n", "<leader>lws", vim.lsp.buf.workspace_symbol, opts)
+
+    vim.keymap.set("n", "<leader>lre", vim.lsp.buf.rename, opts)
     vim.keymap.set("n", "<F2>", vim.lsp.buf.rename, opts)
+
+    vim.keymap.set("n", "<leader>lrf", vim.lsp.buf.references, opts)
+    vim.keymap.set("n", "<F3>", vim.lsp.buf.references, opts)
+
+    vim.keymap.set("n", "<leader>lca", vim.lsp.buf.code_action, opts)
+    vim.keymap.set("n", "<F4>", vim.lsp.buf.code_action, opts)
+
+    vim.keymap.set("n", "<leader>lf", function() vim.lsp.buf.format({ async = true }) end, opts)
+    vim.keymap.set("n", "<F5>", function() vim.lsp.buf.format({ async = true }) end, opts)
+
+    vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
     vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help, opts)
     vim.keymap.set("n", "<leader>?", vim.diagnostic.open_float, opts)
-
     vim.keymap.set("n", "<leader>t", function()
         virtual_text_enabled = not virtual_text_enabled
         vim.diagnostic.config({ virtual_text = virtual_text_enabled })
     end, opts)
-
     vim.keymap.set("n", "<leader>pde", vim.diagnostic.enable, opts)
     vim.keymap.set("n", "<leader>pdd", vim.diagnostic.disable, opts)
 end
