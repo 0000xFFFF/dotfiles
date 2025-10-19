@@ -1,0 +1,43 @@
+#!/usr/bin/env python3
+
+import os
+import difflib
+import argparse
+
+parser = argparse.ArgumentParser(description='find similar names')
+parser.add_argument('input', type=str, help="image file or directory with images")
+parser.add_argument('-t', '--threshold', type=float, default=0.9, help="similarity threshold")
+args = parser.parse_args()
+
+
+def find_similar_filenames_recursive(directory: str, similarity_threshold: float = 0.8):
+    """
+    Recursively find similar filenames in a directory and its subdirectories.
+
+    Args:
+        directory (str): Root directory to search.
+        similarity_threshold (float): Between 0 and 1. Higher means stricter matching.
+    """
+    # Collect all file paths (relative to root)
+    all_files = []
+    for root, _, files in os.walk(directory):
+        for f in files:
+            relative_path = os.path.relpath(os.path.join(root, f), directory)
+            all_files.append(relative_path)
+
+    print(f"Scanning {len(all_files)} files in '{directory}' and subfolders...\n")
+
+    found_similar = False
+    for i, file1 in enumerate(all_files):
+        for file2 in all_files[i + 1:]:
+            similarity = difflib.SequenceMatcher(None, file1, file2).ratio()
+            if similarity >= similarity_threshold:
+                print(f"{file1} ↔ {file2} (similarity: {similarity:.2f})")
+                found_similar = True
+
+    if not found_similar:
+        print("No similar filenames found.")
+
+if __name__ == "__main__":
+    find_similar_filenames_recursive(args.input, similarity_threshold=args.threshold)
+
