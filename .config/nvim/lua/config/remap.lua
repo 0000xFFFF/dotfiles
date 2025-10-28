@@ -33,5 +33,5 @@ vim.keymap.set("n", "<leader>x", "<cmd>!chmod +x %<CR>", { silent = true })     
 vim.keymap.set({"n", "v", "x"}, ":", ";")
 vim.keymap.set({"n", "v", "x"}, ";", ":")
 
-vim.keymap.set("n", "<leader>sh", "<cmd>split<CR>", { desc = "Split window horizontally" })
-vim.keymap.set("n", "<leader>sv", "<cmd>vsplit<CR>", { desc = "Split window vertically" })
+vim.keymap.set("n", "<leader>s-", "<cmd>split<CR>", { desc = "Split window horizontally" })
+vim.keymap.set("n", "<leader>s|", "<cmd>vsplit<CR>", { desc = "Split window vertically" })
