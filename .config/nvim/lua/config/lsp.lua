@@ -60,8 +60,8 @@ local lsp_keymaps = function(client, bufnr)
 
     vim.keymap.set("n", "<leader>lrf", vim.lsp.buf.references, opts)
     vim.keymap.set("n", "<F3>", vim.lsp.buf.references, opts)
-    vim.keymap.set("n", "<leader><F3>n", vim.lsp.buf.references.goto_next, opts)
-    vim.keymap.set("n", "<leader><F3>p", vim.lsp.buf.references.goto_next, opts)
+    -- vim.keymap.set("n", "<leader><F3>n", vim.lsp.buf.references.goto_next, opts)
+    -- vim.keymap.set("n", "<leader><F3>p", vim.lsp.buf.references.goto_next, opts)
 
     vim.keymap.set("n", "<leader>lca", vim.lsp.buf.code_action, opts)
     vim.keymap.set("n", "<F4>", vim.lsp.buf.code_action, opts)
