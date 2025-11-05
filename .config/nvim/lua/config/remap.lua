@@ -15,7 +15,7 @@ vim.keymap.set("n", "N", "Nzzzv")
 vim.keymap.set("x", "<leader>p", [["_dP]])
 
 vim.keymap.set({ "n", "v" }, "<leader>y", [["+y]]) -- copy
-vim.keymap.set("n", "<leader>Y", [["+Y]])        -- copy
+vim.keymap.set("n", "<leader>Y", [["+Y]])          -- copy
 vim.keymap.set({ "n", "v" }, "<leader>d", [["_d]])
 
 vim.keymap.set("i", "<C-c>", "<Esc>")
@@ -27,11 +27,11 @@ vim.keymap.set("n", "<C-j>", "<cmd>cprev<CR>zz")
 vim.keymap.set("n", "<leader>k", "<cmd>lnext<CR>zz")
 vim.keymap.set("n", "<leader>j", "<cmd>lprev<CR>zz")
 
-vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]])   -- SPACE + s = substring current selected word
-vim.keymap.set("n", "<leader>x", "<cmd>!chmod +x %<CR>", { silent = true })                -- SPACE + x = make current file executable
+vim.keymap.set("n", "<leader><F2>", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]]) -- substring current selected word
+vim.keymap.set("n", "<leader>x", "<cmd>!chmod +x %<CR>", { silent = true })                 -- make current file executable
 
-vim.keymap.set({"n", "v", "x"}, ":", ";")
-vim.keymap.set({"n", "v", "x"}, ";", ":")
+vim.keymap.set({ "n", "v", "x" }, ":", ";")
+vim.keymap.set({ "n", "v", "x" }, ";", ":")
 
 vim.keymap.set("n", "<leader>s-", "<cmd>split<CR>", { desc = "Split window horizontally" })
 vim.keymap.set("n", "<leader>s|", "<cmd>vsplit<CR>", { desc = "Split window vertically" })
