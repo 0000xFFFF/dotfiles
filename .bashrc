@@ -69,6 +69,7 @@ alias \
         pacq="p -Qs" \
         pacu="p -Syuu" \
         pacc="p -Scc" \
+        xu="sudo xbps-install -Syyuu" \
         xi="sudo xbps-install" \
         xs="sudo xbps-query -Rs" \
         xr="sudo xbps-remove -R" \
@@ -148,7 +149,7 @@ alias \
         update-grub="s grub-mkconfig -o /boot/grub/grub.cfg" \
         kbmap="setxkbmap -model pc105 -layout us,rs,rs -variant ",,latin" -option """ \
         loadbash="PS4='+ $BASH_SOURCE:$LINENO:' bash -xic ''" \
-        xu="xrdb ~/.Xresources" \
+        xrdbu="xrdb ~/.Xresources" \
         tmuxu="tmux source ~/.config/tmux/tmux.conf" \
 
 # web
