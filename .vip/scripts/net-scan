@@ -3,6 +3,8 @@
 #VARIABLES
 INPUT="$1"
 INPUT2="$2"
+RUN_CMD="nmap -sn"
+# RUN_CMD="nmap -Pn"
 LOCALHOST=$(hostname_I)
 GATEWAYS=$(gateways)
 
@@ -41,7 +43,7 @@ PING() {
 
 NMAP() {
     GATEWAY="$1"
-    nmap -sP "$GATEWAY"/24
+    $RUN_CMD "$GATEWAY"/24
 }
 
 NMAP_BLOCKS() {
@@ -64,7 +66,7 @@ NMAP_BLOCKS() {
         fi
         if echo "$TIME" | grep "latency" >/dev/null 2>/dev/null ; then echo -e "  \e[0mTIME: \e[36m$TIME\e[0m" ; fi
         if echo "$MAC"  | grep ":"       >/dev/null 2>/dev/null ; then echo -e "   \e[0mMAC: \e[92m$MAC\e[0m"  ; fi
-    done <<< "$(nmap -sP "$GATEWAY"/24)"
+    done <<< "$($RUN_CMD "$GATEWAY"/24)"
 }
 
 NMAP_TABLE() {
@@ -88,7 +90,7 @@ NMAP_TABLE() {
         fi
         if echo "$TIME" | grep "latency" >/dev/null 2>/dev/null; then output+="~\e[36m$TIME\e[0m" ; fi
         if echo "$MAC"  | grep ":"       >/dev/null 2>/dev/null; then otuput+="~\e[92m$MAC\e[0m"  ; fi
-    done <<< "$(nmap -sP "$GATEWAY"/24)"
+    done <<< "$($RUN_CMD "$GATEWAY"/24)"
     echo -e "$output" | column -t -s '~'
 }
 
