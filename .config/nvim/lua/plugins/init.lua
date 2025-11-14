@@ -43,7 +43,6 @@ return {
         build = "make hexokinase",
     },
 
-
     -- Terminal & Navigation
     { "tc50cal/vim-terminal" },
     { "christoomey/vim-tmux-navigator" },
@@ -103,21 +102,14 @@ return {
             "L3MON4D3/LuaSnip",
             "saadparwaiz1/cmp_luasnip",
             "onsails/lspkind.nvim", -- For completion icons
-            -- other cmp sources like cmp-buffer, cmp-path
         },
         config = function()
-            require("config.lsp") -- This loads your lsp.lua file
+            require("config.lsp")
         end,
     },
     {
         "hrsh7th/nvim-cmp",
         config = function()
-            -- The cmp.setup() is now inside config/lsp.lua.
-            -- If config/lsp.lua is loaded by nvim-lspconfig's config,
-            -- nvim-cmp might not be fully set up yet.
-            -- It's often better to have cmp.setup() in its own config block
-            -- or ensure config/lsp.lua is structured to be called after cmp is ready.
-            -- For now, config/lsp.lua handles cmp.setup().
         end
     },
 
@@ -130,6 +122,7 @@ return {
         end
     },
 
+    -- Debugger
     {
         "mfussenegger/nvim-dap",
         dependencies = {
@@ -138,52 +131,4 @@ return {
             "nvim-neotest/nvim-nio",
         },
     }
-
-    -----@type LazySpec
-    --{
-    --    "mikavilpas/yazi.nvim",
-    --    event = "VeryLazy",
-    --    dependencies = {
-    --        -- check the installation instructions at
-    --        -- https://github.com/folke/snacks.nvim
-    --        "folke/snacks.nvim"
-    --    },
-    --    keys = {
-    --        -- 👇 in this section, choose your own keymappings!
-    --        {
-    --            "<leader>-",
-    --            mode = { "n", "v" },
-    --            "<cmd>Yazi<cr>",
-    --            desc = "Open yazi at the current file",
-    --        },
-    --        {
-    --            -- Open in the current working directory
-    --            "<leader>cw",
-    --            "<cmd>Yazi cwd<cr>",
-    --            desc = "Open the file manager in nvim's working directory",
-    --        },
-    --        {
-    --            "<c-up>",
-    --            "<cmd>Yazi toggle<cr>",
-    --            desc = "Resume the last yazi session",
-    --        },
-    --    },
-    --    ---@type YaziConfig | {}
-    --    opts = {
-    --        -- if you want to open yazi instead of netrw, see below for more info
-    --        open_for_directories = false,
-    --        keymaps = {
-    --            show_help = "<f1>",
-    --        },
-    --    },
-    --    -- 👇 if you use `open_for_directories=true`, this is recommended
-    --    init = function()
-    --        -- More details: https://github.com/mikavilpas/yazi.nvim/issues/802
-    --        -- vim.g.loaded_netrw = 1
-    --        vim.g.loaded_netrwPlugin = 1
-    --    end,
-    --}
-
-
-
 }
