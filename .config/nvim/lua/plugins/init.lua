@@ -92,7 +92,7 @@ return {
 
     -- LSP and Autocompletion
     { "williamboman/mason.nvim",          config = true }, -- `config = true` will call require("mason").setup()
-    { "williamboman/mason-lspconfig.nvim" },      -- No immediate config needed if lsp.lua handles it
+    { "williamboman/mason-lspconfig.nvim" },               -- No immediate config needed if lsp.lua handles it
     {
         "neovim/nvim-lspconfig",
         dependencies = {
@@ -129,6 +129,15 @@ return {
             require("config.colors")
         end
     },
+
+    {
+        "mfussenegger/nvim-dap",
+        dependencies = {
+            "rcarriga/nvim-dap-ui",
+            "theHamsta/nvim-dap-virtual-text",
+            "nvim-neotest/nvim-nio",
+        },
+    }
 
     -----@type LazySpec
     --{
