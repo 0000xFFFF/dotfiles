@@ -130,5 +130,8 @@ return {
             "theHamsta/nvim-dap-virtual-text",
             "nvim-neotest/nvim-nio",
         },
+        config = function()
+            require("config.dap") -- Adjust path to match your file location
+        end,
     }
 }
