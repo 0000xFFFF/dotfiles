@@ -51,3 +51,15 @@ end, { desc = "Set Conditional Breakpoint" })
 
 -- REPL
 vim.keymap.set("n", "<F8>", function() dap.repl.toggle() end, { desc = "Toggle REPL" })
+
+-- In your DAP config
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "dap-repl",
+    callback = function()
+        require('cmp').setup.buffer({
+            sources = {
+                { name = 'dap' }
+            }
+        })
+    end,
+})

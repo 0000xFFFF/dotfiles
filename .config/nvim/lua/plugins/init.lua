@@ -129,6 +129,7 @@ return {
             "rcarriga/nvim-dap-ui",
             "theHamsta/nvim-dap-virtual-text",
             "nvim-neotest/nvim-nio",
+            "rcarriga/cmp-dap",  -- Autocompletion
         },
         config = function()
             require("config.dap") -- Adjust path to match your file location
