@@ -24,7 +24,6 @@ dap.configurations.c = {
 dap.configurations.cpp = dap.configurations.c
 dap.configurations.rust = dap.configurations.c
 
-
 local dapui = require("dapui")
 dapui.setup()
 
@@ -40,21 +39,40 @@ end
 
 -- DAP UI toggle
 vim.keymap.set("n", "<F6>", function() dapui.toggle() end, { desc = "Toggle DAP UI" })
+vim.keymap.set("n", "<leader>dd", function() dapui.toggle() end, { desc = "Toggle DAP UI" })
 
 -- Basic debugging controls
 vim.keymap.set("n", "<F9>", function() dap.continue() end, { desc = "DAP Continue" })
+vim.keymap.set("n", "<leader>dc", function() dap.continue() end, { desc = "DAP Continue" })
+
 vim.keymap.set("n", "<F10>", function() dap.step_over() end, { desc = "DAP Step Over" })
+vim.keymap.set("n", "<leader>ds", function() dap.step_over() end, { desc = "DAP Step Over" })
+
 vim.keymap.set("n", "<F11>", function() dap.step_into() end, { desc = "DAP Step Into" })
+vim.keymap.set("n", "<leader>di", function() dap.step_into() end, { desc = "DAP Step Into" })
+
 vim.keymap.set("n", "<F12>", function() dap.step_out() end, { desc = "DAP Step Out" })
+vim.keymap.set("n", "<leader>do", function() dap.step_out() end, { desc = "DAP Step Out" })
+
+-- Quit debugger
+vim.keymap.set("n", "<leader>dq", function()
+    dap.clear_breakpoints()
+    dapui.close()
+    dap.terminate()
+    notify("Debugger session ended", "warn")
+end, { desc = "Terminate Debugger" })
 
 -- Breakpoints
 vim.keymap.set("n", "<F7>", function() dap.toggle_breakpoint() end, { desc = "Toggle Breakpoint" })
+vim.keymap.set("n", "<leader>db", function() dap.toggle_breakpoint() end, { desc = "Toggle Breakpoint" })
+
 vim.keymap.set("n", "<leader><F7>", function()
     dap.set_breakpoint(vim.fn.input("Breakpoint condition: "))
 end, { desc = "Set Conditional Breakpoint" })
 
 -- REPL
 vim.keymap.set("n", "<F8>", function() dap.repl.toggle() end, { desc = "Toggle REPL" })
+vim.keymap.set("n", "<leader>dr", function() dap.repl.toggle() end, { desc = "Toggle REPL" })
 
 -- autocomplete
 vim.api.nvim_create_autocmd("FileType", {
