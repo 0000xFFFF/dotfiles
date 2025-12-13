@@ -59,7 +59,6 @@ vim.keymap.set("n", "<leader>dq", function()
     dap.clear_breakpoints()
     dapui.close()
     dap.terminate()
-    notify("Debugger session ended", "warn")
 end, { desc = "Terminate Debugger" })
 
 -- Breakpoints
