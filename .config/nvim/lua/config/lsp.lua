@@ -75,13 +75,13 @@ vim.lsp.config('clangd', {
 vim.lsp.enable('clangd')
 
 -- Setup other servers using the new API
-local servers = { "pylsp", "lua_ls", "cssls", "rust_analyzer", "html", "ts_ls" }
+local servers = { "lua_ls", "cssls", "rust_analyzer", "html", "ts_ls", "gopls" }
 for _, server in ipairs(servers) do
     local config = {
         on_attach = lsp_keymaps,
         capabilities = def_capabilities,
     }
-    
+
     if server == "lua_ls" then
         config.settings = {
             Lua = {
@@ -91,7 +91,23 @@ for _, server in ipairs(servers) do
             }
         }
     end
-    
+
     vim.lsp.config(server, config)
     vim.lsp.enable(server)
 end
+
+vim.lsp.config("basedpyright", {
+    capabilities = def_capabilities,
+    on_attach = lsp_keymaps,
+    settings = {
+        basedpyright = {
+            analysis = {
+                typeCheckingMode = "strict", -- try "standard" if too noisy
+                autoSearchPaths = true,
+                useLibraryCodeForTypes = true,
+                diagnosticMode = "workspace",
+            },
+        },
+    },
+})
+vim.lsp.enable("basedpyright")
