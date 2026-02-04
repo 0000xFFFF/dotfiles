@@ -102,7 +102,7 @@ vim.lsp.config("basedpyright", {
     settings = {
         basedpyright = {
             analysis = {
-                typeCheckingMode = "strict", -- try "standard" if too noisy
+                typeCheckingMode = "standard",
                 autoSearchPaths = true,
                 useLibraryCodeForTypes = true,
                 diagnosticMode = "workspace",
