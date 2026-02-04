@@ -1,2 +1,9 @@
 #!/usr/bin/env bash
-eval $(cat ~/.bash_history | fzf)
+
+cmd=$(fzf < ~/.bash_history)
+
+[ -n "$cmd" ] || exit 0
+
+history -s "$cmd"   # adds to current session history
+eval "$cmd"
+
