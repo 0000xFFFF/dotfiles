@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -e
+
+# ===== CHANGE THIS =====
+INTERFACE="$(wlanDevice)"
+SERVICE="/etc/systemd/system/macspoof.service"
+# =======================
+
+echo "Installing macchanger..."
+sudo pacman -S --noconfirm macchanger
+
+echo "Creating systemd service for interface: $INTERFACE"
+
+sudo tee "$SERVICE" > /dev/null <<EOF
+[Unit]
+Description=Change MAC address on boot
+Wants=network-pre.target
+Before=network-pre.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/ip link set dev $INTERFACE down
+ExecStart=/usr/bin/macchanger -r $INTERFACE
+ExecStart=/usr/bin/ip link set dev $INTERFACE up
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+echo "Enabling service..."
+sudo systemctl daemon-reload
+sudo systemctl enable macspoof.service
+
+echo "Done!"
+echo "Reboot to test. Check with:"
+echo "  ip link show $INTERFACE"
+
