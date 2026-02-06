@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-hashcat -m 22000 "$1" -a 0 "$2" -w 4 --session "$3"
+hashcat -d 1 -m 22000 "$1" -a 0 "$2" -w 4 --session "$3"
