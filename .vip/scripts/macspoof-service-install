@@ -5,18 +5,40 @@ set -e
 # ===== CHANGE THIS =====
 INTERFACE="$(wlanDevice)"
 SERVICE="/etc/systemd/system/macspoof.service"
+NMCONF="/etc/NetworkManager/conf.d/99-macspoof.conf"
 # =======================
 
-echo "Installing macchanger..."
+echo "[+] Installing macchanger..."
 sudo pacman -S --noconfirm macchanger
 
-echo "Creating systemd service for interface: $INTERFACE"
+# -----------------------------
+# Disable NetworkManager MAC tampering
+# -----------------------------
+echo "[+] Creating NetworkManager config..."
+
+sudo mkdir -p /etc/NetworkManager/conf.d
+
+sudo tee "$NMCONF" > /dev/null <<EOF
+[device]
+wifi.scan-rand-mac-address=no
+
+[connection]
+wifi.cloned-mac-address=preserve
+ethernet.cloned-mac-address=preserve
+EOF
+
+# -----------------------------
+# Create EARLY boot service
+# -----------------------------
+echo "[+] Creating early-boot macspoof service..."
 
 sudo tee "$SERVICE" > /dev/null <<EOF
 [Unit]
-Description=Change MAC address on boot
+Description=Spoof MAC before NetworkManager
+DefaultDependencies=no
+Before=NetworkManager.service network-pre.target
 Wants=network-pre.target
-Before=network-pre.target
+After=sysinit.target
 
 [Service]
 Type=oneshot
@@ -26,14 +48,27 @@ ExecStart=/usr/bin/ip link set dev $INTERFACE up
 RemainAfterExit=yes
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=sysinit.target
 EOF
 
-echo "Enabling service..."
+# -----------------------------
+# Enable
+# -----------------------------
+echo "[+] Reloading systemd..."
 sudo systemctl daemon-reload
+
+echo "[+] Enabling macspoof..."
 sudo systemctl enable macspoof.service
 
+echo "[+] Restarting NetworkManager to apply config..."
+sudo systemctl restart NetworkManager
+
+echo
 echo "Done!"
-echo "Reboot to test. Check with:"
+echo
+echo "Boot order now:"
+echo "  macspoof → NetworkManager → connect"
+echo
+echo "Verify with:"
 echo "  ip link show $INTERFACE"
 
