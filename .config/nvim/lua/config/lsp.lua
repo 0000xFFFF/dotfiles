@@ -6,7 +6,6 @@ local cmp = require("cmp")
 local luasnip = require("luasnip")
 require("luasnip.loaders.from_vscode").lazy_load()
 
-local cmp_select = { behavior = cmp.SelectBehavior.Select }
 cmp.setup({
     snippet = {
         expand = function(args)
@@ -39,12 +38,16 @@ local virtual_text_enabled = false
 vim.diagnostic.config({ virtual_text = virtual_text_enabled, underline = false })
 
 -- Global on_attach function for keymaps
-local lsp_keymaps = function(client, bufnr)
+local lsp_keymaps = function(_, bufnr)
     local opts = { buffer = bufnr, remap = true }
     vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
     vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
-    vim.keymap.set("n", "[d", vim.diagnostic.goto_next, opts)
-    vim.keymap.set("n", "]d", vim.diagnostic.goto_prev, opts)
+    vim.keymap.set("n", "]d", function()
+        vim.diagnostic.jump({ count = 1 })
+    end, opts)
+    vim.keymap.set("n", "[d", function()
+        vim.diagnostic.jump({ count = -1 })
+    end, opts)
     vim.keymap.set("n", "<leader>lws", vim.lsp.buf.workspace_symbol, opts)
     vim.keymap.set("n", "<leader>lre", vim.lsp.buf.rename, opts)
     vim.keymap.set("n", "<F2>", vim.lsp.buf.rename, opts)
@@ -61,8 +64,12 @@ local lsp_keymaps = function(client, bufnr)
         virtual_text_enabled = not virtual_text_enabled
         vim.diagnostic.config({ virtual_text = virtual_text_enabled })
     end, opts)
-    vim.keymap.set("n", "<leader>pde", vim.diagnostic.enable, opts)
-    vim.keymap.set("n", "<leader>pdd", vim.diagnostic.disable, opts)
+    vim.keymap.set("n", "<leader>pde", function()
+        vim.diagnostic.enable()
+    end, opts)
+    vim.keymap.set("n", "<leader>pdd", function()
+        vim.diagnostic.disable()
+    end, opts)
 end
 
 -- Setup clangd using the new API
