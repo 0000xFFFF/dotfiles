@@ -52,7 +52,7 @@ return {
     -- Motion Plugins
     { "jinh0/eyeliner.nvim" },
     {
-        "ggandor/leap.nvim",
+        "https://codeberg.org/andyg/leap.nvim",
         config = function()
             require("config.leap")
         end
