@@ -28,7 +28,7 @@ vim.opt.listchars = {
 -- space = '.',
 }
 
-vim.opt.clipboard:append("unnamedplus")
+-- vim.opt.clipboard:append("unnamedplus")
 
 vim.g.have_nerd_font = true
 
