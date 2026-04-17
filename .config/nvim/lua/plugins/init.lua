@@ -38,10 +38,6 @@ return {
     { "vim-airline/vim-airline" },
     { "ap/vim-css-color" },
     { "rafi/awesome-vim-colorschemes" },
-    {
-        "RRethy/vim-hexokinase",
-        build = "make hexokinase",
-    },
 
     -- Terminal & Navigation
     { "tc50cal/vim-terminal" },
