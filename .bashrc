@@ -3,25 +3,39 @@
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
+# path mods
+export PATH="$PATH":"$HOME/.vip/scripts":"$HOME/.vip/scripts_ln":"$HOME/.config/i3/scripts"
+
 # SET PS1 WITHOUT COLOR
 PS1='[\u@\h \W]\$ '
-
 
 # SET PS1 WITH COLOR
 export PS1="\[$(tput bold)\]\[$(tput setaf 3)\][\[$([ "$EUID" -eq 0 ] && tput setaf 1 || tput setaf 2)\]\u\[$(tput setaf 10)\]@\[$(tput setaf 4)\]\h \[$(tput setaf 5)\]\w\[$(tput setaf 3)\]]\[$(tput setaf 7)\]\\$ \[$(tput sgr0)\]"
 
 # PS1 COLOR WITH BRANCH NAME
-
 GIT_PROMPT="/usr/share/git/git-prompt.sh"
 if [ -f "$GIT_PROMPT" ]; then
     source "$GIT_PROMPT"
     export PS1="\[$(tput bold)\]\[$(tput setaf 3)\][\[$([ "$EUID" -eq 0 ] && tput setaf 1 || tput setaf 2)\]\u@\[$(tput setaf 4)\]\h \[$(tput setaf 5)\]\w\[$(tput setaf 3)\]]\[$(tput sgr0)\]\[$(tput setaf 1)\]\$(__git_ps1 '-[%s]-')\[$(tput bold)\]\[$(tput setaf 7)\]\\$ \[$(tput sgr0)\]"
 fi
 
-
-
+# bash settings
 bind "set completion-ignore-case on"
 set -o vi # use vim bindings
+# bash history
+export HISTSIZE=1000000
+export HISTFILESIZE=1000000
+export HISTCONTROL=ignoreboth # ignore dupes
+
+# default programs
+export EDITOR="nvim"
+export TERMINAL="alacritty"
+export BROWSER="brave"
+export READER="okular"
+export FILE="dolphin"
+
+# disable opencl for libreoffice
+export SAL_DISABLE_OPENCL=1
 
 # ===[ alias ] ===
 # main
@@ -189,6 +203,22 @@ alias \
         cdac="cd /etc/httpd/conf" \
         cdal="cd /var/log/httpd" \
         l3mon="cd $HOME/.vip/tools/L3MON/server"
+
+
+# less, man colors
+export LESS_TERMCAP_mb=$(tput bold; tput setaf 2) # green
+export LESS_TERMCAP_md=$(tput bold; tput setaf 6) # cyan
+export LESS_TERMCAP_me=$(tput sgr0)
+export LESS_TERMCAP_so=$(tput bold; tput setaf 3; tput setab 4) # yellow on blue
+export LESS_TERMCAP_se=$(tput rmso; tput sgr0)
+export LESS_TERMCAP_us=$(tput smul; tput bold; tput setaf 7) # white
+export LESS_TERMCAP_ue=$(tput rmul; tput sgr0)
+export LESS_TERMCAP_mr=$(tput rev)
+export LESS_TERMCAP_mh=$(tput dim)
+export LESS_TERMCAP_ZN=$(tput ssubm)
+export LESS_TERMCAP_ZV=$(tput rsubm)
+export LESS_TERMCAP_ZO=$(tput ssupm)
+export LESS_TERMCAP_ZW=$(tput rsupm)
 
 # add beter cd with zoxide
 eval "$(zoxide init bash)"
