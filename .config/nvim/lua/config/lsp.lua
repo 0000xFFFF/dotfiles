@@ -82,7 +82,7 @@ vim.lsp.config('clangd', {
 vim.lsp.enable('clangd')
 
 -- Setup other servers using the new API
-local servers = { "lua_ls", "cssls", "rust_analyzer", "html", "ts_ls", "gopls" }
+local servers = { "lua_ls", "cssls", "rust_analyzer", "html", "ts_ls", "gopls", "jsonls" }
 for _, server in ipairs(servers) do
     local config = {
         on_attach = lsp_keymaps,
