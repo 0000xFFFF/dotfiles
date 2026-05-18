@@ -86,7 +86,6 @@ return {
 
     -- LSP and Autocompletion
     { "williamboman/mason.nvim",          config = true }, -- `config = true` will call require("mason").setup()
-    { "williamboman/mason-lspconfig.nvim" },               -- No immediate config needed if lsp.lua handles it
     {
         "neovim/nvim-lspconfig",
         dependencies = {
