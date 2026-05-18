@@ -7,10 +7,10 @@ return {
     { "tpope/vim-surround" },
     { "tpope/vim-commentary" },
 
-    -- File explorers
-    { "preservim/nerdtree" },
-    { "ryanoasis/vim-devicons" },
-    { "Xuyuanp/nerdtree-git-plugin" },
+    -- -- File explorers
+    -- { "preservim/nerdtree" }, -- replaced with snacks.explorer
+    -- { "ryanoasis/vim-devicons" }, -- replaced with snacks.explorer
+    -- { "Xuyuanp/nerdtree-git-plugin" }, -- replaced with snacks.explorer
 
     -- Git & Undo tools
     { "airblade/vim-gitgutter" },
@@ -47,7 +47,7 @@ return {
     { "lifepillar/pgsql.vim" },
     { "preservim/tagbar" },
     { "mg979/vim-visual-multi" },
-    { "RRethy/vim-illuminate" },
+    -- { "RRethy/vim-illuminate" }, -- replaced with snacks words
 
     -- Motion Plugins
     { "jinh0/eyeliner.nvim" },
@@ -126,4 +126,28 @@ return {
             require("config.dap") -- Adjust path to match your file location
         end,
     },
+
+    {
+        "folke/snacks.nvim",
+        priority = 1000,
+        lazy = false,
+        ---@type snacks.Config
+        opts = {
+            -- your configuration comes here
+            -- or leave it empty to use the default settings
+            -- refer to the configuration section below
+            bigfile = { enabled = true },
+            dashboard = { enabled = true },
+            explorer = { enabled = true },
+            indent = { enabled = true },
+            input = { enabled = true },
+            picker = { enabled = false },
+            notifier = { enabled = true },
+            quickfile = { enabled = true },
+            scope = { enabled = true },
+            scroll = { enabled = true },
+            statuscolumn = { enabled = true },
+            words = { enabled = true },
+        },
+    }
 }
