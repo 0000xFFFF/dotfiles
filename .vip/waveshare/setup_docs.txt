@@ -40,6 +40,7 @@ gpio -v
 wget https://github.com/joan2937/lg/archive/master.zip
 unzip master.zip
 cd lg-master
+sudo apt install python3-setuptools
 sudo make install
 #Raspberry Pi 5 
 sudo apt install python3-rpi-lgpio
