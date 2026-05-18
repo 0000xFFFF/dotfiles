@@ -149,5 +149,54 @@ return {
             statuscolumn = { enabled = true },
             words = { enabled = true },
         },
-    }
+    },
+
+    {
+        'dmtrKovalenko/fff.nvim',
+
+        build = function()
+            require("fff.download").download_or_build_binary()
+        end,
+
+        opts = {},
+        lazy = false,
+        keys = {
+            {
+                "<leader>f",
+                function()
+                    require('fff').find_files()
+                end,
+                desc = 'Find Files',
+            },
+            {
+                "<leader>g",
+                function()
+                    require('fff').live_grep()
+                end,
+                desc = 'Live Grep',
+            },
+        },
+    },
+
+    {
+        "NvChad/nvim-colorizer.lua",
+        event = "BufReadPre",
+        opts = {
+            filetypes = { "*" },
+            user_default_options = {
+                RGB = true,
+                RRGGBB = true,
+                names = true,
+                RRGGBBAA = true,
+                AARRGGBB = false,
+                rgb_fn = true,
+                hsl_fn = true,
+                css = true,
+                css_fn = true,
+                mode = "virtualtext", -- "foreground" | "background" | "virtualtext"
+                tailwind = false,
+                virtualtext = "■",
+            },
+        },
+    },
 }
