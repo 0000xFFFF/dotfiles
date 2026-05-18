@@ -84,27 +84,24 @@ return {
         end
     },
 
-    -- LSP and Autocompletion
-    { "williamboman/mason.nvim",          config = true }, -- `config = true` will call require("mason").setup()
+    -- LSP
+    { "williamboman/mason.nvim", config = true },
+
+    -- Autocompletion
     {
-        "neovim/nvim-lspconfig",
+        "hrsh7th/nvim-cmp",
         dependencies = {
-            "williamboman/mason.nvim",
-            "williamboman/mason-lspconfig.nvim",
-            "hrsh7th/nvim-cmp",
             "hrsh7th/cmp-nvim-lsp",
+            "hrsh7th/cmp-buffer",
+            "hrsh7th/cmp-path",
             "L3MON4D3/LuaSnip",
             "saadparwaiz1/cmp_luasnip",
-            "onsails/lspkind.nvim", -- For completion icons
+            "rafamadriz/friendly-snippets",
+            "onsails/lspkind.nvim",
         },
         config = function()
             require("config.lsp")
         end,
-    },
-    {
-        "hrsh7th/nvim-cmp",
-        config = function()
-        end
     },
 
     -- Colorscheme
