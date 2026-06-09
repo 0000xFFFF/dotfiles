@@ -1,0 +1,90 @@
+#!/usr/bin/env python3
+import os
+import argparse
+
+
+CHAR_MAP = {
+    "  ": " ",
+    "–": "-",
+    "—": "-",
+    "<": "_",
+    ">": "_",
+    ":": "_",
+    "\"": "_",
+    "/": "_",
+    "\\": "_",
+    "|": "_",
+    "?": "_",
+    "*": "_",
+}
+
+
+def sanitize_filename(name: str) -> str:
+    for k, v in CHAR_MAP.items():
+        name = name.replace(k, v)
+
+    while "  " in name:
+        name = name.replace("  ", " ")
+
+    return name
+
+
+def confirm(prompt: str) -> bool:
+    ans = input(f"{prompt} [y/N]: ").strip().lower()
+    return ans in ("y", "yes")
+
+
+def process_file(root_dir: str, filename: str, rename: bool, interactive: bool):
+    new_name = sanitize_filename(filename)
+
+    if new_name == filename:
+        return
+
+    old_path = os.path.join(root_dir, filename)
+    new_path = os.path.join(root_dir, new_name)
+
+    #print(f"{old_path} -> {new_path}")
+    print(old_path)
+    print(new_path)
+    print()
+
+    if not rename:
+        return
+
+    if os.path.exists(new_path):
+        print(f"SKIP (target exists): {new_path}")
+        return
+
+    if interactive:
+        if not confirm("Rename this file?"):
+            print("Skipped.")
+            return
+
+    os.rename(old_path, new_path)
+
+
+def walk_directory(base_dir: str, rename: bool, interactive: bool):
+    for root, _, files in os.walk(base_dir):
+        for file in files:
+            process_file(root, file, rename, interactive)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Sanitize filenames in a directory tree")
+    parser.add_argument("path", help="Target directory to scan")
+    parser.add_argument("-r", "--rename", action="store_true",
+                        help="Actually rename files (default is dry-run)")
+    parser.add_argument("-i", "--interactive", action="store_true",
+                        help="Ask before renaming each file")
+
+    args = parser.parse_args()
+
+    if not os.path.isdir(args.path):
+        print("Error: not a directory")
+        return
+
+    walk_directory(args.path, args.rename, args.interactive)
+
+
+if __name__ == "__main__":
+    main()
