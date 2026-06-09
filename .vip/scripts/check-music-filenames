@@ -34,7 +34,7 @@ def confirm(prompt: str) -> bool:
     return ans in ("y", "yes")
 
 
-def process_file(root_dir: str, filename: str, rename: bool, interactive: bool):
+def process_file_renamer(root_dir: str, filename: str, rename: bool, interactive: bool):
     new_name = sanitize_filename(filename)
 
     if new_name == filename:
@@ -63,11 +63,23 @@ def process_file(root_dir: str, filename: str, rename: bool, interactive: bool):
     os.rename(old_path, new_path)
 
 
+def process_file_lister(root_dir: str, filename: str, rename: bool, interactive: bool):
+    old_path = os.path.join(root_dir, filename)
+    if "-" not in filename:
+        print(old_path)
+
 def walk_directory(base_dir: str, rename: bool, interactive: bool):
+    print("==[ RENAMER: ")
     for root, _, files in os.walk(base_dir):
         for file in files:
-            process_file(root, file, rename, interactive)
+            process_file_renamer(root, file, rename, interactive)
+    print("==\n")
 
+    print("==[ LISTER: ")
+    for root, _, files in os.walk(base_dir):
+        for file in files:
+            process_file_lister(root, file, rename, interactive)
+    print("==\n")
 
 def main():
     parser = argparse.ArgumentParser(description="Sanitize filenames in a directory tree")
