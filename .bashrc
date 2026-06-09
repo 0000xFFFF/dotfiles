@@ -134,6 +134,7 @@ alias \
         sortlessuniq="perl -ne 'print unless \$seen{\$_}++'" \
         gpath="echo "\$PATH" | tr ':' '\n'" \
         ports="ss -tuln -p" \
+        newest="find . -type f -printf '%T@ %p\n' | sort -n | cut -d' ' -f2-" \
 
 # cool stuff
 alias \
