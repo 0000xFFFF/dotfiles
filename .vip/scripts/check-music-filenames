@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 import argparse
-
+import mimetypes
 
 CHAR_MAP = {
     "  ": " ",
@@ -18,6 +18,16 @@ CHAR_MAP = {
     "*": "_",
 }
 
+TO_REMOVE = [
+    "(Official Audio)",
+    "(Official Video)",
+    "Official Music Video"
+    "Soundtrack"
+]
+
+def is_audio_file(file_path):
+    mime_type, _ = mimetypes.guess_type(file_path)
+    return mime_type is not None and mime_type.startswith("audio/")
 
 def sanitize_filename(name: str) -> str:
     for k, v in CHAR_MAP.items():
@@ -63,10 +73,18 @@ def process_file_renamer(root_dir: str, filename: str, rename: bool, interactive
     os.rename(old_path, new_path)
 
 
-def process_file_lister(root_dir: str, filename: str, rename: bool, interactive: bool):
-    old_path = os.path.join(root_dir, filename)
+def process_file_lister(root_dir: str, filename: str):
+    full_path = os.path.join(root_dir, filename)
     if "-" not in filename:
-        print(old_path)
+        print(f"no '-' : {full_path}")
+
+    if not is_audio_file(full_path):
+        print(f"not audio : {full_path}")
+
+    for i in TO_REMOVE:
+        if i.lower() in filename.lower():
+            print(f"has '{i}' : {full_path}")
+
 
 def walk_directory(base_dir: str, rename: bool, interactive: bool):
     print("==[ RENAMER: ")
@@ -78,7 +96,7 @@ def walk_directory(base_dir: str, rename: bool, interactive: bool):
     print("==[ LISTER: ")
     for root, _, files in os.walk(base_dir):
         for file in files:
-            process_file_lister(root, file, rename, interactive)
+            process_file_lister(root, file)
     print("==\n")
 
 def main():
