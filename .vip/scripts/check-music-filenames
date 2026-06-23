@@ -26,6 +26,7 @@ TO_REMOVE = [
     "Official Music Video",
     "Soundtrack",
     "Topic",
+    "Visualiser",
 ]
 
 def is_audio_file(file_path):
