@@ -15,12 +15,14 @@ CHAR_MAP = {
     "\\": "_",
     "|": "_",
     "?": "_",
+    "？": "_",
     "*": "_",
+    "- Topic -": "-",
 }
 
 TO_REMOVE = [
-    "(Official Audio)",
-    "(Official Video)",
+    "Official Audio",
+    "Official Video",
     "Official Music Video",
     "Soundtrack",
     "Topic",
