@@ -21,8 +21,9 @@ CHAR_MAP = {
 TO_REMOVE = [
     "(Official Audio)",
     "(Official Video)",
-    "Official Music Video"
-    "Soundtrack"
+    "Official Music Video",
+    "Soundtrack",
+    "Topic",
 ]
 
 def is_audio_file(file_path):
