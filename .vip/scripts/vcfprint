@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+
+import re
+from prettytable import PrettyTable
+
+def parse_vcf(file_path):
+    contacts = []
+    contact = {}
+
+    with open(file_path, "r", encoding="utf-8") as file:
+        for line in file:
+            line = line.strip()
+
+            if line == "BEGIN:VCARD":
+                contact = {}
+
+            elif line.startswith("FN:"):
+                contact["Name"] = line[3:]
+
+            elif line.startswith("TEL"):
+                phone = line.split(":")[-1]
+                contact["Phone"] = phone
+
+            elif line.startswith("EMAIL"):
+                email = line.split(":")[-1]
+                contact["Email"] = email
+
+            elif line == "END:VCARD":
+                contacts.append(contact)
+
+    return contacts
+
+def display_contacts(contacts):
+    table = PrettyTable()
+    table.field_names = ["Name", "Phone", "Email"]
+
+    for contact in contacts:
+        table.add_row([
+            contact.get("Name", "N/A"),
+            contact.get("Phone", "N/A"),
+            contact.get("Email", "N/A")
+        ])
+
+    print(table)
+
+if __name__ == "__main__":
+    contacts = parse_vcf("Contacts.vcf")
+    display_contacts(contacts)
