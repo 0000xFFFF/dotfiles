@@ -1,32 +1,58 @@
 #!/usr/bin/env python3
 
-import re
+import quopri
 from prettytable import PrettyTable
+
+def decode_value(value):
+    """Decode quoted-printable UTF-8 values if needed."""
+    try:
+        if "=" in value:
+            return quopri.decodestring(value).decode("utf-8", errors="replace")
+        return value
+    except:
+        return value
+
+def unfold_lines(lines):
+    """Merge folded vCard lines (lines starting with space/tab)."""
+    unfolded = []
+    for line in lines:
+        if line.startswith((" ", "\t")) and unfolded:
+            unfolded[-1] += line.strip()
+        else:
+            unfolded.append(line.strip())
+    return unfolded
 
 def parse_vcf(file_path):
     contacts = []
     contact = {}
 
-    with open(file_path, "r", encoding="utf-8") as file:
-        for line in file:
-            line = line.strip()
+    with open(file_path, "r", encoding="utf-8", errors="replace") as file:
+        lines = unfold_lines(file.readlines())
 
-            if line == "BEGIN:VCARD":
-                contact = {}
+    for line in lines:
+        if line == "BEGIN:VCARD":
+            contact = {}
 
-            elif line.startswith("FN:"):
-                contact["Name"] = line[3:]
+        elif line.startswith("FN"):
+            value = line.split(":", 1)[1]
+            contact["Name"] = decode_value(value)
 
-            elif line.startswith("TEL"):
-                phone = line.split(":")[-1]
-                contact["Phone"] = phone
+        elif line.startswith("N"):
+            if "Name" not in contact:
+                value = line.split(":", 1)[1]
+                parts = value.split(";")
+                contact["Name"] = decode_value(" ".join(filter(None, reversed(parts))))
 
-            elif line.startswith("EMAIL"):
-                email = line.split(":")[-1]
-                contact["Email"] = email
+        elif line.startswith("TEL"):
+            value = line.split(":", 1)[1]
+            contact["Phone"] = decode_value(value)
 
-            elif line == "END:VCARD":
-                contacts.append(contact)
+        elif line.startswith("EMAIL"):
+            value = line.split(":", 1)[1]
+            contact["Email"] = decode_value(value)
+
+        elif line == "END:VCARD":
+            contacts.append(contact)
 
     return contacts
 
