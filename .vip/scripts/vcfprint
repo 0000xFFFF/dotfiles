@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import quopri
 from prettytable import PrettyTable
 
@@ -74,5 +75,10 @@ def display_contacts(contacts):
     print(table)
 
 if __name__ == "__main__":
-    contacts = parse_vcf("Contacts.vcf")
+    parser = argparse.ArgumentParser(description="Read and display contacts from a VCF file.")
+    parser.add_argument("file", help="Path to the .vcf file")
+
+    args = parser.parse_args()
+
+    contacts = parse_vcf(args.file)
     display_contacts(contacts)
