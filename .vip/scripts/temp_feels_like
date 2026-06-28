@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+
+import argparse
+
+def real_heat_index(temp_c, humidity):
+    # Convert to Fahrenheit
+    T = (temp_c * 9/5) + 32
+    R = humidity
+    
+    # 1. Try a simple calculation first
+    hi_f = 0.5 * (T + 61.0 + ((T - 68.0) * 1.2) + (R * 0.094))
+    
+    # 2. If it's over 80°F, use the full Rothfusz regression
+    if (T + hi_f) / 2 >= 80:
+        c1, c2, c3, c4 = -42.379, 2.04901523, 10.14333127, -0.22475541
+        c5, c6, c7, c8 = -0.00683783, -0.05481717, 0.00122874, 0.00085282
+        c9 = -0.00000199
+        hi_f = (c1 + (c2 * T) + (c3 * R) + (c4 * T * R) + (c5 * T**2) + 
+                (c6 * R**2) + (c7 * T**2 * R) + (c8 * T * R**2) + (c9 * T**2 * R**2))
+        
+        # Adjustments for specific conditions
+        if R < 13 and (80 <= T <= 112):
+            adjustment = ((13 - R) / 4) * ((17 - abs(T - 95)) / 17)**0.5
+            hi_f -= adjustment
+        elif R > 85 and (80 <= T <= 87):
+            adjustment = ((R - 85) / 10) * ((87 - T) / 5)
+            hi_f += adjustment
+
+    # Convert back to Celsius
+    hi_c = (hi_f - 32) * 5/9
+    return round(hi_c, 1)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Read and display contacts from a VCF file.")
+    parser.add_argument("temperature", type=int, help="temperature")
+    parser.add_argument("humidity", type=int, help="humidity")
+
+    args = parser.parse_args()
+
+    print(real_heat_index(args.temperature, args.humidity))
