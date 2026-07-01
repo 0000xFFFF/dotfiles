@@ -33,6 +33,7 @@ TO_REMOVE = [
     "Soundtrack",
     "Topic",
     "Visualiser",
+    "Visualizer",
 ]
 
 def is_audio_file(file_path):
