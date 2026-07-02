@@ -18,6 +18,10 @@ CHAR_MAP = {
     "？": "_",
     "*": "_",
     "- Topic -": "-",
+    " (Official Audio)": "",
+    " (Official Video)": "",
+    " [Official Audio]": "",
+    " [Official Video]": "",
 }
 
 TO_REMOVE = [
