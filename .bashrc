@@ -4,7 +4,7 @@
 [[ $- != *i* ]] && return
 
 # path mods
-export PATH="$PATH":"$HOME/.vip/scripts":"$HOME/.vip/scripts_ln":"$HOME/.config/i3/scripts"
+export PATH="$PATH":"$HOME/.vip/scripts":"$HOME/.vip/scripts_ln":"$HOME/.config/i3/scripts":"$HOME/.vip/appimages"
 
 # SET PS1 WITHOUT COLOR
 PS1='[\u@\h \W]\$ '
