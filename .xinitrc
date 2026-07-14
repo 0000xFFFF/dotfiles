@@ -1,4 +1,3 @@
-## USING WAYLAND!!!
 #awesome
 #xrdb ~/.Xresources
 #exec startplasma-x11
