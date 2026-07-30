@@ -37,6 +37,8 @@ CHAR_MAP = {
     " [Official Music Video]": "",
     " (Official Lyric Video)": "",
     " [Official Lyric Video]": "",
+    " (Official HD Video)": "",
+    " [Official HD Video]": "",
 
     " (Offical Audio)": "",
     " [Offical Audio]": "",
@@ -48,6 +50,8 @@ CHAR_MAP = {
     " [Offical Music Video]": "",
     " (Offical Lyric Video)": "",
     " [Offical Lyric Video]": "",
+    " (Offical HD Video)": "",
+    " [Offical HD Video]": "",
 }
 
 TO_REMOVE = [
