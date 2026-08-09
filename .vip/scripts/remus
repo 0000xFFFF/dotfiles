@@ -12,8 +12,12 @@ CHAR_MAP = {
     ":": "",
     "\"": "",
     "/": "",
+    "⧸": "",
     "\\": "",
     "|": "",
+    "｜": "",  # Fullwidth Vertical Line
+    "∣": "",   # Divides
+    "ǀ": "",   # Latin letter dental click
     "?": "",
     "？": "",
     "\"": "",
