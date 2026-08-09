@@ -44,6 +44,7 @@ cabextract
 chafa
 cheese
 chromium
+clamav
 clang
 clinfo
 cloc
@@ -54,6 +55,7 @@ cpio
 cpupower
 cpupower-gui-git
 cracklib
+croc
 cups
 cups-pdf
 dd_rescue
@@ -243,6 +245,7 @@ mpv
 mtd-utils
 mtools
 mtpfs
+mupdf
 nano
 nasm
 ncdu
@@ -257,7 +260,6 @@ nmon
 nnn
 nodejs
 noise-suppression-for-voice
-nomacs
 notepadqq
 noto-fonts-cjk
 noto-fonts-emoji
@@ -350,6 +352,7 @@ python-getkey
 python-gnupg
 python-importlib_resources
 python-jose
+python-librosa
 python-matplotlib
 python-netifaces
 python-networkx
@@ -427,6 +430,7 @@ steam
 strace
 sudo
 superfile
+sxiv
 sysstat
 system-config-printer
 systemsettings
@@ -588,7 +592,7 @@ vim
 virt-manager
 virt-viewer
 virtualbox
-virtualbox-host-modules-arch
+virtualbox-host-dkms
 visual-studio-code-bin
 vlc-plugin-aalib
 vlc-plugin-aom
@@ -611,7 +615,6 @@ vlc-plugin-gme
 vlc-plugin-gstreamer
 vlc-plugin-jack
 vlc-plugin-kate
-vlc-plugin-kwallet
 vlc-plugin-libsecret
 vlc-plugin-lirc
 vlc-plugin-live555
@@ -624,7 +627,6 @@ vlc-plugin-mtp
 vlc-plugin-musepack
 vlc-plugin-nfs
 vlc-plugin-notify
-vlc-plugin-quicksync
 vlc-plugin-samplerate
 vlc-plugin-sdl
 vlc-plugin-sftp
