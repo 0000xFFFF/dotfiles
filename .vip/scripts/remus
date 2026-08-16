@@ -145,7 +145,7 @@ def process_file_lister(root_dir: str, filename: str):
     if "-" not in filename:
         print(f"no '-' : {full_path}")
 
-    check_missing_spaces_around_dash(filename, full_path)
+    #check_missing_spaces_around_dash(filename, full_path)
 
     if not is_audio_file(full_path):
         print(f"not audio : {full_path}")
