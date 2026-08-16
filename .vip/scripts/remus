@@ -2,6 +2,7 @@
 import os
 import argparse
 import mimetypes
+import re
 
 CHAR_MAP = {
     "  ": " ",
@@ -30,6 +31,8 @@ CHAR_MAP = {
     " [Video]": "",
     " (Visualizer)": "",
     " [Visualizer]": "",
+    " (Visualiser)": "",
+    " [Visualiser]": "",
 
     " (Official Audio)": "",
     " [Official Audio]": "",
@@ -77,6 +80,21 @@ TO_REMOVE = [
 def is_audio_file(file_path):
     mime_type, _ = mimetypes.guess_type(file_path)
     return mime_type is not None and mime_type.startswith("audio/")
+
+
+def check_missing_spaces_around_dash(filename: str, full_path: str):
+    # Artist- Song
+    if re.search(r"\S-\s", filename):
+        print(f"missing space before '-' : {full_path}")
+
+    # Artist -Song
+    if re.search(r"\s-\S", filename):
+        print(f"missing space after '-' : {full_path}")
+
+    # Artist-Song
+    if re.search(r"\S-\S", filename):
+        print(f"missing spaces around '-' : {full_path}")
+
 
 def sanitize_filename(name: str) -> str:
     for k, v in CHAR_MAP.items():
@@ -126,6 +144,8 @@ def process_file_lister(root_dir: str, filename: str):
     full_path = os.path.join(root_dir, filename)
     if "-" not in filename:
         print(f"no '-' : {full_path}")
+
+    check_missing_spaces_around_dash(filename, full_path)
 
     if not is_audio_file(full_path):
         print(f"not audio : {full_path}")
