@@ -25,6 +25,7 @@ CHAR_MAP = {
     "＂": "",
     "*": "",
     "- Topic -": "-",
+    " (Original Mix)": "",
     " (Audio)": "",
     " [Audio]": "",
     " (Video)": "",
