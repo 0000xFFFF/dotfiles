@@ -1,0 +1,14 @@
+[StreamInputs]
+inputDevice=alsa_input.pci-0000_2f_00.4.analog-stereo
+plugins=rnnoise#0,equalizer#0,gate#0
+visiblePage=pluginsPage
+visiblePlugin=gate#0
+
+[StreamOutputs]
+outputDevice=bluez_output.04_57_91_C7_2D_C4.1
+visiblePage=pluginsPage
+
+[Window]
+height=869
+visiblePage=inputPage
+width=1421
