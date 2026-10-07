@@ -1,0 +1,8 @@
+GPU: NVIDIA GeForce GTX 1070 Mobile [Discrete]
+
+yay -S nvidia-580xx-dkms nvidia-580xx-utils lib32-nvidia-580xx-utils
+
+vim /etc/mkinitcpio.conf
+MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)
+
+sudo mkinitcpio -P
