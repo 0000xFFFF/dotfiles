@@ -67,6 +67,7 @@ discord
 discover
 dmenu
 docker
+docker-desktop
 dolphin
 doomretro
 dosfstools
@@ -186,6 +187,7 @@ kwayland-integration
 kwin
 kwin-x11
 kwrited
+lact
 layer-shell-qt
 lazygit
 leafpad
@@ -215,6 +217,7 @@ linux-headers
 lldb
 llvm
 lsof
+lsp-plugins
 lxappearance
 lynx
 macchanger
@@ -260,6 +263,7 @@ nmon
 nnn
 nodejs
 noise-suppression-for-voice
+nomacs-git
 notepadqq
 noto-fonts-cjk
 noto-fonts-emoji
