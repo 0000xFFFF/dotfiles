@@ -1,1 +1,2 @@
-pacman -Qe | awk '{print $1}'
+#!/bin/bash
+pacman -Qn | awk '{print $1}'
