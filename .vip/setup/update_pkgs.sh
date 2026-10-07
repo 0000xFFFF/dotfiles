@@ -1,3 +1,3 @@
 #!/bin/bash
-./list_pkgs.sh > pkgs.txt
-./list_pkgs_with_aur.sh > pkgs_with_aur.txt
+./list_pkgs_native.sh > pkgs_native.txt
+./list_pkgs_aur.sh > pkgs_aur.txt
