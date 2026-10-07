@@ -1,0 +1,9 @@
+alacritty
+dolphin
+eza
+feh
+git
+mpv
+plasma
+ssh
+zoxide
