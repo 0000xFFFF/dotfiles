@@ -5,5 +5,5 @@ feh
 git
 mpv
 plasma
-ssh
+openssh
 zoxide
