@@ -64,8 +64,15 @@ for root, dirs, files in os.walk(args.directory):
         safe_mkdir(file_type_dir)
 
         if file_ext in image_exts:
-            im = Image.open(full_file_path)
-            width, height = im.size
+            width = "unk"
+            height = "unk"
+            try:
+                im = Image.open(full_file_path)
+                width, height = im.size
+            except:
+                print(f"can't open image: {full_file_path}")
+
+
             key = f"{file_ext}_{width}x{height}"
 
             wxh_dir = os.path.join(file_type_dir, f"{width}x{height}")
