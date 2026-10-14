@@ -249,17 +249,18 @@ return {
             {
                 "<leader>f",
                 function()
-                    require('fff').find_files()
+                    require('fff').find_files({ resume = true })
                 end,
                 desc = 'Find Files',
             },
+
             {
                 "<leader>gg",
                 function()
-                    require('fff').live_grep()
+                    require('fff').live_grep({ resume = true })
                 end,
                 desc = 'Live Grep',
-            },
+            }
         },
     },
 
