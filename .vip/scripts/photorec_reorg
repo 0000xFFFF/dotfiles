@@ -48,7 +48,7 @@ file_types_dir = os.path.join(cwd, "reorg")
 safe_mkdir(file_types_dir)
 
 file_counts = defaultdict(int)
-image_exts = [ ".jpg", ".png" ]
+image_exts = [".jpg", ".jpeg", ".png"]
 longest_key = 3
 
 for root, dirs, files in os.walk(args.directory):
@@ -56,7 +56,6 @@ for root, dirs, files in os.walk(args.directory):
         full_file_path = os.path.join(root, file)
 
         file_ext = os.path.splitext(file)[1].lower()
-
         key = file_ext
 
         file_type_dir_name = file_ext.replace(".", "") + "_type"
@@ -64,25 +63,38 @@ for root, dirs, files in os.walk(args.directory):
         safe_mkdir(file_type_dir)
 
         if file_ext in image_exts:
-            width = "unk"
-            height = "unk"
+            size_category = "unknown"
+
             try:
-                im = Image.open(full_file_path)
-                width, height = im.size
-            except:
-                print(f"can't open image: {full_file_path}")
+                with Image.open(full_file_path) as im:
+                    width, height = im.size
 
+                pixels = width * height
 
-            key = f"{file_ext}_{width}x{height}"
+                if pixels < 1_000_000:
+                    size_category = "small"
+                elif pixels <= 5_000_000:
+                    size_category = "medium"
+                else:
+                    size_category = "big"
 
-            wxh_dir = os.path.join(file_type_dir, f"{width}x{height}")
-            safe_mkdir(wxh_dir)
-            process_file(full_file_path, wxh_dir)
+            except Exception as e:
+                print(f"can't process image: {full_file_path}: {e}")
+
+            key = f"{file_ext}_{size_category}"
+
+            dest_dir = os.path.join(file_type_dir, size_category)
+            safe_mkdir(dest_dir)
+
+            process_file(full_file_path, dest_dir)
+
         else:
             process_file(full_file_path, file_type_dir)
 
         l = len(key)
-        if l > longest_key: longest_key = l
+        if l > longest_key:
+            longest_key = l
+
         file_counts[key] += 1
 
 
