@@ -30,8 +30,14 @@ def safe_move(src, dest):
     print(f"move: {src} -> {dest}")
     try:
         shutil.move(src, dest)
-    except:
-        print(f"move error: {src} -> {dest}")
+    except FileNotFoundError:
+        print(f"Error: Source '{src}' not found.")
+    except PermissionError:
+        print(f"Error: Permission denied for '{src}'.")
+    except shutil.Error as e:
+        print(f"Error: {e}")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
 
 def safe_copy(src, dest):
     print(f"copy: {src} -> {dest}")
