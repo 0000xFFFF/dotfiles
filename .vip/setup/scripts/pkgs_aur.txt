@@ -19,6 +19,8 @@ httptoolkit
 httptoolkit-debug
 insomnia-bin
 jd-gui-bin
+kgamma
+kwin-x11
 leafpad
 lib32-amdgpu-pro-oglp
 lib32-glm
@@ -41,6 +43,7 @@ opencl-amd-debug
 oracle-datamodeler
 oracle-sqldeveloper
 oracle-xe-11g
+playit-bin
 postman-bin
 python-getkey
 python-nmap
@@ -60,4 +63,5 @@ ttf-charis-sil
 ttf-hanazono
 visual-studio-code-bin
 vulkan-amdgpu-pro
+wacomtablet
 yay

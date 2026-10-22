@@ -40,6 +40,7 @@ clamav
 clang
 clinfo
 cloc
+cloudflared
 corectrl
 cowsay
 cpio
@@ -122,14 +123,15 @@ impala
 imwheel
 inetutils
 inotify-tools
-intellij-idea-community-edition
+intellij-idea-oss
 isoimagewriter
 jadx
-jdk-openjdk
 jdk17-openjdk
+jdk25-openjdk
 jedi-language-server
 john
 jq
+jre-openjdk
 jre8-openjdk
 jupyter-notebook
 kactivitymanagerd
@@ -141,7 +143,6 @@ kdegraphics-thumbnailers
 kdenlive
 kdeplasma-addons
 kdesdk-thumbnailers
-kgamma
 kglobalacceld
 kimageformats
 kimageformats5
@@ -164,7 +165,6 @@ kwalletmanager
 kwayland
 kwayland-integration
 kwin
-kwin-x11
 kwrited
 lact
 layer-shell-qt
@@ -295,6 +295,8 @@ powerdevil
 powertop
 prettier
 print-manager
+prismlauncher
+protontricks
 pulseaudio-alsa
 pulsemixer
 putty
@@ -589,7 +591,6 @@ vulkan-html-docs
 vulkan-radeon
 vulscan
 w3m
-wacomtablet
 waydroid
 weston
 wget
@@ -612,6 +613,7 @@ xorg-iceauth
 xorg-mkfontscale
 xorg-server
 xorg-server-devel
+xorg-server-src
 xorg-server-xephyr
 xorg-server-xnest
 xorg-server-xvfb
