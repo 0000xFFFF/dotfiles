@@ -191,6 +191,7 @@ alias \
         dx="cd \"$HOME/Desktop\"" \
         cddx="cd \"$HOME/Desktop\"" \
         cddl="cd \"$HOME/Downloads\"" \
+        cdsdl="cd /run/media/user/FROG/Downloads/" \
         cdpic="cd \"$HOME/Pictures\"" \
         cddoc="cd \"$HOME/Documents\"" \
         cdmus="cd \"$HOME/Music\"" \
@@ -203,7 +204,8 @@ alias \
         cda="cd /srv/http" \
         cdac="cd /etc/httpd/conf" \
         cdal="cd /var/log/httpd" \
-        l3mon="cd $HOME/.vip/tools/L3MON/server"
+        l3mon="cd $HOME/.vip/tools/L3MON/server" \
+
 
 
 # less, man colors
