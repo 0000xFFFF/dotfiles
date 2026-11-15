@@ -1,26 +1,50 @@
 #!/usr/bin/env python3
-"""Find (and optionally fix) images whose extension doesn't match their content.
+"""Find (and optionally fix) images/videos whose extension doesn't match their content.
 
   python3 fixext.py [DIR]          # list mismatches only
   python3 fixext.py [DIR] --fix    # rename them (never overwrites)
 """
 import os, sys
 
-def sniff(head: bytes):
-    if head.startswith(b"\x89PNG\r\n\x1a\n"):             return "png"
-    if head.startswith(b"\xff\xd8\xff"):                  return "jpg"
-    if head[:6] in (b"GIF87a", b"GIF89a"):                return "gif"
-    if head[:4] == b"RIFF" and head[8:12] == b"WEBP":     return "webp"
-    if head[:2] == b"BM":                                 return "bmp"
-    if head[:4] in (b"II*\x00", b"MM\x00*"):              return "tiff"
-    if head[4:8] == b"ftyp":
-        brand = head[8:12]
-        if brand in (b"avif", b"avis"):                   return "avif"
-        if brand in (b"heic", b"heix", b"mif1", b"msf1"): return "heic"
+def sniff(h: bytes):
+    """Return (family, canonical_ext) or None."""
+    # ---- images ----
+    if h.startswith(b"\x89PNG\r\n\x1a\n"):              return "png", "png"
+    if h.startswith(b"\xff\xd8\xff"):                   return "jpg", "jpg"
+    if h[:6] in (b"GIF87a", b"GIF89a"):                 return "gif", "gif"
+    if h[:4] == b"RIFF" and h[8:12] == b"WEBP":         return "webp", "webp"
+    if h[:2] == b"BM":                                  return "bmp", "bmp"
+    if h[:4] in (b"II*\x00", b"MM\x00*"):               return "tiff", "tiff"
+    # ---- ISO base media (mp4 / mov / 3gp / avif / heic) ----
+    if h[4:8] == b"ftyp":
+        b = h[8:12]
+        if b in (b"avif", b"avis"):                     return "avif", "avif"
+        if b in (b"heic", b"heix", b"mif1", b"msf1"):   return "heic", "heic"
+        if b == b"qt  ":                                return "bmff", "mov"
+        if b[:3] in (b"3gp", b"3g2"):                   return "bmff", "3gp"
+        if b in (b"M4V ", b"M4VH", b"M4VP"):            return "bmff", "m4v"
+        return "bmff", "mp4"                            # isom, mp41, mp42, avc1, dash...
+    # ---- other video containers ----
+    if h.startswith(b"\x1a\x45\xdf\xa3"):               return "mkv", ("webm" if b"webm" in h[:64] else "mkv")
+    if h[:4] == b"RIFF" and h[8:12] == b"AVI ":         return "avi", "avi"
+    if h.startswith(bytes.fromhex("3026b2758e66cf11")): return "asf", "wmv"
+    if h.startswith(b"FLV\x01"):                        return "flv", "flv"
+    if h.startswith(b"\x00\x00\x01\xba"):               return "mpg", "mpg"
+    if len(h) >= 377 and h[0] == h[188] == h[376] == 0x47: return "ts", "ts"
+    if len(h) >= 389 and h[4] == h[196] == h[388] == 0x47: return "ts", "m2ts"
     return None
 
-CANON = {"jpeg": "jpg", "jpe": "jpg", "tif": "tiff"}
-KNOWN = {"png", "jpg", "jpeg", "jpe", "gif", "webp", "bmp", "tif", "tiff", "avif", "heic"}
+# extensions that are fine for each detected family
+ACCEPT = {
+    "png": {"png"}, "jpg": {"jpg", "jpeg", "jpe"}, "gif": {"gif"}, "webp": {"webp"},
+    "bmp": {"bmp"}, "tiff": {"tif", "tiff"}, "avif": {"avif"}, "heic": {"heic", "heif"},
+    "bmff": {"mp4", "m4v", "mov", "3gp", "3g2"},   # all the same container family
+    "mkv": {"mkv", "webm"}, "avi": {"avi"}, "asf": {"wmv", "asf"}, "flv": {"flv"},
+    "mpg": {"mpg", "mpeg"}, "ts": {"ts", "m2ts", "mts"},
+}
+KNOWN = set().union(*ACCEPT.values())
+# .ts is also TypeScript; don't call those "unknown"
+QUIET_UNKNOWN = {"ts", "mts", "m2ts"}
 
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
@@ -37,19 +61,21 @@ def main():
             path = os.path.join(dirpath, name)
             try:
                 with open(path, "rb") as f:
-                    real = sniff(f.read(16))
+                    res = sniff(f.read(512))
             except OSError as e:
                 print(f"ERROR   {path}: {e}")
                 continue
-            if real is None:
-                unknown += 1
-                print(f"UNKNOWN {path}  (not a recognised image; corrupt?)")
+            if res is None:
+                if ext not in QUIET_UNKNOWN:
+                    unknown += 1
+                    print(f"UNKNOWN {path}  (not a recognised format; corrupt?)")
                 continue
-            if real == CANON.get(ext, ext):
+            family, canon = res
+            if ext in ACCEPT[family]:
                 continue
             mismatched += 1
-            new = os.path.join(dirpath, f"{base}.{real}")
-            print(f"{ext} -> {real}   {path}")
+            new = os.path.join(dirpath, f"{base}.{canon}")
+            print(f"{ext} -> {canon}   {path}")
             if fix:
                 if os.path.exists(new):
                     print(f"   SKIP (target exists): {new}")
