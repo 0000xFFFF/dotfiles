@@ -1,0 +1,64 @@
+#!/usr/bin/env python3
+"""Find (and optionally fix) images whose extension doesn't match their content.
+
+  python3 fixext.py [DIR]          # list mismatches only
+  python3 fixext.py [DIR] --fix    # rename them (never overwrites)
+"""
+import os, sys
+
+def sniff(head: bytes):
+    if head.startswith(b"\x89PNG\r\n\x1a\n"):             return "png"
+    if head.startswith(b"\xff\xd8\xff"):                  return "jpg"
+    if head[:6] in (b"GIF87a", b"GIF89a"):                return "gif"
+    if head[:4] == b"RIFF" and head[8:12] == b"WEBP":     return "webp"
+    if head[:2] == b"BM":                                 return "bmp"
+    if head[:4] in (b"II*\x00", b"MM\x00*"):              return "tiff"
+    if head[4:8] == b"ftyp":
+        brand = head[8:12]
+        if brand in (b"avif", b"avis"):                   return "avif"
+        if brand in (b"heic", b"heix", b"mif1", b"msf1"): return "heic"
+    return None
+
+CANON = {"jpeg": "jpg", "jpe": "jpg", "tif": "tiff"}
+KNOWN = {"png", "jpg", "jpeg", "jpe", "gif", "webp", "bmp", "tif", "tiff", "avif", "heic"}
+
+def main():
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    fix = "--fix" in sys.argv
+    root = args[0] if args else "."
+    mismatched = unknown = renamed = skipped = 0
+
+    for dirpath, _, files in os.walk(root):
+        for name in files:
+            base, dot, ext = name.rpartition(".")
+            ext = ext.lower()
+            if not dot or ext not in KNOWN:
+                continue
+            path = os.path.join(dirpath, name)
+            try:
+                with open(path, "rb") as f:
+                    real = sniff(f.read(16))
+            except OSError as e:
+                print(f"ERROR   {path}: {e}")
+                continue
+            if real is None:
+                unknown += 1
+                print(f"UNKNOWN {path}  (not a recognised image; corrupt?)")
+                continue
+            if real == CANON.get(ext, ext):
+                continue
+            mismatched += 1
+            new = os.path.join(dirpath, f"{base}.{real}")
+            print(f"{ext} -> {real}   {path}")
+            if fix:
+                if os.path.exists(new):
+                    print(f"   SKIP (target exists): {new}")
+                    skipped += 1
+                else:
+                    os.rename(path, new)
+                    renamed += 1
+
+    print(f"\n{mismatched} mismatched, {unknown} unknown"
+          + (f", {renamed} renamed, {skipped} skipped" if fix else "  (run with --fix to rename)"))
+
+main()
